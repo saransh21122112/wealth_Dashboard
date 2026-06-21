@@ -13,8 +13,14 @@ function getClient() {
   const tursoToken = process.env.TURSO_AUTH_TOKEN;
 
   if (tursoUrl) {
+    console.log('[DB] Connected to Turso remote database.');
     client = createClient({ url: tursoUrl, authToken: tursoToken });
   } else {
+    if (process.env.NODE_ENV === 'production') {
+      console.error('[DB] WARNING: TURSO_DATABASE_URL is not set in production! Falling back to local SQLite — all data will be lost on restart/redeploy.');
+    } else {
+      console.log('[DB] No TURSO_DATABASE_URL set. Using local SQLite file.');
+    }
     const dataDir = path.resolve(__dirname, '../../data');
     fs.mkdirSync(dataDir, { recursive: true });
     client = createClient({ url: `file:${path.join(dataDir, 'aurelia.db')}` });
