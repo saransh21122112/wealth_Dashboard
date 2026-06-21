@@ -1070,111 +1070,118 @@
   <!-- Edit Modal -->
   <div class="modal-overlay" id="editModal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="editModalTitle">
     <div class="modal-card">
+
+      <!-- Header -->
       <div class="modal-header">
         <h2 id="editModalTitle">Edit Entry</h2>
         <button class="modal-close-btn" id="editModalClose" aria-label="Close">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
       </div>
+
       <form id="editModalForm" novalidate>
         <input type="hidden" id="editItemId">
         <input type="hidden" id="editItemType">
 
-        <!-- Income / Expense fields -->
-        <div id="editCommonFields">
-          <div class="form-group">
-            <label class="form-label" for="editDescription">Description</label>
-            <input class="form-input" type="text" id="editDescription" required>
-          </div>
-          <div class="form-group horizontal">
-            <div>
-              <label class="form-label" for="editAmount">Amount (₹)</label>
-              <input class="form-input" type="number" min="1" id="editAmount" required>
+        <!-- ── INCOME / EXPENSE FIELDS ── -->
+        <div id="editCommonFields" style="display:none;">
+          <div class="edit-section">
+            <div class="form-group">
+              <label class="form-label" for="editDescription">Description</label>
+              <input class="form-input" type="text" id="editDescription" placeholder="e.g. Monthly Salary, Rent" required>
             </div>
-            <div>
-              <label class="form-label" for="editDate">Date</label>
-              <input class="form-input" type="date" id="editDate" required>
+            <div class="form-group horizontal">
+              <div>
+                <label class="form-label" for="editAmount">Amount (₹)</label>
+                <input class="form-input" type="number" min="1" id="editAmount" placeholder="0" required>
+              </div>
+              <div>
+                <label class="form-label" for="editDate">Date</label>
+                <input class="form-input" type="date" id="editDate" required>
+              </div>
             </div>
+            <div class="form-group">
+              <label class="form-label" for="editCategory">Category</label>
+              <select class="form-select" id="editCategory"></select>
+            </div>
+            <label class="toggle-container">
+              <input type="checkbox" id="editIsRecurring" class="toggle-input">
+              <div class="toggle-switch"></div>
+              <span class="toggle-label">Monthly Recurring</span>
+            </label>
           </div>
-          <div class="form-group">
-            <label class="form-label" for="editCategory">Category</label>
-            <select class="form-select" id="editCategory"></select>
-          </div>
-          <label class="toggle-container">
-            <input type="checkbox" id="editIsRecurring" class="toggle-input">
-            <div class="toggle-switch"></div>
-            <span class="toggle-label">Monthly Recurring</span>
-          </label>
         </div>
 
-        <!-- Investment fields -->
+        <!-- ── INVESTMENT FIELDS ── -->
         <div id="editInvestmentFields" style="display:none;">
-          <div class="form-group">
-            <label class="form-label" for="editInvName">Asset / Policy Name</label>
-            <input class="form-input" type="text" id="editInvName" required>
-          </div>
 
-          <div class="form-group horizontal">
-            <div>
-              <label class="form-label" for="editInvType">Type</label>
-              <select class="form-select" id="editInvType">
-                <option value="sip">Mutual Fund (Monthly SIP)</option>
-                <option value="lump-sum">Mutual Fund / FD (One-time)</option>
-                <option value="stocks">Stocks / Equities</option>
-                <option value="lic">LIC / Insurance Policy</option>
-              </select>
+          <!-- Block 1: Identity -->
+          <div class="edit-section">
+            <div class="form-group" style="margin-bottom:0.9rem;">
+              <label class="form-label" for="editInvName">Asset / Policy Name</label>
+              <input class="form-input" type="text" id="editInvName" placeholder="e.g. LIC Jeevan Lakshya, Nifty SIP" required>
             </div>
-            <div>
-              <label class="form-label" for="editInvDate">Start Date</label>
-              <input class="form-input" type="date" id="editInvDate" required>
-            </div>
-          </div>
-
-          <div class="form-group horizontal">
-            <div>
-              <label class="form-label" id="editInvAmountLabel" for="editInvAmount">Amount (₹)</label>
-              <input class="form-input" type="number" min="1" id="editInvAmount" required>
-            </div>
-            <div>
-              <label class="form-label" for="editInvDuration">Duration (Years)</label>
-              <input class="form-input" type="number" min="1" id="editInvDuration" required>
+            <div class="form-group horizontal" style="margin-bottom:0;">
+              <div>
+                <label class="form-label" for="editInvType">Type</label>
+                <select class="form-select" id="editInvType">
+                  <option value="sip">Mutual Fund (Monthly SIP)</option>
+                  <option value="lump-sum">Mutual Fund / FD (One-time)</option>
+                  <option value="stocks">Stocks / Equities</option>
+                  <option value="lic">LIC / Insurance Policy</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label" for="editInvDate">Start Date</label>
+                <input class="form-input" type="date" id="editInvDate" required>
+              </div>
             </div>
           </div>
 
-          <!-- Rate row: manual for SIP/stocks, auto-calculated for LIC -->
-          <div class="form-group horizontal" id="editRateManualGroup">
-            <div>
-              <label class="form-label" for="editInvCompounding">Compounding</label>
-              <select class="form-select" id="editInvCompounding">
-                <option value="12">Monthly</option>
-                <option value="4">Quarterly</option>
-                <option value="2">Half-Yearly</option>
-                <option value="1">Annually</option>
-                <option value="0">Simple Interest</option>
-              </select>
-            </div>
-            <div>
-              <label class="form-label" for="editInvRate">Annual Rate (%)</label>
-              <input class="form-input" type="number" step="0.1" min="0" id="editInvRate">
+          <!-- Block 2: Core numbers (always visible) -->
+          <div class="edit-section">
+            <p class="edit-section-label">Core Details</p>
+            <div class="form-group horizontal" style="margin-bottom:0;">
+              <div>
+                <label class="form-label" for="editInvAmount">Premium / Amount (₹)</label>
+                <input class="form-input" type="number" min="1" id="editInvAmount" placeholder="e.g. 1729" required>
+              </div>
+              <div>
+                <label class="form-label" for="editInvDuration">Duration (Years)</label>
+                <input class="form-input" type="number" min="1" id="editInvDuration" placeholder="e.g. 25" required>
+              </div>
             </div>
           </div>
 
-          <!-- LIC-specific fields -->
-          <div id="editLicFields" style="display:none;">
-            <div class="edit-lic-header">
-              <span>LIC / Insurance Details</span>
+          <!-- Block 3: SIP / FD / Stocks only -->
+          <div class="edit-section" id="editRateManualGroup">
+            <p class="edit-section-label">Returns</p>
+            <div class="form-group horizontal" style="margin-bottom:0;">
+              <div>
+                <label class="form-label" for="editInvCompounding">Compounding</label>
+                <select class="form-select" id="editInvCompounding">
+                  <option value="12">Monthly</option>
+                  <option value="4">Quarterly</option>
+                  <option value="2">Half-Yearly</option>
+                  <option value="1">Annually</option>
+                  <option value="0">Simple Interest</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label" for="editInvRateManual">Annual Rate (%)</label>
+                <input class="form-input" type="number" step="0.1" min="0" id="editInvRateManual" placeholder="e.g. 12">
+              </div>
             </div>
+          </div>
+
+          <!-- Block 4: LIC only -->
+          <div class="edit-section" id="editLicFields" style="display:none;">
+            <p class="edit-section-label">LIC Policy Details</p>
             <div class="form-group horizontal">
               <div>
                 <label class="form-label" for="editLicSumAssured">Maturity Value (₹)</label>
                 <input class="form-input" type="number" min="0" id="editLicSumAssured" placeholder="e.g. 1300000">
               </div>
-              <div>
-                <label class="form-label" for="editLicPolicyNum">Policy Number</label>
-                <input class="form-input" type="text" id="editLicPolicyNum" placeholder="Optional">
-              </div>
-            </div>
-            <div class="form-group horizontal">
               <div>
                 <label class="form-label" for="editLicPremiumFreq">Premium Frequency</label>
                 <select class="form-select" id="editLicPremiumFreq">
@@ -1184,19 +1191,32 @@
                   <option value="annually">Annually</option>
                 </select>
               </div>
+            </div>
+            <div class="form-group horizontal">
               <div>
-                <label class="form-label" for="editLicPremiumDue">Next Premium Due</label>
+                <label class="form-label" for="editLicPolicyNum">Policy Number <span style="font-weight:400;color:var(--text-muted)">(optional)</span></label>
+                <input class="form-input" type="text" id="editLicPolicyNum" placeholder="e.g. 901234567">
+              </div>
+              <div>
+                <label class="form-label" for="editLicPremiumDue">Next Premium Due <span style="font-weight:400;color:var(--text-muted)">(optional)</span></label>
                 <input class="form-input" type="date" id="editLicPremiumDue">
               </div>
             </div>
-            <div class="edit-lic-rate-row" id="editLicRateDisplay">
-              <span class="edit-lic-rate-label">Implied Annual Return</span>
-              <span class="edit-lic-rate-value" id="editLicRateValue">— %</span>
+            <!-- Rate: auto-calculated but directly editable -->
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label" for="editInvRateLic">
+                Annual Return Rate (%)
+                <span class="edit-rate-auto-tag" id="editLicRateTag">auto-calculated</span>
+              </label>
+              <input class="form-input" type="number" step="0.1" min="0" id="editInvRateLic" placeholder="e.g. 6.5">
+              <div class="edit-rate-hint" id="editLicRateHint">Fill in Maturity Value + Duration above to auto-calculate</div>
             </div>
           </div>
+
         </div>
 
-        <div style="display:flex; gap:0.75rem; margin-top:1.25rem;">
+        <!-- Action buttons -->
+        <div class="edit-modal-actions">
           <button type="submit" class="btn btn-primary" style="flex:1;">Save Changes</button>
           <button type="button" id="editModalCancelBtn" class="btn btn-secondary" style="flex:1;">Cancel</button>
         </div>

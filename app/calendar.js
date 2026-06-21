@@ -54,7 +54,8 @@ export function setupCalendar({ store, formatCurrency }) {
 
     for (const inc of currentUser.income || []) {
       if (inc.isRecurring) {
-        const incDay = new Date(inc.date + 'T00:00:00').getDate();
+        // Prefer explicit recurringDay over the day in the date field
+        const incDay = inc.recurringDay || new Date(inc.date + 'T00:00:00').getDate();
         if (incDay === d) events.push({ type: 'income', label: inc.description, amount: inc.amount });
       } else if (inc.date === dateStr) {
         events.push({ type: 'income', label: inc.description, amount: inc.amount });
@@ -63,7 +64,9 @@ export function setupCalendar({ store, formatCurrency }) {
 
     for (const exp of currentUser.expenses || []) {
       if (exp.isRecurring) {
-        const expDay = new Date(exp.date + 'T00:00:00').getDate();
+        // Skip if this expense has ended before the viewed date
+        if (exp.endDate && new Date(exp.endDate) < date) continue;
+        const expDay = exp.recurringDay || new Date(exp.date + 'T00:00:00').getDate();
         if (expDay === d) events.push({ type: 'expense', label: exp.description, amount: exp.amount });
       } else if (exp.date === dateStr) {
         events.push({ type: 'expense', label: exp.description, amount: exp.amount });
@@ -73,23 +76,27 @@ export function setupCalendar({ store, formatCurrency }) {
     for (const inv of currentUser.investments || []) {
       const start = new Date(inv.startDate + 'T00:00:00');
       if (start > date) continue;
+      // Skip if investment/policy has matured
+      if (inv.endDate && new Date(inv.endDate) < date) continue;
 
       if (inv.type === 'sip') {
-        if (start.getDate() === d) events.push({ type: 'investment', label: `${inv.name} SIP`, amount: inv.amount });
+        // Prefer recurringDay; fall back to start day
+        const sipDay = inv.recurringDay || start.getDate();
+        if (sipDay === d) events.push({ type: 'investment', label: `${inv.name} SIP`, amount: inv.amount });
       } else if (inv.type === 'lic') {
         const freq = inv.licPremiumFreq || 'annually';
-        const startDay = start.getDate();
+        const premDay = inv.recurringDay || start.getDate();
         const startMonth = start.getMonth();
 
-        if (freq === 'monthly' && startDay === d) {
+        if (freq === 'monthly' && premDay === d) {
           events.push({ type: 'investment', label: `${inv.name} premium`, amount: inv.amount });
-        } else if (freq === 'quarterly' && startDay === d) {
+        } else if (freq === 'quarterly' && premDay === d) {
           const monthDiff = (y - start.getFullYear()) * 12 + (m - startMonth);
           if (monthDiff % 3 === 0) events.push({ type: 'investment', label: `${inv.name} premium`, amount: inv.amount });
-        } else if (freq === 'half-yearly' && startDay === d) {
+        } else if (freq === 'half-yearly' && premDay === d) {
           const monthDiff = (y - start.getFullYear()) * 12 + (m - startMonth);
           if (monthDiff % 6 === 0) events.push({ type: 'investment', label: `${inv.name} premium`, amount: inv.amount });
-        } else if (freq === 'annually' && startDay === d && startMonth === m) {
+        } else if (freq === 'annually' && premDay === d && startMonth === m) {
           events.push({ type: 'investment', label: `${inv.name} premium`, amount: inv.amount });
         }
       }
