@@ -28,14 +28,14 @@ export function calculateInvestmentValue(inv) {
 
   switch (inv.type) {
     case 'sip': {
-      const monthlyRate = annualRate / 12;
-      const totalInstallments = Math.floor(elapsedMonths) + 1;
+      // Effective monthly rate from annual CAGR: (1 + r_annual)^(1/12) − 1
+      const monthlyRate = Math.pow(1 + annualRate, 1 / 12) - 1;
+      const maxInstallments = Math.floor(parseFloat(inv.duration || 999) * 12);
+      const totalInstallments = Math.min(Math.floor(elapsedMonths) + 1, maxInstallments);
       principalInvested = principalInput * totalInstallments;
-      if (monthlyRate === 0) {
-        currentValue = principalInvested;
-      } else {
-        currentValue = principalInput * ((Math.pow(1 + monthlyRate, totalInstallments) - 1) / monthlyRate) * (1 + monthlyRate);
-      }
+      currentValue = monthlyRate === 0
+        ? principalInvested
+        : principalInput * ((Math.pow(1 + monthlyRate, totalInstallments) - 1) / monthlyRate) * (1 + monthlyRate);
       break;
     }
     case 'lump-sum':
@@ -49,30 +49,23 @@ export function calculateInvestmentValue(inv) {
     }
     case 'lic': {
       let frequencyMonths = 12;
-      if (inv.licPremiumFreq === 'half-yearly') frequencyMonths = 6;
-      if (inv.licPremiumFreq === 'quarterly') frequencyMonths = 3;
       if (inv.licPremiumFreq === 'monthly') frequencyMonths = 1;
+      else if (inv.licPremiumFreq === 'quarterly') frequencyMonths = 3;
+      else if (inv.licPremiumFreq === 'half-yearly') frequencyMonths = 6;
 
-      const paymentsMade = Math.floor(elapsedMonths / frequencyMonths) + 1;
-      principalInvested = principalInput * paymentsMade;
+      // Cap payments at policy term
+      const maxPeriods = Math.floor(parseFloat(inv.duration) * 12 / frequencyMonths);
+      const n = Math.min(Math.floor(elapsedMonths / frequencyMonths) + 1, maxPeriods);
+      principalInvested = principalInput * n;
 
-      const maturityValue = inv.licSumAssured && Number(inv.licSumAssured) > 0
-        ? Number(inv.licSumAssured)
-        : null;
+      // Period rate derived from the effective annual rate
+      // (the annual rate was derived via monthly SIP FV bisection: annual = (1+r_monthly)^12 − 1)
+      const periodsPerYear = 12 / frequencyMonths;
+      const periodRate = Math.pow(1 + annualRate, 1 / periodsPerYear) - 1;
 
-      if (maturityValue) {
-        // Proportional growth toward maturity — accurate for endowment plans
-        const totalMonths = parseFloat(inv.duration) * 12;
-        const progress = Math.min(elapsedMonths / totalMonths, 1);
-        currentValue = maturityValue * progress;
-      } else {
-        // Fallback: compound interest on each payment
-        for (let index = 0; index < paymentsMade; index += 1) {
-          const monthsSincePayment = elapsedMonths - (index * frequencyMonths);
-          const yearsSincePayment = monthsSincePayment / 12;
-          currentValue += principalInput * Math.pow(1 + annualRate, yearsSincePayment);
-        }
-      }
+      currentValue = periodRate < 0.000001
+        ? principalInvested
+        : principalInput * ((Math.pow(1 + periodRate, n) - 1) / periodRate) * (1 + periodRate);
       break;
     }
   }
