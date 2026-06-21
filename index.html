@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aurelia - AI Wealth Operating System</title>
+  <meta name="description" content="Aurelia is an AI-powered wealth operating system for households and professionals to track expenses, investments, insurance, and financial decisions in one subscription-ready dashboard.">
+  
+  <!-- Prevent Theme FOUC -->
+  <meta name="color-scheme" content="light dark">
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('aurelia-theme') || 'system';
+      if (savedTheme === 'dark' || (savedTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+  </script>
+  
+  <link rel="stylesheet" href="styles.css">
+  <!-- Chart.js CDN for visualizations -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+  <!-- Main controllers -->
+  <script src="charts.js" defer></script>
+  <script type="module" src="app/main.js"></script>
+  <script type="module" src="ai/main.js"></script>
+  <script src="tour.js" defer></script>
+</head>
+<body>
+
+  <!-- Auth Overlay Screen -->
+  <div class="auth-overlay" id="authOverlay">
+    <div class="auth-card">
+      <div class="auth-header">
+        <h1 class="auth-logo">Aurelia</h1>
+        <p class="auth-subtitle" id="authSubtitle">Log in to manage your Aurelia workspace</p>
+      </div>
+      <form id="authForm">
+        <div class="form-group">
+          <label class="form-label" for="authUsername">Username</label>
+          <input type="text" id="authUsername" class="form-input" placeholder="Enter username" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="authPassword">Password</label>
+          <input type="password" id="authPassword" class="form-input" placeholder="Enter password" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn btn-primary btn-full" id="authSubmitBtn">Log In</button>
+      </form>
+      <div class="auth-switch-link" id="authSwitchLink">Don't have an account? Sign up</div>
+    </div>
+  </div>
+
+  <!-- Mobile Top Header Bar -->
+  <header class="mobile-top-bar" id="mobileHeader">
+    <div class="brand-section" style="margin-bottom: 0;">
+      <div class="brand-icon">A</div>
+      <div class="brand-name">Aurelia<span>Wealth</span></div>
+    </div>
+    <button class="menu-toggle-btn" id="menuToggle" aria-label="Toggle Navigation Menu">
+      <!-- Menu burger SVG icon -->
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="4" y1="12" x2="20" y2="12"></line>
+        <line x1="4" y1="6" x2="20" y2="6"></line>
+        <line x1="4" y1="18" x2="20" y2="18"></line>
+      </svg>
+    </button>
+  </header>
+
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="appSidebar">
+      <div class="sidebar-top">
+        <div class="brand-section">
+          <div class="brand-icon">A</div>
+          <div class="brand-name">Aurelia<span>Wealth</span></div>
+        </div>
+        
+        <nav>
+          <ul class="nav-menu">
+            <li class="nav-item active" data-tab="dashboard">
+              <button>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+                Overview
+              </button>
+            </li>
+            <li class="nav-item" data-tab="expenses">
+              <button>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+                Expenses
+              </button>
+            </li>
+            <li class="nav-item" data-tab="investments">
+              <button>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                Investments
+              </button>
+            </li>
+            <li class="nav-item" data-tab="settings">
+              <button>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                Backup & Settings
+              </button>
+            </li>
+            <li class="nav-item" data-tab="about">
+              <button>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                About Aurelia
+              </button>
+            </li>
+            <li class="nav-item" data-tab="admin" id="adminNavItem" style="display: none;">
+              <button>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                Admin Panel
+              </button>
+            </li>
+          </ul>
+        </nav>
+      </div>
+      
+      <div class="sidebar-footer">
+        <!-- App Tour Button -->
+        <div class="tour-launch-row" style="padding: 0; margin-bottom: 0.5rem;">
+          <button class="tour-launch-btn" id="startTourBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            Take App Tour
+          </button>
+        </div>
+        <!-- Logged in User Profile Info -->
+        <div class="user-profile-summary" id="userProfileSummary" style="display: none;">
+          <div class="user-profile-avatar" id="userAvatar">U</div>
+          <div class="user-profile-info">
+            <div class="user-profile-name" id="userProfileName">Guest</div>
+            <div class="user-profile-role" id="userProfileRole">User</div>
+          </div>
+        </div>
+        <button class="theme-toggle-btn" id="themeToggleBtn" aria-label="Toggle light and dark mode">
+          <svg id="themeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <!-- Sun / Moon will be rendered here dynamically -->
+          </svg>
+          <span id="themeBtnText">Toggle Theme</span>
+        </button>
+        <!-- Logout Button -->
+        <button class="btn btn-secondary btn-full" id="logoutBtn" style="min-height: auto; padding: 0.5rem 1rem; font-size: 0.85rem; display: none; margin-top: 0.5rem; justify-content: center; gap: 0.5rem;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+          Log Out
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+
+      <!-- Active LIC Premium Due Warnings Section -->
+      <section class="alert-banner" id="licAlertBanner" style="display: none;" aria-live="polite">
+        <div class="alert-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        </div>
+        <div class="alert-content">
+          <h2 class="alert-title">Upcoming Premium Payments</h2>
+          <p class="alert-message">The following insurance/LIC policies have premiums due in the next 30 days. Please ensure you make payments on time.</p>
+          <ul class="alert-list" id="licAlertList">
+            <!-- Items added dynamically -->
+          </ul>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- TAB 1: OVERVIEW DASHBOARD                     -->
+      <!-- ============================================== -->
+      <div class="tab-pane active" id="dashboardTab">
+        <header class="page-header">
+          <h1 class="page-title">Wealth Overview</h1>
+          <p class="page-subtitle">A real-time snapshot of your net worth, expenses, and investment growth.</p>
+        </header>
+
+        <!-- KPI Cards -->
+        <section class="metrics-grid" aria-label="Key Performance Indicators">
+          
+          <div class="card primary">
+            <div class="card-header">
+              <h2 class="card-title">Net Worth</h2>
+              <div class="card-icon" style="background-color: var(--color-gold-light); color: var(--color-gold);">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+              </div>
+            </div>
+            <div class="card-value" id="netWorthVal">₹0.00</div>
+            <div class="card-meta">
+              <span>Current Assets - Total Expenses</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Investments Value</h2>
+              <div class="card-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+              </div>
+            </div>
+            <div class="card-value" id="investmentsVal">₹0.00</div>
+            <div class="card-meta">
+              <span class="trend-up" id="investmentsGrowth">0.00% absolute returns</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Monthly Expenses</h2>
+              <div class="card-icon" style="background-color: rgba(198, 40, 40, 0.08); color: var(--color-error);">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
+              </div>
+            </div>
+            <div class="card-value" id="expensesVal">₹0.00</div>
+            <div class="card-meta">
+              <span id="recurringExpensesMeta">₹0.00 recurring expenses</span>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- AI Financial Assistant Card -->
+        <section class="card primary ai-assistant-card" aria-labelledby="aiAssistantTitle">
+          <div class="card-header">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <div class="pulse-indicator"></div>
+              <h2 class="card-title" id="aiAssistantTitle" style="font-size: 1.15rem; font-weight: 700; margin: 0; color: var(--text-primary);">Aurelia AI Assistant</h2>
+            </div>
+          </div>
+          <div class="ai-chat-container">
+            <div class="ai-chat-messages" id="aiChatMessages" role="log" aria-live="polite">
+              <div class="ai-message assistant">
+                Hi! I'm Aurelia AI, your personal financial assistant. Tell me about your salary, expenses, or investments (like SIPs, FDs, Stocks, or LIC policies), and I'll log them directly for you! Try saying: <em>"I started a monthly SIP of ₹5000 in SBI Mutual Fund last year with a 12% rate for 10 years"</em> or <em>"I spent ₹1500 on groceries today"</em>.
+              </div>
+            </div>
+            <form id="aiChatForm" class="ai-chat-form">
+              <input type="text" id="aiChatInput" placeholder="Describe your expense or investment, or ask a question..." aria-label="Type message to Aurelia AI Assistant" required autocomplete="off">
+              <button type="submit" class="btn btn-primary" style="min-height: auto; padding: 0.5rem 1.25rem;">Send</button>
+            </form>
+          </div>
+        </section>
+
+        <!-- Charts Section -->
+        <section class="visuals-grid" aria-label="Visual Analytics">
+          
+          <!-- Wealth Growth Projection -->
+          <div class="card chart-card">
+            <div class="chart-header">
+              <h2 class="chart-title">Future Wealth Projection</h2>
+              <div class="timeline-picker" id="timelinePicker" role="group" aria-label="Timeline selector">
+                <button class="active" data-years="5">5Y</button>
+                <button data-years="10">10Y</button>
+                <button data-years="20">20Y</button>
+                <button data-years="30">30Y</button>
+              </div>
+            </div>
+            <div class="chart-container">
+              <canvas id="projectionChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Expense Allocation -->
+          <div class="card chart-card">
+            <div class="chart-header">
+              <h2 class="chart-title">Expenses Breakdown</h2>
+            </div>
+            <div class="chart-container">
+              <canvas id="expensesChart"></canvas>
+            </div>
+          </div>
+
+        </section>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- TAB 2: EXPENSES TRACKER                       -->
+      <!-- ============================================== -->
+      <div class="tab-pane" id="expensesTab">
+        <header class="page-header">
+          <h1 class="page-title">Expenses Tracker</h1>
+          <p class="page-subtitle">Log your monthly recurring outlays or extra/one-time expenses.</p>
+        </header>
+
+        <div class="management-layout">
+          <!-- Add Expense Form -->
+          <section class="card" aria-labelledby="addExpenseTitle">
+            <h2 class="form-title" id="addExpenseTitle">Log New Expense</h2>
+            <form id="expenseForm" novalidate>
+              <div class="form-group">
+                <label class="form-label" for="expDescription">Description</label>
+                <input class="form-input" type="text" id="expDescription" placeholder="e.g., Grocery, Electricity Bill" required>
+              </div>
+
+              <div class="form-group horizontal">
+                <div>
+                  <label class="form-label" for="expAmount">Amount (₹)</label>
+                  <input class="form-input" type="number" min="1" id="expAmount" placeholder="Amount" required>
+                </div>
+                <div>
+                  <label class="form-label" for="expDate">Date</label>
+                  <input class="form-input" type="date" id="expDate" required>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="expCategory">Category</label>
+                <select class="form-select" id="expCategory" required>
+                  <option value="housing">Housing/Rent</option>
+                  <option value="groceries">Groceries/Food</option>
+                  <option value="utilities">Utilities/Bills</option>
+                  <option value="entertainment">Entertainment</option>
+                  <option value="lic">LIC/Insurance Premium</option>
+                  <option value="health">Health & Medical</option>
+                  <option value="travel">Travel/Commute</option>
+                  <option value="extra">Extra/Splurge</option>
+                  <option value="miscellaneous" selected>Miscellaneous</option>
+                </select>
+              </div>
+
+              <!-- Double State Toggle: Recurring vs One-time -->
+              <label class="toggle-container" id="expTypeToggleContainer">
+                <input type="checkbox" id="expIsRecurring" class="toggle-input">
+                <div class="toggle-switch"></div>
+                <span class="toggle-label" id="expToggleLabel">One-time / Extra Expense</span>
+              </label>
+
+              <button type="submit" class="btn btn-primary btn-full">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Add Expense
+              </button>
+            </form>
+          </section>
+
+          <!-- Expense List Table -->
+          <section class="data-table-container">
+            <div class="table-header">
+              <h2 class="table-title">Expenses Log</h2>
+              <div class="table-actions">
+                <!-- Simple Filter dropdown -->
+                <select class="form-select" id="expenseFilter" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; width: auto;">
+                  <option value="all">All Expenses</option>
+                  <option value="recurring">Monthly Recurring</option>
+                  <option value="onetime">One-time/Extra</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="table-wrapper">
+              <table id="expensesTable">
+                <thead>
+                  <tr>
+                    <th>Description</th>
+                    <th>Category</th>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Amount (₹)</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="expensesTableBody">
+                  <!-- Generated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- TAB 3: INVESTMENTS TRACKER                    -->
+      <!-- ============================================== -->
+      <div class="tab-pane" id="investmentsTab">
+        <header class="page-header">
+          <h1 class="page-title">Investments & Insurance</h1>
+          <p class="page-subtitle">Track your wealth corpus: Mutual Funds (SIPs), Fixed Deposits, Stocks, and LIC Policies.</p>
+        </header>
+
+        <div class="management-layout">
+          <!-- Add Investment Form -->
+          <section class="card" aria-labelledby="addInvestmentTitle">
+            <h2 class="form-title" id="addInvestmentTitle">Log Investment</h2>
+            <form id="investmentForm" novalidate>
+              <div class="form-group">
+                <label class="form-label" for="invName">Investment / Asset Name</label>
+                <input class="form-input" type="text" id="invName" placeholder="e.g., SBI Mutual Fund, LIC Jeevan Labh" required>
+              </div>
+
+              <div class="form-group horizontal">
+                <div>
+                  <label class="form-label" for="invType">Asset Type</label>
+                  <select class="form-select" id="invType" required>
+                    <option value="sip" selected>Mutual Fund (Monthly SIP)</option>
+                    <option value="lump-sum">Mutual Fund / FD (One-time)</option>
+                    <option value="stocks">Stocks/Equities</option>
+                    <option value="lic">LIC / Insurance Policy</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label" for="invDate">Investment Start Date</label>
+                  <input class="form-input" type="date" id="invDate" required>
+                </div>
+              </div>
+
+              <div class="form-group horizontal">
+                <div>
+                  <label class="form-label" id="invAmountLabel" for="invAmount">Monthly SIP Amount (₹)</label>
+                  <input class="form-input" type="number" min="1" id="invAmount" placeholder="Amount (₹)" required>
+                </div>
+                <div>
+                  <label class="form-label" for="invRate">Annual Interest Rate (%)</label>
+                  <input class="form-input" type="number" step="0.1" min="0" max="100" id="invRate" placeholder="Interest Rate" required>
+                </div>
+              </div>
+
+              <div class="form-group horizontal" id="compoundingFrequencyGroup">
+                <div>
+                  <label class="form-label" for="invCompounding">Compounding Frequency</label>
+                  <select class="form-select" id="invCompounding" required>
+                    <option value="12" selected>Monthly Compounding</option>
+                    <option value="4">Quarterly Compounding</option>
+                    <option value="2">Half-Yearly Compounding</option>
+                    <option value="1">Annual Compounding</option>
+                    <option value="0">Simple Interest</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label" for="invDuration">Duration (Years)</label>
+                  <input class="form-input" type="number" min="1" max="100" id="invDuration" placeholder="e.g., 10" required>
+                </div>
+              </div>
+
+              <!-- Dynamic LIC Specific Fields (Displayed only when Type = LIC) -->
+              <div class="conditional-fields" id="licFields">
+                <h3 class="form-label" style="border-bottom: 1px dashed var(--border-color); padding-bottom: 0.25rem; margin-bottom: 0.75rem; color: var(--color-maroon);">LIC / Insurance Policy Details</h3>
+                
+                <div class="form-group horizontal">
+                  <div>
+                    <label class="form-label" for="licPolicyNum">Policy Number</label>
+                    <input class="form-input" type="text" id="licPolicyNum" placeholder="e.g., 90128374">
+                  </div>
+                  <div>
+                    <label class="form-label" for="licSumAssured">Sum Assured (₹)</label>
+                    <input class="form-input" type="number" min="0" id="licSumAssured" placeholder="Sum Assured">
+                  </div>
+                </div>
+
+                <div class="form-group horizontal">
+                  <div>
+                    <label class="form-label" for="licPremiumFreq">Premium Frequency</label>
+                    <select class="form-select" id="licPremiumFreq">
+                      <option value="annually" selected>Annually</option>
+                      <option value="half-yearly">Half-Yearly</option>
+                      <option value="quarterly">Quarterly</option>
+                      <option value="monthly">Monthly</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="form-label" for="licPremiumDue">Next Premium Due Date</label>
+                    <input class="form-input" type="date" id="licPremiumDue">
+                  </div>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-accent btn-full" style="color: #2d161a;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Log Investment
+              </button>
+            </form>
+          </section>
+
+          <!-- Investment Portfolio Summary Table -->
+          <section class="data-table-container">
+            <div class="table-header">
+              <h2 class="table-title">Investments Portfolio</h2>
+            </div>
+            
+            <div class="table-wrapper">
+              <table id="investmentsTable">
+                <thead>
+                  <tr>
+                    <th>Asset Name</th>
+                    <th>Type</th>
+                    <th>Principal Invested</th>
+                    <th>Rate</th>
+                    <th>Est. Current Value (₹)</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="investmentsTableBody">
+                  <!-- Generated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- TAB 4: BACKUP & SETTINGS                       -->
+      <!-- ============================================== -->
+      <div class="tab-pane" id="settingsTab">
+        <header class="page-header">
+          <h1 class="page-title">Backup & Settings</h1>
+          <p class="page-subtitle">Configure application settings, backup or restore your local database offline.</p>
+        </header>
+
+        <section class="settings-section">
+          
+          <!-- Storage Management -->
+          <div class="settings-card">
+            <h2 class="form-title" style="border-bottom: none; margin-bottom: 1rem;">Data Portability (Local Persistence)</h2>
+            <div class="settings-row">
+              <div class="settings-details">
+                <h3 class="settings-title">Export Dashboard Data</h3>
+                <p class="settings-desc">Download a backup file containing all your expenses and investments to keep safe or import on another machine.</p>
+              </div>
+              <button class="btn btn-secondary" id="exportDataBtn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                Export JSON
+              </button>
+            </div>
+
+            <div class="settings-row">
+              <div class="settings-details">
+                <h3 class="settings-title">Import Backup File</h3>
+                <p class="settings-desc">Upload a previously exported Aurelia JSON data file to restore your expenses and investments.</p>
+                <input type="file" id="importFileSelector" accept=".json" style="display: none;">
+              </div>
+              <button class="btn btn-secondary" id="importDataBtn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                Import JSON
+              </button>
+            </div>
+
+            <div class="settings-row">
+              <div class="settings-details">
+                <h3 class="settings-title" style="color: var(--color-error);">Reset Dashboard Database</h3>
+                <p class="settings-desc" style="color: var(--text-secondary);">Permanently erase all expenses and investments from your browser's local storage. This action cannot be undone.</p>
+              </div>
+              <button class="btn btn-danger" id="resetDataBtn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                Reset Database
+              </button>
+            </div>
+          </div>
+
+          <!-- Application Theme Settings -->
+          <div class="settings-card">
+            <h2 class="form-title" style="border-bottom: none; margin-bottom: 1rem;">Theme Configuration</h2>
+            <div class="settings-row">
+              <div class="settings-details">
+                <h3 class="settings-title">Default Color Mode</h3>
+                <p class="settings-desc">Choose between Light mode, Dark mode, or follow your operating system's setting automatically.</p>
+              </div>
+              <div class="timeline-picker" id="settingsThemePicker" role="group" aria-label="Theme selector">
+                <button data-theme-val="light">Light</button>
+                <button data-theme-val="dark">Dark</button>
+                <button data-theme-val="system" class="active">System</button>
+              </div>
+            </div>
+          </div>
+
+        </section>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- TAB 5: ADMIN PANEL                             -->
+      <!-- ============================================== -->
+      <div class="tab-pane" id="adminTab">
+        <header class="page-header">
+          <h1 class="page-title">Admin Console</h1>
+          <p class="page-subtitle">Inspect registered platform users, their assets, savings, and earnings.</p>
+        </header>
+
+        <!-- Platform Metrics -->
+        <section class="admin-stats-grid" aria-label="Platform Summary Metrics">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Registered Users</h2>
+            </div>
+            <div class="card-value" id="adminTotalUsers">0</div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Total Active Capital</h2>
+            </div>
+            <div class="card-value" id="adminTotalWealth">₹0</div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Average User Savings</h2>
+            </div>
+            <div class="card-value" id="adminAvgSavings">₹0</div>
+          </div>
+        </section>
+
+        <!-- User Inspector Header -->
+        <div class="admin-header-row">
+          <div>
+            <h2 class="table-title" style="margin-bottom: 0.25rem; color: var(--text-primary);">Select User to Audit</h2>
+            <p style="font-size: 0.85rem; color: var(--text-secondary);">Load a user's private ledger to inspect details</p>
+          </div>
+          <select class="admin-inspect-select" id="adminInspectSelect">
+            <!-- Populated dynamically -->
+          </select>
+        </div>
+
+        <!-- Inspected User's Ledger -->
+        <div id="adminInspectorPanel" style="display: none; flex-direction: column; gap: 2rem;">
+          
+          <!-- Role Management Bar -->
+          <div id="adminUserRoleBar" style="min-height: 52px;"></div>
+
+          <!-- User financial summaries -->
+          <section class="metrics-grid">
+            <div class="card primary">
+              <div class="card-header"><h3 class="card-title">User Net Worth</h3></div>
+              <div class="card-value" id="adminUserNetWorth">₹0</div>
+            </div>
+            <div class="card">
+              <div class="card-header"><h3 class="card-title">User Assets Current Value</h3></div>
+              <div class="card-value" id="adminUserInvestments">₹0</div>
+            </div>
+            <div class="card">
+              <div class="card-header"><h3 class="card-title">User Total Expenses</h3></div>
+              <div class="card-value" id="adminUserExpenses">₹0</div>
+            </div>
+          </section>
+
+          <!-- User Ledger tables -->
+          <div class="admin-tables-stacked">
+            <!-- User Investments -->
+            <section class="data-table-container">
+              <div class="table-header">
+                <h2 class="table-title">User Investments Portfolio</h2>
+              </div>
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Asset Name</th>
+                      <th>Type</th>
+                      <th>Principal Invested</th>
+                      <th>Rate</th>
+                      <th>Est. Current Value (₹)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="adminUserInvestmentsTable">
+                    <!-- Generated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <!-- User Expenses -->
+            <section class="data-table-container">
+              <div class="table-header">
+                <h2 class="table-title">User Expenses Log</h2>
+              </div>
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Description</th>
+                      <th>Category</th>
+                      <th>Date</th>
+                      <th>Amount (₹)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="adminUserExpensesTable">
+                    <!-- Generated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <!-- ABOUT AURELIA TAB                                          -->
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <div class="tab-pane" id="aboutTab">
+
+        <!-- ── HERO: Profile Split Layout ── -->
+        <section class="ame-hero">
+          <div class="ame-hero-bg-glow"></div>
+
+          <!-- Left: Avatar -->
+          <div class="ame-avatar-col">
+            <div class="ame-avatar-ring">
+              <img src="founder_avatar.png" alt="Aurelia Wealth brand portrait" class="ame-avatar-img" />
+            </div>
+            <div class="ame-status-dot-row">
+              <span class="ame-status-dot"></span>
+              <span class="ame-status-text">Subscription launch ready</span>
+            </div>
+            <!-- Social Links -->
+            <div class="ame-social-links">
+              <a href="#" class="ame-social-btn" title="GitHub" aria-label="GitHub">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+              </a>
+              <a href="#" class="ame-social-btn" title="LinkedIn" aria-label="LinkedIn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+              </a>
+              <a href="#" class="ame-social-btn" title="Twitter / X" aria-label="Twitter">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.741l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+              </a>
+              <a href="mailto:saransh@aurelia.in" class="ame-social-btn" title="Email" aria-label="Email">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+              </a>
+            </div>
+          </div>
+
+          <!-- Right: Bio -->
+          <div class="ame-bio-col">
+            <div class="ame-section-label">Built for modern wealth management</div>
+            <h1 class="ame-hero-name">Aurelia</h1>
+            <div class="ame-hero-role">
+              <span class="ame-role-pill">AI Wealth Copilot</span>
+              <span class="ame-role-pill">Subscription Ready</span>
+              <span class="ame-role-pill">Built for India-first finance</span>
+            </div>
+            <p class="ame-hero-bio">
+              Aurelia brings <strong>cash flow, investments, and insurance</strong> into one clean operating system so customers can manage money without juggling spreadsheets, reminders, or fragmented apps.
+            </p>
+            <p class="ame-hero-bio">
+              Designed as a premium subscription product, Aurelia gives users an AI assistant that understands how <strong>Indians actually invest and spend</strong>, then turns that context into clarity, consistency, and action.
+            </p>
+            <div class="ame-hero-quick-facts">
+              <div class="ame-quick-fact">
+                <span class="ame-quick-icon">📍</span>
+                <span>India-first financial workflows</span>
+              </div>
+              <div class="ame-quick-fact">
+                <span class="ame-quick-icon">💳</span>
+                <span>Recurring revenue ready</span>
+              </div>
+              <div class="ame-quick-fact">
+                <span class="ame-quick-icon">🤖</span>
+                <span>AI-guided money workflows</span>
+              </div>
+              <div class="ame-quick-fact">
+                <span class="ame-quick-icon">📈</span>
+                <span>Built for long-term retention</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── STATS STRIP ── -->
+        <section class="ame-stats-strip">
+          <div class="ame-stat-item">
+            <div class="ame-stat-num">24/7</div>
+            <div class="ame-stat-label">AI Guidance Layer</div>
+          </div>
+          <div class="ame-stat-divider"></div>
+          <div class="ame-stat-item">
+            <div class="ame-stat-num">4+</div>
+            <div class="ame-stat-label">Core Wealth Modules</div>
+          </div>
+          <div class="ame-stat-divider"></div>
+          <div class="ame-stat-item">
+            <div class="ame-stat-num">1</div>
+            <div class="ame-stat-label">Unified Subscription Product</div>
+          </div>
+          <div class="ame-stat-divider"></div>
+          <div class="ame-stat-item">
+            <div class="ame-stat-num">Cloud</div>
+            <div class="ame-stat-label">Deployment Ready</div>
+          </div>
+        </section>
+
+        <!-- ── VALUE PROPS ── -->
+        <section class="ame-section">
+          <div class="ame-section-label">Why customers subscribe</div>
+          <h2 class="ame-section-title">What Aurelia delivers</h2>
+          <div class="ame-skills-grid">
+            <div class="ame-skill-group">
+              <div class="ame-skill-group-title">Financial Clarity</div>
+              <div class="ame-skill-tags">
+                <span class="ame-skill-tag active">Expense visibility</span>
+                <span class="ame-skill-tag active">Investment tracking</span>
+                <span class="ame-skill-tag">Insurance reminders</span>
+                <span class="ame-skill-tag">Net worth snapshots</span>
+              </div>
+            </div>
+            <div class="ame-skill-group">
+              <div class="ame-skill-group-title">AI Assistance</div>
+              <div class="ame-skill-tags">
+                <span class="ame-skill-tag active">Natural language logging</span>
+                <span class="ame-skill-tag active">Prompted onboarding</span>
+                <span class="ame-skill-tag">Actionable nudges</span>
+                <span class="ame-skill-tag">Personalized context</span>
+              </div>
+            </div>
+            <div class="ame-skill-group">
+              <div class="ame-skill-group-title">Business Model Fit</div>
+              <div class="ame-skill-tags">
+                <span class="ame-skill-tag active">Premium positioning</span>
+                <span class="ame-skill-tag active">Retention-focused workflows</span>
+                <span class="ame-skill-tag">Recurring subscriptions</span>
+                <span class="ame-skill-tag">Self-serve activation</span>
+              </div>
+            </div>
+            <div class="ame-skill-group">
+              <div class="ame-skill-group-title">Customer Experience</div>
+              <div class="ame-skill-tags">
+                <span class="ame-skill-tag active">Fast setup</span>
+                <span class="ame-skill-tag active">Beautiful dashboarding</span>
+                <span class="ame-skill-tag">Trust-first design</span>
+                <span class="ame-skill-tag">Low-friction adoption</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── PROJECT SHOWCASE ── -->
+        <section class="ame-section">
+          <div class="ame-section-label">Product overview</div>
+          <h2 class="ame-section-title">Aurelia Wealth Platform</h2>
+
+          <div class="ame-project-card">
+            <div class="ame-project-card-glow"></div>
+            <div class="ame-project-header">
+              <div class="ame-project-logo">A</div>
+              <div>
+                <div class="ame-project-name">Aurelia Wealth</div>
+                <div class="ame-project-year">Subscription product</div>
+              </div>
+              <div class="ame-project-live-badge">Ready to launch</div>
+            </div>
+            <p class="ame-project-desc">
+              Aurelia is a wealth management subscription product that combines guided onboarding, conversational expense and investment logging, portfolio monitoring, and policy reminders in a single premium experience for modern Indian users.
+            </p>
+            <div class="ame-project-features">
+              <span class="ame-proj-feat">AI-guided money logging</span>
+              <span class="ame-proj-feat">Wealth projections</span>
+              <span class="ame-proj-feat">Household finance visibility</span>
+              <span class="ame-proj-feat">Insurance premium reminders</span>
+              <span class="ame-proj-feat">Portfolio organization</span>
+              <span class="ame-proj-feat">Premium dashboard experience</span>
+            </div>
+            <div class="ame-project-tech-row">
+              <span class="ame-tech-chip">Designed for subscriptions</span>
+              <span class="ame-tech-chip">AI-supported workflows</span>
+              <span class="ame-tech-chip">Investment awareness</span>
+              <span class="ame-tech-chip">Policy tracking</span>
+              <span class="ame-tech-chip">Customer-first UX</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── PHILOSOPHY / STORY ── -->
+        <section class="ame-section ame-story-section">
+          <div class="ame-section-label">Product philosophy</div>
+          <h2 class="ame-section-title">Why Aurelia works</h2>
+          <div class="ame-quote-card">
+            <div class="ame-quote-mark">"</div>
+            <blockquote class="ame-quote-text">
+              The best financial product is the one customers return to every week. Aurelia turns wealth management into a guided habit instead of a spreadsheet chore.
+            </blockquote>
+            <div class="ame-quote-attr">— Aurelia product principle</div>
+          </div>
+          <div class="ame-philosophy-grid">
+            <div class="ame-phil-card">
+              <div class="ame-phil-icon">🎯</div>
+              <h3>Built for paying users</h3>
+              <p>Every screen is designed to help customers see value quickly, stay organized, and keep coming back.</p>
+            </div>
+            <div class="ame-phil-card">
+              <div class="ame-phil-icon">⚡</div>
+              <h3>Simple enough to use daily</h3>
+              <p>Users can log money activity in plain language, review performance instantly, and avoid friction that kills retention.</p>
+            </div>
+            <div class="ame-phil-card">
+              <div class="ame-phil-icon">🌱</div>
+              <h3>Trust drives retention</h3>
+              <p>Clear insights, useful reminders, and thoughtful guidance are what make a finance product worth subscribing to long term.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── CTA ── -->
+        <section class="ame-cta">
+          <div class="ame-cta-glow"></div>
+          <div class="ame-cta-inner">
+            <div class="ame-cta-avatar">A</div>
+            <h2 class="ame-cta-title">Start the Aurelia experience</h2>
+            <p class="ame-cta-body">Aurelia is positioned as a premium subscription product for users who want cleaner money workflows, better visibility, and an AI assistant that keeps their finances moving.</p>
+            <div class="ame-cta-actions">
+              <a href="mailto:saransh@aurelia.in" class="btn btn-primary ame-cta-btn" style="text-decoration: none; color: white; display: inline-flex; align-items: center; gap: 0.5rem; border: none; cursor: pointer;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                Request Access
+              </a>
+              <button class="ame-cta-btn-secondary" onclick="document.querySelector('[data-tab=dashboard]').click()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+                View Product
+              </button>
+            </div>
+          </div>
+        </section>
+
+      </div><!-- /#aboutTab -->
+
+    </main>
+  </div>
+  
+  <!-- Screen reader accessible table alternate data for accessibility compliance -->
+  <div class="sr-only" style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0;" id="accessibleSummary">
+    Aurelia Wealth Dashboard tracks your personal expenses and investments.
+  </div>
+
+</body>
+</html>
