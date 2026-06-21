@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
-const { run, get, all } = require('../db/sqlite');
+const { run, get, all, batch } = require('../db/sqlite');
 
 function mapExpense(row) {
   return {
@@ -111,57 +111,45 @@ async function getSessionUser(token) {
 }
 
 async function replaceUserData(userId, expenses, income, investments) {
-  await run('DELETE FROM expenses WHERE user_id = ?', [userId]);
-  await run('DELETE FROM income WHERE user_id = ?', [userId]);
-  await run('DELETE FROM investments WHERE user_id = ?', [userId]);
+  const statements = [
+    { sql: 'DELETE FROM expenses WHERE user_id = ?', args: [userId] },
+    { sql: 'DELETE FROM income WHERE user_id = ?', args: [userId] },
+    { sql: 'DELETE FROM investments WHERE user_id = ?', args: [userId] }
+  ];
 
   for (const inc of income) {
-    await run(
-      `INSERT INTO income (id, user_id, description, amount, date, category, is_recurring)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [inc.id, userId, inc.description, Number(inc.amount), inc.date, inc.category, inc.isRecurring ? 1 : 0]
-    );
+    statements.push({
+      sql: `INSERT INTO income (id, user_id, description, amount, date, category, is_recurring)
+            VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      args: [inc.id, userId, inc.description, Number(inc.amount), inc.date, inc.category, inc.isRecurring ? 1 : 0]
+    });
   }
 
   for (const expense of expenses) {
-    await run(
-      `INSERT INTO expenses (id, user_id, description, amount, date, category, is_recurring)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [
-        expense.id,
-        userId,
-        expense.description,
-        Number(expense.amount),
-        expense.date,
-        expense.category,
-        expense.isRecurring ? 1 : 0
-      ]
-    );
+    statements.push({
+      sql: `INSERT INTO expenses (id, user_id, description, amount, date, category, is_recurring)
+            VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      args: [expense.id, userId, expense.description, Number(expense.amount), expense.date, expense.category, expense.isRecurring ? 1 : 0]
+    });
   }
 
   for (const investment of investments) {
-    await run(
-      `INSERT INTO investments (
-        id, user_id, name, type, start_date, amount, rate, compounding, duration,
-        lic_policy_num, lic_sum_assured, lic_premium_freq, lic_premium_due
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        investment.id,
-        userId,
-        investment.name,
-        investment.type,
-        investment.startDate,
-        Number(investment.amount),
-        Number(investment.rate),
-        String(investment.compounding ?? '12'),
-        Number(investment.duration ?? 10),
-        investment.licPolicyNum ?? null,
+    statements.push({
+      sql: `INSERT INTO investments (
+              id, user_id, name, type, start_date, amount, rate, compounding, duration,
+              lic_policy_num, lic_sum_assured, lic_premium_freq, lic_premium_due
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [
+        investment.id, userId, investment.name, investment.type, investment.startDate,
+        Number(investment.amount), Number(investment.rate), String(investment.compounding ?? '12'),
+        Number(investment.duration ?? 10), investment.licPolicyNum ?? null,
         investment.licSumAssured == null ? null : Number(investment.licSumAssured),
-        investment.licPremiumFreq ?? null,
-        investment.licPremiumDue ?? null
+        investment.licPremiumFreq ?? null, investment.licPremiumDue ?? null
       ]
-    );
+    });
   }
+
+  await batch(statements);
 }
 
 async function getAllUsersWithData() {

@@ -20,6 +20,7 @@ function requestLogger(req, res, next) {
 function createApp() {
   const app = express();
 
+  app.set('trust proxy', 1);
   app.use(helmet({ contentSecurityPolicy: false }));
   app.use(express.json({ limit: '1mb' }));
   app.use(cookieParser());

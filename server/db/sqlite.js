@@ -131,9 +131,14 @@ async function initializeDatabase() {
   }
 }
 
+async function batch(statements) {
+  return getClient().batch(statements, 'write');
+}
+
 module.exports = {
   run,
   get,
   all,
+  batch,
   initializeDatabase
 };
