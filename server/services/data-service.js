@@ -85,7 +85,12 @@ async function verifyPassword(plaintext, hash) {
 
 async function createSession(userId) {
   const token = crypto.randomUUID();
-  await run('INSERT INTO sessions (token, user_id, created_at) VALUES (?, ?, ?)', [token, userId, new Date().toISOString()]);
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  await run(
+    'INSERT INTO sessions (token, user_id, created_at, expires_at) VALUES (?, ?, ?, ?)',
+    [token, userId, now.toISOString(), expiresAt]
+  );
   return token;
 }
 
@@ -96,6 +101,12 @@ async function deleteSession(token) {
 async function getSessionUser(token) {
   const session = await get('SELECT * FROM sessions WHERE token = ?', [token]);
   if (!session) return null;
+
+  if (session.expires_at && new Date(session.expires_at) < new Date()) {
+    await run('DELETE FROM sessions WHERE token = ?', [token]);
+    return null;
+  }
+
   return getUserById(session.user_id);
 }
 

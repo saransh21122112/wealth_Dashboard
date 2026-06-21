@@ -1,4 +1,5 @@
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const {
   getUserByUsername,
   buildUserPayload,
@@ -6,14 +7,21 @@ const {
   verifyPassword,
   createSession,
   deleteSession,
-  getSessionUser,
   replaceUserData,
   getAllUsersWithData,
   updateUserRole
 } = require('../services/data-service');
+const { authMiddleware, SESSION_COOKIE } = require('../middleware/auth');
 
 const router = express.Router();
-const SESSION_COOKIE = 'aurelia_session';
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many login attempts. Please try again later.' }
+});
 
 function setSessionCookie(res, token) {
   res.cookie(SESSION_COOKIE, token, {
@@ -24,30 +32,17 @@ function setSessionCookie(res, token) {
   });
 }
 
-async function authMiddleware(req, res, next) {
-  const token = req.cookies?.[SESSION_COOKIE];
-  if (!token) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
-  const user = await getSessionUser(token);
-  if (!user) {
-    res.clearCookie(SESSION_COOKIE);
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
-  req.sessionToken = token;
-  req.user = user;
-  return next();
-}
-
-router.post('/api/auth/signup', async (req, res) => {
+router.post('/api/auth/signup', loginLimiter, async (req, res) => {
   try {
     const username = String(req.body?.username || '').trim().toLowerCase();
     const password = String(req.body?.password || '');
 
     if (!username || !password) {
       return res.status(400).json({ error: 'Username and password are required.' });
+    }
+
+    if (username.length > 32) {
+      return res.status(400).json({ error: 'Username must be 32 characters or fewer.' });
     }
 
     const existing = await getUserByUsername(username);
@@ -59,12 +54,12 @@ router.post('/api/auth/signup', async (req, res) => {
     const token = await createSession(user.id);
     setSessionCookie(res, token);
     return res.json({ user: await buildUserPayload(user), isNew: true });
-  } catch (error) {
-    return res.status(500).json({ error: error.message || 'Signup failed.' });
+  } catch (_error) {
+    return res.status(500).json({ error: 'Signup failed.' });
   }
 });
 
-router.post('/api/auth/login', async (req, res) => {
+router.post('/api/auth/login', loginLimiter, async (req, res) => {
   try {
     const username = String(req.body?.username || '').trim().toLowerCase();
     const password = String(req.body?.password || '');
@@ -77,8 +72,8 @@ router.post('/api/auth/login', async (req, res) => {
     const token = await createSession(user.id);
     setSessionCookie(res, token);
     return res.json({ user: await buildUserPayload(user), isNew: false });
-  } catch (error) {
-    return res.status(500).json({ error: error.message || 'Login failed.' });
+  } catch (_error) {
+    return res.status(500).json({ error: 'Login failed.' });
   }
 });
 

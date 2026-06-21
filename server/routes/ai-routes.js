@@ -1,9 +1,19 @@
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const { createChatCompletion, hasOpenAIKey } = require('../services/openai-chat-service');
+const { authMiddleware } = require('../middleware/auth');
 
 const router = express.Router();
 
-router.post('/api/ai/chat', async (req, res) => {
+const aiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many AI requests. Please slow down.' }
+});
+
+router.post('/api/ai/chat', authMiddleware, aiLimiter, async (req, res) => {
   if (!hasOpenAIKey()) {
     return res.status(500).json({
       error: 'Missing OPENAI_API_KEY. Set it in .env or your deployment environment before using Aurelia AI.'

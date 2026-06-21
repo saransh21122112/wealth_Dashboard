@@ -1,5 +1,6 @@
 const path = require('path');
 const express = require('express');
+const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 const healthRoutes = require('./routes/health-routes');
 const aiRoutes = require('./routes/ai-routes');
@@ -9,6 +10,7 @@ const { rootDir } = require('./config/env');
 function createApp() {
   const app = express();
 
+  app.use(helmet({ contentSecurityPolicy: false }));
   app.use(express.json({ limit: '1mb' }));
   app.use(cookieParser());
   app.use(express.static(rootDir));

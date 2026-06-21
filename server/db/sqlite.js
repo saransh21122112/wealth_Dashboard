@@ -99,9 +99,16 @@ async function initializeDatabase() {
       token TEXT PRIMARY KEY,
       user_id INTEGER NOT NULL,
       created_at TEXT NOT NULL,
+      expires_at TEXT,
       FOREIGN KEY(user_id) REFERENCES users(id)
     )
   `);
+
+  try {
+    await run('ALTER TABLE sessions ADD COLUMN expires_at TEXT');
+  } catch (_e) {
+    // Column already exists — safe to ignore.
+  }
 
   const countRow = await get('SELECT COUNT(*) AS count FROM users');
   if (Number(countRow.count) === 0) {
