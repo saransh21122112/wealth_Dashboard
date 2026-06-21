@@ -2,6 +2,23 @@ export function executeToolCall(toolCall, appendSystemStatus) {
   const name = toolCall.function.name;
   const args = JSON.parse(toolCall.function.arguments);
 
+  if (name === 'add_income') {
+    if (!window.addIncomeFromAI) {
+      return {
+        name,
+        content: JSON.stringify({ status: 'error', message: 'Dashboard insertion API unavailable.' })
+      };
+    }
+
+    const added = window.addIncomeFromAI(args.description, args.amount, args.date, args.category, args.isRecurring);
+    appendSystemStatus(`💰 Logged Income: <strong>${added.description}</strong> of +₹${added.amount.toLocaleString('en-IN')}`);
+
+    return {
+      name,
+      content: JSON.stringify({ status: 'success', message: 'Income added to dashboard successfully.' })
+    };
+  }
+
   if (name === 'add_expense') {
     if (!window.addExpenseFromAI) {
       return {

@@ -102,6 +102,19 @@ async function initializeDatabase() {
   `);
 
   await run(`
+    CREATE TABLE IF NOT EXISTS income (
+      id TEXT PRIMARY KEY,
+      user_id INTEGER NOT NULL,
+      description TEXT NOT NULL,
+      amount REAL NOT NULL,
+      date TEXT NOT NULL,
+      category TEXT NOT NULL,
+      is_recurring INTEGER NOT NULL,
+      FOREIGN KEY(user_id) REFERENCES users(id)
+    )
+  `);
+
+  await run(`
     CREATE TABLE IF NOT EXISTS sessions (
       token TEXT PRIMARY KEY,
       user_id INTEGER NOT NULL,

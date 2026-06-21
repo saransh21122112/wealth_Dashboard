@@ -54,6 +54,14 @@ export function getDom() {
     importFileSelector: document.getElementById('importFileSelector'),
     resetDataBtn: document.getElementById('resetDataBtn'),
     expDateInput: document.getElementById('expDate'),
-    invDateInput: document.getElementById('invDate')
+    invDateInput: document.getElementById('invDate'),
+    incomeForm: document.getElementById('incomeForm'),
+    incomeTableBody: document.getElementById('incomeTableBody'),
+    incomeFilter: document.getElementById('incomeFilter'),
+    incomeVal: document.getElementById('incomeVal'),
+    recurringIncomeMeta: document.getElementById('recurringIncomeMeta'),
+    incIsRecurring: document.getElementById('incIsRecurring'),
+    incToggleLabel: document.getElementById('incToggleLabel'),
+    incDateInput: document.getElementById('incDate')
   };
 }

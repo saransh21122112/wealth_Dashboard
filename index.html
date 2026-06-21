@@ -86,6 +86,12 @@
                 Overview
               </button>
             </li>
+            <li class="nav-item" data-tab="income">
+              <button>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+                Income
+              </button>
+            </li>
             <li class="nav-item" data-tab="expenses">
               <button>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
@@ -188,7 +194,7 @@
             </div>
             <div class="card-value" id="netWorthVal">₹0.00</div>
             <div class="card-meta">
-              <span>Current Assets - Total Expenses</span>
+              <span>Income − Expenses + Investments</span>
             </div>
           </div>
 
@@ -207,7 +213,20 @@
 
           <div class="card">
             <div class="card-header">
-              <h2 class="card-title">Monthly Expenses</h2>
+              <h2 class="card-title">Total Income</h2>
+              <div class="card-icon" style="background-color: rgba(46, 160, 67, 0.08); color: #2ea043;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+              </div>
+            </div>
+            <div class="card-value" id="incomeVal">₹0.00</div>
+            <div class="card-meta">
+              <span id="recurringIncomeMeta">₹0.00 recurring income</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Total Expenses</h2>
               <div class="card-icon" style="background-color: rgba(198, 40, 40, 0.08); color: var(--color-error);">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
               </div>
@@ -231,7 +250,7 @@
           <div class="ai-chat-container">
             <div class="ai-chat-messages" id="aiChatMessages" role="log" aria-live="polite">
               <div class="ai-message assistant">
-                Hi! I'm Aurelia AI, your personal financial assistant. Tell me about your salary, expenses, or investments (like SIPs, FDs, Stocks, or LIC policies), and I'll log them directly for you! Try saying: <em>"I started a monthly SIP of ₹5000 in SBI Mutual Fund last year with a 12% rate for 10 years"</em> or <em>"I spent ₹1500 on groceries today"</em>.
+                Hi! I'm Aurelia AI, your personal financial assistant. Tell me about your <strong>income</strong> (salary, freelance, bonus), <strong>expenses</strong>, or <strong>investments</strong> and I'll log them directly. Try: <em>"My monthly salary is ₹80,000"</em>, <em>"I spent ₹1500 on groceries today"</em>, or <em>"I started a SIP of ₹5000 in Nifty Index at 12% for 10 years"</em>.
               </div>
             </div>
             <form id="aiChatForm" class="ai-chat-form">
@@ -274,7 +293,96 @@
       </div>
 
       <!-- ============================================== -->
-      <!-- TAB 2: EXPENSES TRACKER                       -->
+      <!-- TAB 2: INCOME TRACKER                         -->
+      <!-- ============================================== -->
+      <div class="tab-pane" id="incomeTab">
+        <header class="page-header">
+          <h1 class="page-title">Income Tracker</h1>
+          <p class="page-subtitle">Log your salary, freelance earnings, bonuses, and other income sources.</p>
+        </header>
+
+        <div class="management-layout">
+          <!-- Add Income Form -->
+          <section class="card" aria-labelledby="addIncomeTitle">
+            <h2 class="form-title" id="addIncomeTitle">Log New Income</h2>
+            <form id="incomeForm" novalidate>
+              <div class="form-group">
+                <label class="form-label" for="incDescription">Description</label>
+                <input class="form-input" type="text" id="incDescription" placeholder="e.g., Monthly Salary, Freelance Project" required>
+              </div>
+
+              <div class="form-group horizontal">
+                <div>
+                  <label class="form-label" for="incAmount">Amount (₹)</label>
+                  <input class="form-input" type="number" min="1" id="incAmount" placeholder="Amount" required>
+                </div>
+                <div>
+                  <label class="form-label" for="incDate">Date</label>
+                  <input class="form-input" type="date" id="incDate" required>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="incCategory">Category</label>
+                <select class="form-select" id="incCategory" required>
+                  <option value="salary">Salary / Wages</option>
+                  <option value="freelance">Freelance / Contract</option>
+                  <option value="bonus">Bonus / Commission</option>
+                  <option value="rental">Rental Income</option>
+                  <option value="gift">Gift / Inheritance</option>
+                  <option value="other" selected>Other</option>
+                </select>
+              </div>
+
+              <label class="toggle-container" id="incTypeToggleContainer">
+                <input type="checkbox" id="incIsRecurring" class="toggle-input">
+                <div class="toggle-switch"></div>
+                <span class="toggle-label" id="incToggleLabel">One-time / Extra Income</span>
+              </label>
+
+              <button type="submit" class="btn btn-primary btn-full">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Add Income
+              </button>
+            </form>
+          </section>
+
+          <!-- Income List Table -->
+          <section class="data-table-container">
+            <div class="table-header">
+              <h2 class="table-title">Income Log</h2>
+              <div class="table-actions">
+                <select class="form-select" id="incomeFilter" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; width: auto;">
+                  <option value="all">All Income</option>
+                  <option value="recurring">Recurring</option>
+                  <option value="onetime">One-time / Extra</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="table-wrapper">
+              <table id="incomeTable">
+                <thead>
+                  <tr>
+                    <th>Description</th>
+                    <th>Category</th>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Amount (₹)</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="incomeTableBody">
+                  <!-- Generated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- TAB 3: EXPENSES TRACKER                       -->
       <!-- ============================================== -->
       <div class="tab-pane" id="expensesTab">
         <header class="page-header">

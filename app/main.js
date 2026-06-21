@@ -74,5 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderAll: renderers.renderAll
   });
 
+  if (dom.incDateInput) dom.incDateInput.value = TODAY_STRING;
+
   auth.loadSession();
 });

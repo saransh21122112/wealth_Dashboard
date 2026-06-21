@@ -1,7 +1,27 @@
 export function setupAIBridge({ store, saveAccounts, renderAll }) {
+  window.getIncome = () => (store.state.currentUser ? store.state.currentUser.income || [] : []);
   window.getExpenses = () => (store.state.currentUser ? store.state.currentUser.expenses || [] : []);
   window.getInvestments = () => (store.state.currentUser ? store.state.currentUser.investments || [] : []);
   window.calculateInvestmentValue = window.calculateInvestmentValue;
+
+  window.addIncomeFromAI = (description, amount, date, category, isRecurring) => {
+    if (!store.state.currentUser) return null;
+
+    const newIncome = {
+      id: Date.now().toString(),
+      description,
+      amount: parseFloat(amount),
+      date: date || new Date().toISOString().split('T')[0],
+      category: category || 'other',
+      isRecurring: Boolean(isRecurring)
+    };
+
+    store.state.currentUser.income ||= [];
+    store.state.currentUser.income.push(newIncome);
+    saveAccounts();
+    renderAll();
+    return newIncome;
+  };
 
   window.addExpenseFromAI = (description, amount, date, category, isRecurring) => {
     if (!store.state.currentUser) return null;

@@ -20,6 +20,12 @@ export function setupFormControls(dom) {
       dom.expToggleLabel.textContent = dom.expIsRecurring.checked ? 'Monthly Recurring Expense' : 'One-time / Extra Expense';
     });
   }
+
+  if (dom.incIsRecurring) {
+    dom.incIsRecurring.addEventListener('change', () => {
+      dom.incToggleLabel.textContent = dom.incIsRecurring.checked ? 'Monthly Recurring Income' : 'One-time / Extra Income';
+    });
+  }
 }
 
 export function resetInvestmentFormUI(dom) {
@@ -30,4 +36,8 @@ export function resetInvestmentFormUI(dom) {
 
 export function resetExpenseFormUI(dom) {
   if (dom.expToggleLabel) dom.expToggleLabel.textContent = 'One-time / Extra Expense';
+}
+
+export function resetIncomeFormUI(dom) {
+  if (dom.incToggleLabel) dom.incToggleLabel.textContent = 'One-time / Extra Income';
 }

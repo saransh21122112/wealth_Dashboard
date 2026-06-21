@@ -5,6 +5,7 @@ export function setupBackupHandlers({ dom, store, saveAccounts, renderAll }) {
       if (!currentUser) return;
 
       const dataString = JSON.stringify({
+        income: currentUser.income || [],
         expenses: currentUser.expenses || [],
         investments: currentUser.investments || []
       }, null, 2);
@@ -32,6 +33,7 @@ export function setupBackupHandlers({ dom, store, saveAccounts, renderAll }) {
             return;
           }
 
+          currentUser.income = Array.isArray(data.income) ? data.income : [];
           currentUser.expenses = data.expenses;
           currentUser.investments = data.investments;
           saveAccounts();
@@ -51,6 +53,7 @@ export function setupBackupHandlers({ dom, store, saveAccounts, renderAll }) {
       if (!currentUser) return;
       if (!confirm('Permanently clear all expenses and investments from your current ledger?')) return;
 
+      currentUser.income = [];
       currentUser.expenses = [];
       currentUser.investments = [];
       saveAccounts();

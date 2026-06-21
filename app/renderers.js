@@ -110,6 +110,57 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
     });
   }
 
+  function renderIncome() {
+    const { currentUser } = store.state;
+    if (!dom.incomeTableBody || !currentUser) return;
+
+    const filter = dom.incomeFilter?.value || 'all';
+    dom.incomeTableBody.innerHTML = '';
+    const filtered = (currentUser.income || []).filter((inc) => {
+      if (filter === 'recurring') return inc.isRecurring;
+      if (filter === 'onetime') return !inc.isRecurring;
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      dom.incomeTableBody.innerHTML = `
+        <tr>
+          <td colspan="6" class="empty-state">
+            <div class="empty-icon">💰</div>
+            No income logged yet.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+    filtered.forEach((inc) => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td style="font-weight: 500;">${inc.description}</td>
+        <td><span class="category-tag tag-${inc.category}">${inc.category}</span></td>
+        <td>${new Date(inc.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+        <td>${inc.isRecurring ? 'Recurring' : 'Extra'}</td>
+        <td style="font-weight: 600; color: var(--color-success);">+₹${parseFloat(inc.amount).toLocaleString('en-IN')}</td>
+        <td>
+          <button class="action-btn delete-inc" data-id="${inc.id}" aria-label="Delete income">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          </button>
+        </td>
+      `;
+      dom.incomeTableBody.appendChild(row);
+    });
+
+    document.querySelectorAll('.delete-inc').forEach((button) => {
+      button.addEventListener('click', () => {
+        store.state.currentUser.income = store.state.currentUser.income.filter((inc) => inc.id !== button.getAttribute('data-id'));
+        saveAccounts();
+        renderAll();
+      });
+    });
+  }
+
   function renderMetrics() {
     const { currentUser } = store.state;
     if (!currentUser) return;
@@ -129,7 +180,14 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
       if (expense.isRecurring) totalRecurring += parseFloat(expense.amount);
     });
 
-    const netWorth = totalCurrentValue - totalExpenses;
+    let totalIncome = 0;
+    let recurringIncome = 0;
+    (currentUser.income || []).forEach((inc) => {
+      totalIncome += parseFloat(inc.amount);
+      if (inc.isRecurring) recurringIncome += parseFloat(inc.amount);
+    });
+
+    const netWorth = totalIncome - totalExpenses + totalCurrentValue;
     const profit = totalCurrentValue - totalInvested;
     const absoluteReturn = totalInvested > 0 ? (profit / totalInvested) * 100 : 0;
 
@@ -139,6 +197,8 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
       dom.investmentsGrowth.className = profit >= 0 ? 'trend-up' : 'trend-down';
       dom.investmentsGrowth.textContent = `${profit >= 0 ? '+' : ''}${formatCurrency(profit)} (${absoluteReturn.toFixed(1)}% abs. return)`;
     }
+    if (dom.incomeVal) dom.incomeVal.textContent = formatCurrency(totalIncome);
+    if (dom.recurringIncomeMeta) dom.recurringIncomeMeta.textContent = `${formatCurrency(recurringIncome)} recurring income`;
     if (dom.expensesVal) dom.expensesVal.textContent = formatCurrency(totalExpenses);
     if (dom.recurringExpensesMeta) dom.recurringExpensesMeta.textContent = `${formatCurrency(totalRecurring)} recurring expenses`;
   }
@@ -184,6 +244,7 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
 
   function renderAll() {
     renderExpenses();
+    renderIncome();
     renderInvestments();
     renderMetrics();
     renderLICAlerts();
@@ -199,6 +260,7 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
 
   return {
     renderExpenses,
+    renderIncome,
     renderInvestments,
     renderMetrics,
     renderLICAlerts,

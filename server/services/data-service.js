@@ -48,10 +48,23 @@ async function getInvestmentsByUserId(userId) {
   return rows.map(mapInvestment);
 }
 
+async function getIncomeByUserId(userId) {
+  const rows = await all('SELECT * FROM income WHERE user_id = ?', [userId]);
+  return rows.map((row) => ({
+    id: row.id,
+    description: row.description,
+    amount: Number(row.amount),
+    date: row.date,
+    category: row.category,
+    isRecurring: Boolean(row.is_recurring)
+  }));
+}
+
 async function buildUserPayload(userRow) {
   return {
     username: userRow.username,
     role: userRow.role,
+    income: await getIncomeByUserId(userRow.id),
     expenses: await getExpensesByUserId(userRow.id),
     investments: await getInvestmentsByUserId(userRow.id)
   };
@@ -86,9 +99,18 @@ async function getSessionUser(token) {
   return getUserById(session.user_id);
 }
 
-async function replaceUserData(userId, expenses, investments) {
+async function replaceUserData(userId, expenses, income, investments) {
   await run('DELETE FROM expenses WHERE user_id = ?', [userId]);
+  await run('DELETE FROM income WHERE user_id = ?', [userId]);
   await run('DELETE FROM investments WHERE user_id = ?', [userId]);
+
+  for (const inc of income) {
+    await run(
+      `INSERT INTO income (id, user_id, description, amount, date, category, is_recurring)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [inc.id, userId, inc.description, Number(inc.amount), inc.date, inc.category, inc.isRecurring ? 1 : 0]
+    );
+  }
 
   for (const expense of expenses) {
     await run(

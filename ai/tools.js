@@ -2,6 +2,40 @@ export const AI_TOOLS = [
   {
     type: 'function',
     function: {
+      name: 'add_income',
+      description: 'Log a new income entry (salary, freelance, bonus, rental, etc.) to the wealth dashboard as a credit.',
+      parameters: {
+        type: 'object',
+        properties: {
+          description: {
+            type: 'string',
+            description: 'The name or description of the income source (e.g., Monthly Salary, Freelance Project, Diwali Bonus).'
+          },
+          amount: {
+            type: 'number',
+            description: 'The income amount in Indian Rupees (₹).'
+          },
+          date: {
+            type: 'string',
+            description: 'The date the income was received in YYYY-MM-DD format. Default to today\'s date if unspecified.'
+          },
+          category: {
+            type: 'string',
+            enum: ['salary', 'freelance', 'bonus', 'rental', 'gift', 'other'],
+            description: 'The category that best fits this income source.'
+          },
+          isRecurring: {
+            type: 'boolean',
+            description: 'True if this is a monthly recurring income (like a salary). False if it is a one-time or irregular income.'
+          }
+        },
+        required: ['description', 'amount']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
       name: 'add_expense',
       description: 'Log a new expense (monthly recurring or one-time/extra) to the wealth dashboard.',
       parameters: {

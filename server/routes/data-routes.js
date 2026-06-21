@@ -94,8 +94,9 @@ router.get('/api/session', authMiddleware, async (req, res) => {
 
 router.put('/api/user/data', authMiddleware, async (req, res) => {
   const expenses = Array.isArray(req.body?.expenses) ? req.body.expenses : [];
+  const income = Array.isArray(req.body?.income) ? req.body.income : [];
   const investments = Array.isArray(req.body?.investments) ? req.body.investments : [];
-  await replaceUserData(req.user.id, expenses, investments);
+  await replaceUserData(req.user.id, expenses, income, investments);
   return res.json({ ok: true });
 });
 

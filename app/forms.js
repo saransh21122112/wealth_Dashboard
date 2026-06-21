@@ -1,8 +1,43 @@
-import { resetExpenseFormUI, resetInvestmentFormUI } from './form-controls.js';
+import { resetExpenseFormUI, resetInvestmentFormUI, resetIncomeFormUI } from './form-controls.js';
 
 export function setupForms({ dom, store, todayStr, saveAccounts, renderAll }) {
   if (dom.expenseFilter) {
     dom.expenseFilter.addEventListener('change', renderAll);
+  }
+
+  if (dom.incomeFilter) {
+    dom.incomeFilter.addEventListener('change', renderAll);
+  }
+
+  if (dom.incomeForm) {
+    dom.incomeForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      if (!store.state.currentUser) return;
+
+      const description = document.getElementById('incDescription').value.trim();
+      const amount = parseFloat(document.getElementById('incAmount').value);
+      const date = document.getElementById('incDate').value;
+      const category = document.getElementById('incCategory').value;
+      const isRecurring = document.getElementById('incIsRecurring').checked;
+
+      if (!description || Number.isNaN(amount) || !date) return;
+
+      store.state.currentUser.income ||= [];
+      store.state.currentUser.income.push({
+        id: Date.now().toString(),
+        description,
+        amount,
+        date,
+        category,
+        isRecurring
+      });
+
+      saveAccounts();
+      dom.incomeForm.reset();
+      document.getElementById('incDate').value = todayStr;
+      resetIncomeFormUI(dom);
+      renderAll();
+    });
   }
 
   if (dom.expenseForm) {

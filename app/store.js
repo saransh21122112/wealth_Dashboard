@@ -40,6 +40,7 @@ export function createStore() {
       await apiRequest('/api/user/data', {
         method: 'PUT',
         body: JSON.stringify({
+          income: state.currentUser.income || [],
           expenses: state.currentUser.expenses || [],
           investments: state.currentUser.investments || []
         })
