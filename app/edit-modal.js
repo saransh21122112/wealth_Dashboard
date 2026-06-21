@@ -11,21 +11,26 @@ const EXPENSE_CATEGORIES = [
   ['miscellaneous', 'Miscellaneous']
 ];
 
-// Bisection search: monthly SIP premium × n months → maturity value → implied annual rate
-function calcImpliedRate(monthlyPremium, maturityValue, durationYears) {
-  const n = durationYears * 12;
-  if (!monthlyPremium || !maturityValue || !durationYears || n <= 0) return null;
+const FREQ_MONTHS = { monthly: 1, quarterly: 3, 'half-yearly': 6, annually: 12 };
+
+// Bisection search: premium × SIP FV(period rate, n periods) = maturityValue → effective annual rate
+function calcImpliedRate(premium, maturityValue, durationYears, frequencyMonths) {
+  const fm = frequencyMonths || 1;
+  const periodsPerYear = 12 / fm;
+  const n = Math.round(durationYears * periodsPerYear);
+  if (!premium || !maturityValue || !durationYears || n <= 0) return null;
   function fv(r) {
-    if (r < 0.000001) return monthlyPremium * n;
-    return monthlyPremium * ((Math.pow(1 + r, n) - 1) / r) * (1 + r);
+    if (r < 0.000001) return premium * n;
+    return premium * ((Math.pow(1 + r, n) - 1) / r) * (1 + r);
   }
   if (fv(0) >= maturityValue) return null;
-  let lo = 0.000001, hi = 0.05;
-  for (let i = 0; i < 300; i++) {
+  let lo = 0.000001, hi = 0.5 / periodsPerYear;
+  for (let i = 0; i < 400; i++) {
     const mid = (lo + hi) / 2;
     if (fv(mid) < maturityValue) lo = mid; else hi = mid;
   }
-  const annual = (Math.pow(1 + (lo + hi) / 2, 12) - 1) * 100;
+  const periodRate = (lo + hi) / 2;
+  const annual = (Math.pow(1 + periodRate, periodsPerYear) - 1) * 100;
   return Math.round(annual * 10) / 10;
 }
 
@@ -49,20 +54,24 @@ export function setupEditModal({ store, saveAccounts, renderAll }) {
     ).join('');
   }
 
-  // Update the LIC rate field (auto-calculate and pre-fill, user can still edit)
+  const FREQ_LABELS = { monthly: '/mo', quarterly: '/qtr', 'half-yearly': '/half-yr', annually: '/yr' };
+
   function updateLICRate() {
     const amount = parseFloat(document.getElementById('editInvAmount').value);
     const maturity = parseFloat(document.getElementById('editLicSumAssured').value);
     const duration = parseInt(document.getElementById('editInvDuration').value, 10);
+    const freqVal = document.getElementById('editLicPremiumFreq')?.value || 'monthly';
+    const frequencyMonths = FREQ_MONTHS[freqVal] || 1;
     const rateInput = document.getElementById('editInvRateLic');
     const hint = document.getElementById('editLicRateHint');
     const tag = document.getElementById('editLicRateTag');
 
-    const rate = calcImpliedRate(amount, maturity, duration);
+    const rate = calcImpliedRate(amount, maturity, duration, frequencyMonths);
     if (rate !== null) {
       rateInput.value = rate;
       rateInput.style.color = 'var(--color-success)';
-      if (hint) hint.textContent = `₹${amount.toLocaleString('en-IN')}/mo × ${duration}yr → ₹${Math.round(maturity).toLocaleString('en-IN')}`;
+      const freqLabel = FREQ_LABELS[freqVal] || '/mo';
+      if (hint) hint.textContent = `₹${amount.toLocaleString('en-IN')}${freqLabel} × ${duration}yr → ₹${Math.round(maturity).toLocaleString('en-IN')}`;
       if (tag) { tag.textContent = 'auto'; tag.style.color = 'var(--color-success)'; }
     } else {
       rateInput.style.color = '';
@@ -84,6 +93,9 @@ export function setupEditModal({ store, saveAccounts, renderAll }) {
     document.getElementById(id)?.addEventListener('input', () => {
       if (invTypeSelect.value === 'lic') updateLICRate();
     });
+  });
+  document.getElementById('editLicPremiumFreq')?.addEventListener('change', () => {
+    if (invTypeSelect.value === 'lic') updateLICRate();
   });
 
   function openEdit(type, item) {
