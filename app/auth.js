@@ -30,6 +30,7 @@ export function createAuthModule({ dom, store, todayStr, saveAccounts, setCurren
     if (dom.adminNavItem) {
       if (store.state.currentUser.role === 'admin') {
         dom.adminNavItem.style.display = 'flex';
+        store.loadAccounts().then(() => admin.renderAdminDashboard());
         admin.renderAdminDashboard();
       } else {
         dom.adminNavItem.style.display = 'none';
@@ -53,20 +54,23 @@ export function createAuthModule({ dom, store, todayStr, saveAccounts, setCurren
     toggleAuthMode();
   }
 
-  function loadSession() {
-    const activeSession = localStorage.getItem('aurelia_active_session');
+  async function loadSession() {
     if (dom.expDateInput) dom.expDateInput.value = todayStr;
     if (dom.invDateInput) dom.invDateInput.value = todayStr;
 
-    if (activeSession) {
-      const session = JSON.parse(activeSession);
-      const matched = store.state.accounts.find((account) => account.username === session.username);
-      if (matched) {
-        setCurrentUser(matched);
+    try {
+      const user = await store.fetchSession();
+      if (user) {
+        setCurrentUser(user);
+        if (user.role === 'admin') {
+          await store.loadAccounts();
+        }
         setupLoggedInUI();
         renderAll();
         return;
       }
+    } catch (_error) {
+      // Not logged in.
     }
 
     setupLoggedOutUI();
@@ -80,50 +84,46 @@ export function createAuthModule({ dom, store, todayStr, saveAccounts, setCurren
   }
 
   if (dom.authForm) {
-    dom.authForm.addEventListener('submit', (event) => {
+    dom.authForm.addEventListener('submit', async (event) => {
       event.preventDefault();
 
       const username = dom.authUsernameInput.value.trim().toLowerCase();
       const password = dom.authPasswordInput.value;
       if (!username || !password) return;
 
-      if (store.state.isSignupMode) {
-        const exists = store.state.accounts.find((account) => account.username === username);
-        if (exists) {
-          alert('Username already taken. Please choose another.');
+      try {
+        if (store.state.isSignupMode) {
+          const signupResult = await store.signup(username, password);
+          setCurrentUser(signupResult.user);
+          setupLoggedInUI();
+          renderAll();
+          window.dispatchEvent(new CustomEvent('aurelia-login', { detail: { username, isNew: true } }));
+          dom.authForm.reset();
           return;
         }
 
-        const newAccount = { username, password, role: 'user', expenses: [], investments: [] };
-        store.state.accounts.push(newAccount);
-        saveAccounts();
-        setCurrentUser(newAccount);
-        localStorage.setItem('aurelia_active_session', JSON.stringify({ username, role: newAccount.role }));
+        const loginResult = await store.login(username, password);
+        setCurrentUser(loginResult.user);
+        if (loginResult.user.role === 'admin') {
+          await store.loadAccounts();
+        }
         setupLoggedInUI();
         renderAll();
-        window.dispatchEvent(new CustomEvent('aurelia-login', { detail: { username, isNew: true } }));
+        window.dispatchEvent(new CustomEvent('aurelia-login', { detail: { username, isNew: false } }));
         dom.authForm.reset();
-        return;
+      } catch (error) {
+        alert(error.message || 'Authentication failed.');
       }
-
-      const matched = store.state.accounts.find((account) => account.username === username && account.password === password);
-      if (!matched) {
-        alert('Invalid username or password.');
-        return;
-      }
-
-      setCurrentUser(matched);
-      localStorage.setItem('aurelia_active_session', JSON.stringify({ username, role: matched.role }));
-      setupLoggedInUI();
-      renderAll();
-      window.dispatchEvent(new CustomEvent('aurelia-login', { detail: { username, isNew: false } }));
-      dom.authForm.reset();
     });
   }
 
   if (dom.logoutBtn) {
-    dom.logoutBtn.addEventListener('click', () => {
-      localStorage.removeItem('aurelia_active_session');
+    dom.logoutBtn.addEventListener('click', async () => {
+      try {
+        await store.logout();
+      } catch (_error) {
+        // Logout still clears local state.
+      }
       setCurrentUser(null);
       setupLoggedOutUI();
     });

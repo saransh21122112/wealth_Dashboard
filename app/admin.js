@@ -91,6 +91,11 @@ export function createAdminModule({ dom, store, calculations, formatCurrency, sa
   function renderAdminDashboard() {
     if (!dom.adminTotalUsers || !dom.adminTotalWealth || !dom.adminAvgSavings || !dom.adminInspectSelect) return;
 
+    if (store.state.currentUser?.role === 'admin' && store.state.accounts.length === 0) {
+      store.loadAccounts().then(() => renderAdminDashboard()).catch(() => {});
+      return;
+    }
+
     const clientUsers = store.state.accounts.filter((account) => account.role === 'user');
     dom.adminTotalUsers.textContent = clientUsers.length;
 
@@ -120,8 +125,8 @@ export function createAdminModule({ dom, store, calculations, formatCurrency, sa
     }
   }
 
-  function changeUserRole(username, newRole) {
-    const { currentUser, accounts } = store.state;
+  async function changeUserRole(username, newRole) {
+    const { currentUser } = store.state;
     if (!currentUser || currentUser.role !== 'admin') {
       alert('Unauthorized: Only admins can change user roles.');
       return;
@@ -132,21 +137,26 @@ export function createAdminModule({ dom, store, calculations, formatCurrency, sa
       return;
     }
 
-    const target = accounts.find((account) => account.username === username);
-    if (!target) {
-      alert('User not found.');
-      return;
+    try {
+      await store.changeUserRole(username, newRole);
+      await store.loadAccounts();
+      const target = store.state.accounts.find((account) => account.username === username);
+      if (!target) {
+        alert('User not found.');
+        return;
+      }
+      target.role = newRole;
+
+      renderAdminDashboard();
+      inspectUser(username);
+
+      const badge = document.getElementById('adminInspectedRoleBadge');
+      if (badge) badge.textContent = newRole;
+      const roleSelect = document.getElementById('adminChangeRoleSelect');
+      if (roleSelect) roleSelect.value = newRole;
+    } catch (error) {
+      alert(error.message || 'Failed to update role.');
     }
-
-    target.role = newRole;
-    saveAccounts();
-    renderAdminDashboard();
-    inspectUser(username);
-
-    const badge = document.getElementById('adminInspectedRoleBadge');
-    if (badge) badge.textContent = newRole;
-    const roleSelect = document.getElementById('adminChangeRoleSelect');
-    if (roleSelect) roleSelect.value = newRole;
   }
 
   if (dom.adminInspectSelect) {
