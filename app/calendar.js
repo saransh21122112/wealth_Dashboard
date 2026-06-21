@@ -1,46 +1,19 @@
 const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-const DAY_LABELS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
 export function setupCalendar({ store, formatCurrency }) {
   let viewYear = new Date().getFullYear();
   let viewMonth = new Date().getMonth();
-  let selectedDay = null;
 
   const grid = document.getElementById('calendarGrid');
   const monthLabel = document.getElementById('calendarMonthYear');
-  const eventsPanel = document.getElementById('calendarEventsPanel');
-  const eventsList = document.getElementById('calendarEventsList');
-  const eventsDateLabel = document.getElementById('calendarEventsDate');
   const prevBtn = document.getElementById('calendarPrevBtn');
   const nextBtn = document.getElementById('calendarNextBtn');
-  const askAIBtn = document.getElementById('calendarAskAIBtn');
+  const tooltip = document.getElementById('calTooltip');
 
   if (!grid) return { renderCalendar: () => {} };
 
   prevBtn.addEventListener('click', () => { viewMonth--; if (viewMonth < 0) { viewMonth = 11; viewYear--; } render(); });
   nextBtn.addEventListener('click', () => { viewMonth++; if (viewMonth > 11) { viewMonth = 0; viewYear++; } render(); });
-
-  askAIBtn.addEventListener('click', () => {
-    if (!selectedDay) return;
-    const input = document.getElementById('aiChatInput');
-    const form = document.getElementById('aiChatForm');
-    if (!input || !form) return;
-
-    const dateStr = `${selectedDay.getDate()} ${MONTH_NAMES[selectedDay.getMonth()]} ${selectedDay.getFullYear()}`;
-    const events = getEventsForDay(selectedDay);
-    let prompt;
-    if (events.length > 0) {
-      const lines = events.map(e => `${e.label} (₹${parseFloat(e.amount).toLocaleString('en-IN')})`).join(', ');
-      prompt = `On ${dateStr} I have: ${lines}. Give me a brief summary and any tips.`;
-    } else {
-      prompt = `What should I be aware of financially on ${dateStr}?`;
-    }
-
-    input.value = prompt;
-    input.focus();
-    // scroll AI chat into view
-    document.getElementById('aiChatMessages')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  });
 
   function getEventsForDay(date) {
     const { currentUser } = store.state;
@@ -54,7 +27,6 @@ export function setupCalendar({ store, formatCurrency }) {
 
     for (const inc of currentUser.income || []) {
       if (inc.isRecurring) {
-        // Prefer explicit recurringDay over the day in the date field
         const incDay = inc.recurringDay || new Date(inc.date + 'T00:00:00').getDate();
         if (incDay === d) events.push({ type: 'income', label: inc.description, amount: inc.amount });
       } else if (inc.date === dateStr) {
@@ -64,7 +36,6 @@ export function setupCalendar({ store, formatCurrency }) {
 
     for (const exp of currentUser.expenses || []) {
       if (exp.isRecurring) {
-        // Skip if this expense has ended before the viewed date
         if (exp.endDate && new Date(exp.endDate) < date) continue;
         const expDay = exp.recurringDay || new Date(exp.date + 'T00:00:00').getDate();
         if (expDay === d) events.push({ type: 'expense', label: exp.description, amount: exp.amount });
@@ -76,26 +47,23 @@ export function setupCalendar({ store, formatCurrency }) {
     for (const inv of currentUser.investments || []) {
       const start = new Date(inv.startDate + 'T00:00:00');
       if (start > date) continue;
-      // Skip if investment/policy has matured
       if (inv.endDate && new Date(inv.endDate) < date) continue;
 
       if (inv.type === 'sip') {
-        // Prefer recurringDay; fall back to start day
         const sipDay = inv.recurringDay || start.getDate();
         if (sipDay === d) events.push({ type: 'investment', label: `${inv.name} SIP`, amount: inv.amount });
       } else if (inv.type === 'lic') {
         const freq = inv.licPremiumFreq || 'annually';
         const premDay = inv.recurringDay || start.getDate();
         const startMonth = start.getMonth();
-
         if (freq === 'monthly' && premDay === d) {
           events.push({ type: 'investment', label: `${inv.name} premium`, amount: inv.amount });
         } else if (freq === 'quarterly' && premDay === d) {
-          const monthDiff = (y - start.getFullYear()) * 12 + (m - startMonth);
-          if (monthDiff % 3 === 0) events.push({ type: 'investment', label: `${inv.name} premium`, amount: inv.amount });
+          const diff = (y - start.getFullYear()) * 12 + (m - startMonth);
+          if (diff % 3 === 0) events.push({ type: 'investment', label: `${inv.name} premium`, amount: inv.amount });
         } else if (freq === 'half-yearly' && premDay === d) {
-          const monthDiff = (y - start.getFullYear()) * 12 + (m - startMonth);
-          if (monthDiff % 6 === 0) events.push({ type: 'investment', label: `${inv.name} premium`, amount: inv.amount });
+          const diff = (y - start.getFullYear()) * 12 + (m - startMonth);
+          if (diff % 6 === 0) events.push({ type: 'investment', label: `${inv.name} premium`, amount: inv.amount });
         } else if (freq === 'annually' && premDay === d && startMonth === m) {
           events.push({ type: 'investment', label: `${inv.name} premium`, amount: inv.amount });
         }
@@ -105,36 +73,46 @@ export function setupCalendar({ store, formatCurrency }) {
     return events;
   }
 
-  function getDayEventTypes(date) {
-    const events = getEventsForDay(date);
-    return {
-      hasIncome: events.some(e => e.type === 'income'),
-      hasExpense: events.some(e => e.type === 'expense'),
-      hasInvestment: events.some(e => e.type === 'investment')
-    };
+  function showTooltip(cell, date, events) {
+    if (!tooltip || events.length === 0) return;
+
+    const colorMap = { income: 'var(--color-success)', expense: 'var(--color-error)', investment: 'var(--color-gold)' };
+    const signMap = { income: '+', expense: '−', investment: '−' };
+
+    const dateLabel = `${date.getDate()} ${MONTH_NAMES[date.getMonth()]}`;
+    const rows = events.map(e => `
+      <div class="cal-tooltip-item">
+        <span class="cal-tooltip-label" style="color:${colorMap[e.type]}">${e.label}</span>
+        <span class="cal-tooltip-amount" style="color:${colorMap[e.type]}">${signMap[e.type]}${formatCurrency(e.amount)}</span>
+      </div>`).join('');
+
+    tooltip.innerHTML = `
+      <div class="cal-tooltip-date">${dateLabel}</div>
+      ${rows}
+      <div class="cal-tooltip-ask">Click to ask Aurelia</div>
+    `;
+    tooltip.style.display = 'block';
+
+    // Position: above the cell, horizontally aligned, smart edge-clamping
+    const calRect = grid.closest('.calendar-card').getBoundingClientRect();
+    const cellRect = cell.getBoundingClientRect();
+
+    let top = cellRect.top - calRect.top - tooltip.offsetHeight - 6;
+    let left = cellRect.left - calRect.left + cellRect.width / 2 - tooltip.offsetWidth / 2;
+
+    // Flip below if not enough room above
+    if (top < 0) top = cellRect.top - calRect.top + cellRect.height + 6;
+    // Clamp horizontal edges
+    const cardWidth = calRect.width;
+    if (left < 4) left = 4;
+    if (left + tooltip.offsetWidth > cardWidth - 4) left = cardWidth - tooltip.offsetWidth - 4;
+
+    tooltip.style.top = `${top}px`;
+    tooltip.style.left = `${left}px`;
   }
 
-  function showEventsPanel(date) {
-    selectedDay = date;
-    const events = getEventsForDay(date);
-    const dayName = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][date.getDay()];
-    eventsDateLabel.textContent = `${dayName}, ${date.getDate()} ${MONTH_NAMES[date.getMonth()]} ${date.getFullYear()}`;
-
-    if (events.length === 0) {
-      eventsList.innerHTML = `<p style="color:var(--text-muted);font-size:0.85rem;margin:0;">No financial events on this day.</p>`;
-    } else {
-      eventsList.innerHTML = events.map(e => {
-        const colorMap = { income: 'var(--color-success)', expense: 'var(--color-error)', investment: 'var(--color-gold)' };
-        const iconMap = { income: '↑', expense: '↓', investment: '◆' };
-        return `<div class="cal-event-item">
-          <span class="cal-event-dot" style="background:${colorMap[e.type]}">${iconMap[e.type]}</span>
-          <span class="cal-event-label">${e.label}</span>
-          <span class="cal-event-amount" style="color:${colorMap[e.type]}">${e.type === 'income' ? '+' : '−'}${formatCurrency(e.amount)}</span>
-        </div>`;
-      }).join('');
-    }
-
-    eventsPanel.style.display = 'block';
+  function hideTooltip() {
+    if (tooltip) tooltip.style.display = 'none';
   }
 
   function render() {
@@ -143,9 +121,9 @@ export function setupCalendar({ store, formatCurrency }) {
     const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
 
     monthLabel.textContent = `${MONTH_NAMES[viewMonth]} ${viewYear}`;
-
     grid.innerHTML = '';
-    // leading empty cells
+    hideTooltip();
+
     for (let i = 0; i < firstDay; i++) {
       const empty = document.createElement('div');
       empty.className = 'cal-day cal-day-empty';
@@ -154,13 +132,14 @@ export function setupCalendar({ store, formatCurrency }) {
 
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(viewYear, viewMonth, day);
-      const { hasIncome, hasExpense, hasInvestment } = getDayEventTypes(date);
+      const events = getEventsForDay(date);
+      const hasIncome = events.some(e => e.type === 'income');
+      const hasExpense = events.some(e => e.type === 'expense');
+      const hasInvestment = events.some(e => e.type === 'investment');
       const isToday = today.getDate() === day && today.getMonth() === viewMonth && today.getFullYear() === viewYear;
-      const isSelected = selectedDay && selectedDay.getDate() === day && selectedDay.getMonth() === viewMonth && selectedDay.getFullYear() === viewYear;
 
       const cell = document.createElement('div');
-      cell.className = `cal-day${isToday ? ' cal-today' : ''}${isSelected ? ' cal-selected' : ''}`;
-
+      cell.className = `cal-day${isToday ? ' cal-today' : ''}`;
       cell.innerHTML = `
         <span class="cal-day-num">${day}</span>
         <div class="cal-dots">
@@ -170,28 +149,26 @@ export function setupCalendar({ store, formatCurrency }) {
         </div>
       `;
 
-      cell.addEventListener('click', () => {
-        document.querySelectorAll('.cal-day.cal-selected').forEach(el => el.classList.remove('cal-selected'));
-        cell.classList.add('cal-selected');
-        showEventsPanel(date);
-      });
+      if (events.length > 0) {
+        cell.addEventListener('mouseenter', () => showTooltip(cell, date, events));
+        cell.addEventListener('mouseleave', hideTooltip);
+
+        // Click → pre-fill AI chat with context
+        cell.addEventListener('click', () => {
+          const input = document.getElementById('aiChatInput');
+          if (!input) return;
+          const dateStr = `${day} ${MONTH_NAMES[viewMonth]} ${viewYear}`;
+          const lines = events.map(e => `${e.label} (${formatCurrency(e.amount)})`).join(', ');
+          input.value = `On ${dateStr} I have: ${lines}. Give me a brief summary and tips.`;
+          input.focus();
+          document.getElementById('aiChatMessages')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+      }
 
       grid.appendChild(cell);
     }
-
-    // re-render events panel if a day is already selected in this month
-    if (selectedDay && selectedDay.getMonth() === viewMonth && selectedDay.getFullYear() === viewYear) {
-      showEventsPanel(selectedDay);
-    } else {
-      eventsPanel.style.display = 'none';
-      selectedDay = null;
-    }
-  }
-
-  function renderCalendar() {
-    render();
   }
 
   render();
-  return { renderCalendar };
+  return { renderCalendar: render };
 }

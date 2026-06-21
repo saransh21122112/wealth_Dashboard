@@ -62,12 +62,12 @@ export function setupEditModal({ store, saveAccounts, renderAll }) {
     if (rate !== null) {
       rateInput.value = rate;
       rateInput.style.color = 'var(--color-success)';
-      if (hint) hint.textContent = `Implied from ₹${amount.toLocaleString('en-IN')}/mo × ${duration}yr → ₹${maturity.toLocaleString('en-IN')}`;
-      if (tag) { tag.textContent = 'auto-calculated'; tag.style.color = 'var(--color-success)'; }
+      if (hint) hint.textContent = `₹${amount.toLocaleString('en-IN')}/mo × ${duration}yr → ₹${Math.round(maturity).toLocaleString('en-IN')}`;
+      if (tag) { tag.textContent = 'auto'; tag.style.color = 'var(--color-success)'; }
     } else {
       rateInput.style.color = '';
-      if (hint) hint.textContent = 'Fill Maturity Value + Duration above to auto-calculate';
-      if (tag) { tag.textContent = 'enter manually or fill above'; tag.style.color = 'var(--text-muted)'; }
+      if (hint) hint.textContent = 'Enter maturity value & duration above';
+      if (tag) { tag.textContent = 'manual'; tag.style.color = 'var(--text-muted)'; }
     }
   }
 

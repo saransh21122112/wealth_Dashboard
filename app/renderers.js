@@ -205,7 +205,11 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
       if (inc.isRecurring) recurringIncome += parseFloat(inc.amount);
     });
 
-    const netWorth = totalIncome - totalExpenses + totalCurrentValue;
+    const cashBalance = currentUser.cashBalance?.amount || 0;
+    const totalOutstandingLends = (currentUser.lends || [])
+      .filter(l => !l.returned)
+      .reduce((s, l) => s + (parseFloat(l.amount) - (parseFloat(l.returnedAmount) || 0)), 0);
+    const netWorth = totalIncome - totalExpenses + totalCurrentValue + cashBalance + totalOutstandingLends;
     const profit = totalCurrentValue - totalInvested;
     const absoluteReturn = totalInvested > 0 ? (profit / totalInvested) * 100 : 0;
 
@@ -223,6 +227,27 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
 
     if (dom.netWorthVal) dom.netWorthVal.textContent = formatCurrency(netWorth);
     if (dom.investmentsVal) dom.investmentsVal.textContent = formatCurrency(totalCurrentValue);
+
+    // Cash card
+    const cashCard = document.getElementById('cashCard');
+    const cashVal = document.getElementById('cashVal');
+    const cashMeta = document.getElementById('cashMeta');
+    if (cashCard) {
+      if (cashBalance > 0) {
+        cashCard.style.display = '';
+        if (cashVal) cashVal.textContent = formatCurrency(cashBalance);
+        if (cashMeta) {
+          const cb = currentUser.cashBalance;
+          const noteStr = cb.note ? ` · ${cb.note}` : '';
+          const dateStr = cb.updatedAt
+            ? `Updated ${new Date(cb.updatedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`
+            : 'Updated today';
+          cashMeta.textContent = `${dateStr}${noteStr}`;
+        }
+      } else {
+        cashCard.style.display = 'none';
+      }
+    }
     if (dom.investmentsGrowth) {
       dom.investmentsGrowth.className = profit >= 0 ? 'trend-up' : 'trend-down';
       dom.investmentsGrowth.textContent = `${profit >= 0 ? '+' : ''}${formatCurrency(profit)} (${absoluteReturn.toFixed(1)}% abs. return)`;
@@ -239,6 +264,88 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
       leftEl.style.color = leftPerMonth >= 0 ? 'var(--color-success)' : 'var(--color-error)';
     }
     if (leftMeta) leftMeta.textContent = `${formatCurrency(recurringIncome)} − ${formatCurrency(totalRecurring)} exp − ${formatCurrency(Math.round(monthlyInvestmentOutgo))} inv`;
+  }
+
+  function renderLends() {
+    const { currentUser } = store.state;
+    const section = document.getElementById('lendsSection');
+    const tbody = document.getElementById('lendsTableBody');
+    const badge = document.getElementById('lendsOutstandingBadge');
+    if (!section || !tbody || !currentUser) return;
+
+    const lends = (currentUser.lends || []).slice().sort((a, b) => new Date(b.date) - new Date(a.date));
+    const outstanding = lends.filter(l => !l.returned);
+
+    if (lends.length === 0) { section.style.display = 'none'; return; }
+    section.style.display = '';
+
+    const totalOut = outstanding.reduce((s, l) => s + (l.amount - (l.returnedAmount || 0)), 0);
+    if (badge) badge.textContent = `${formatCurrency(totalOut)} outstanding`;
+
+    tbody.innerHTML = '';
+    lends.forEach(lend => {
+      const outstanding = lend.amount - (lend.returnedAmount || 0);
+      const isOverdue = lend.dueDate && !lend.returned && new Date(lend.dueDate) < new Date();
+      const dueDateStr = lend.dueDate
+        ? new Date(lend.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+        : '—';
+      const lentDateStr = new Date(lend.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+
+      const row = document.createElement('tr');
+      if (lend.returned) row.style.opacity = '0.5';
+      row.innerHTML = `
+        <td>
+          <div style="font-weight:600;">${lend.person}</div>
+          ${lend.note ? `<div style="font-size:0.78rem;color:var(--text-muted);">${lend.note}</div>` : ''}
+        </td>
+        <td style="font-weight:600;">₹${parseFloat(lend.amount).toLocaleString('en-IN')}</td>
+        <td>${lentDateStr}</td>
+        <td style="color:${isOverdue ? 'var(--color-error)' : 'inherit'};">
+          ${dueDateStr}${isOverdue ? ' <span style="font-size:0.7rem;font-weight:700;">OVERDUE</span>' : ''}
+        </td>
+        <td style="font-weight:700;color:${lend.returned ? 'var(--color-success)' : 'var(--color-maroon)'};">
+          ${lend.returned ? 'Returned ✓' : formatCurrency(outstanding)}
+        </td>
+        <td>
+          ${lend.returned
+            ? '<span class="category-tag" style="background:rgba(46,125,50,0.1);color:var(--color-success);">Settled</span>'
+            : lend.returnedAmount > 0
+              ? `<span class="category-tag tag-housing">Partial (₹${lend.returnedAmount.toLocaleString('en-IN')})</span>`
+              : '<span class="category-tag tag-miscellaneous">Pending</span>'}
+        </td>
+        <td style="display:flex;gap:0.35rem;">
+          ${!lend.returned ? `<button class="action-btn lend-return-btn" data-id="${lend.id}" title="Mark as returned" style="color:var(--color-success);">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </button>` : ''}
+          <button class="action-btn delete-lend" data-id="${lend.id}" title="Delete" aria-label="Delete lend">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          </button>
+        </td>
+      `;
+      tbody.appendChild(row);
+    });
+
+    document.querySelectorAll('.lend-return-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const lend = currentUser.lends.find(l => l.id === btn.dataset.id);
+        if (!lend) return;
+        const remaining = lend.amount - (lend.returnedAmount || 0);
+        const input = prompt(`How much did ${lend.person} return? (Outstanding: ₹${remaining.toLocaleString('en-IN')})\nLeave blank for full amount.`);
+        if (input === null) return; // cancelled
+        const paid = input.trim() === '' ? remaining : parseFloat(input);
+        if (isNaN(paid) || paid <= 0) return;
+        lend.returnedAmount = (lend.returnedAmount || 0) + Math.min(paid, remaining);
+        if (lend.returnedAmount >= lend.amount) lend.returned = true;
+        saveAccounts(); renderAll();
+      });
+    });
+
+    document.querySelectorAll('.delete-lend').forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentUser.lends = currentUser.lends.filter(l => l.id !== btn.dataset.id);
+        saveAccounts(); renderAll();
+      });
+    });
   }
 
   function renderLICAlerts() {
@@ -284,6 +391,7 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
     renderExpenses();
     renderIncome();
     renderInvestments();
+    renderLends();
     renderMetrics();
     renderLICAlerts();
 
