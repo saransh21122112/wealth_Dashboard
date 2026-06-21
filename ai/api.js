@@ -15,26 +15,16 @@ export async function requestAICompletion(messages, tools) {
   });
 
   if (!response.ok) {
-    let errorMessage = `API Error: ${response.status} ${response.statusText}`;
-    let hint = null;
+    let errorMessage = 'Something went wrong. Please try again.';
 
     try {
-      const rawText = await response.text();
-      try {
-        const errorPayload = JSON.parse(rawText);
-        if (errorPayload?.error) errorMessage = errorPayload.error;
-        if (errorPayload?.hint) hint = errorPayload.hint;
-      } catch (_parseError) {
-        if (rawText) errorMessage = `API Error ${response.status}: ${rawText.slice(0, 200)}`;
-      }
-    } catch (_readError) {
-      // Use default message if body can't be read.
+      const errorPayload = await response.json();
+      if (errorPayload?.error) errorMessage = errorPayload.error;
+    } catch (_error) {
+      // Use default message if body can't be parsed.
     }
 
-    const err = new Error(errorMessage);
-    err.hint = hint;
-    err.status = response.status;
-    throw err;
+    throw new Error(errorMessage);
   }
 
   return response.json();

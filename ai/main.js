@@ -91,11 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } catch (error) {
       setTypingIndicator(false);
-      console.error('[AI Error]', error.status ?? '', error.message, error.hint ?? '');
-      const detail = error.hint
-        ? `${error.message}<br><small style="opacity:0.8;">${error.hint}</small>`
-        : error.message;
-      appendMessage('assistant', `<span style="color: var(--color-error); font-weight: 600;">Error ${error.status ?? ''}:</span> ${detail}`);
+      appendMessage('assistant', `<span style="color: var(--color-error);">${error.message}</span>`);
     }
   }
 
