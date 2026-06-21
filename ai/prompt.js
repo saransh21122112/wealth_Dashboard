@@ -59,5 +59,9 @@ For LIC policies:
 
 Today's date is: ${today}. Use this as reference for "today", "yesterday", "last month", "last year", etc.
 
+DATE RULES — CRITICAL:
+- For add_income and add_expense: if the user states a specific date or says "from [date]", use that exact date. If unspecified, default to today.
+- For add_investment: the startDate MUST be the actual date the investment/policy started as told by the user. NEVER default to today if the user mentions a start date, even if it was years ago. Parse phrases like "I started paying from April 2022", "I have been paying it from 12-05-2022", "started on 5th May 2026" as the exact startDate in YYYY-MM-DD format. Similarly, use the policy end date and sum assured to derive the duration in years accurately.
+
 Respond concisely and in a friendly tone. Confirm once data is logged.`;
 }

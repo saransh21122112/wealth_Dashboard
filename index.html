@@ -239,6 +239,19 @@
             </div>
           </div>
 
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Left Per Month</h2>
+              <div class="card-icon" style="background-color: rgba(46, 160, 67, 0.08); color: #2ea043;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+              </div>
+            </div>
+            <div class="card-value" id="leftPerMonthVal">₹0</div>
+            <div class="card-meta">
+              <span id="leftPerMonthMeta">Income − Expenses − Investments</span>
+            </div>
+          </div>
+
         </section>
 
         <!-- AI Financial Assistant Card -->
@@ -259,6 +272,42 @@
               <input type="text" id="aiChatInput" placeholder="Describe your expense or investment, or ask a question..." aria-label="Type message to Aurelia AI Assistant" required autocomplete="off">
               <button type="submit" class="btn btn-primary" style="min-height: auto; padding: 0.5rem 1.25rem;">Send</button>
             </form>
+          </div>
+        </section>
+
+        <!-- Financial Calendar -->
+        <section class="card calendar-card" id="calendarSection" aria-labelledby="calendarTitle">
+          <div class="card-header" style="margin-bottom:1rem;">
+            <h2 class="card-title" id="calendarTitle">Financial Calendar</h2>
+            <div class="calendar-nav">
+              <button class="cal-nav-btn" id="calendarPrevBtn" aria-label="Previous month">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+              </button>
+              <span id="calendarMonthYear" style="font-weight:600;font-size:0.95rem;min-width:130px;text-align:center;"></span>
+              <button class="cal-nav-btn" id="calendarNextBtn" aria-label="Next month">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="calendar-weekdays">
+            <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+          </div>
+          <div class="calendar-grid" id="calendarGrid"></div>
+
+          <div class="cal-legend">
+            <span><span class="cal-dot cal-dot-income"></span> Income</span>
+            <span><span class="cal-dot cal-dot-expense"></span> Expense</span>
+            <span><span class="cal-dot cal-dot-investment"></span> Investment</span>
+          </div>
+
+          <div class="calendar-events-panel" id="calendarEventsPanel" style="display:none;">
+            <div class="cal-events-date" id="calendarEventsDate"></div>
+            <div id="calendarEventsList"></div>
+            <button class="btn btn-secondary" id="calendarAskAIBtn" style="margin-top:0.75rem;font-size:0.82rem;padding:0.4rem 0.9rem;gap:0.4rem;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+              Ask Aurelia about this day
+            </button>
           </div>
         </section>
 
@@ -1018,6 +1067,131 @@
     </main>
   </div>
   
+  <!-- Edit Modal -->
+  <div class="modal-overlay" id="editModal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="editModalTitle">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 id="editModalTitle">Edit Entry</h2>
+        <button class="modal-close-btn" id="editModalClose" aria-label="Close">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <form id="editModalForm" novalidate>
+        <input type="hidden" id="editItemId">
+        <input type="hidden" id="editItemType">
+
+        <!-- Income / Expense fields -->
+        <div id="editCommonFields">
+          <div class="form-group">
+            <label class="form-label" for="editDescription">Description</label>
+            <input class="form-input" type="text" id="editDescription" required>
+          </div>
+          <div class="form-group horizontal">
+            <div>
+              <label class="form-label" for="editAmount">Amount (₹)</label>
+              <input class="form-input" type="number" min="1" id="editAmount" required>
+            </div>
+            <div>
+              <label class="form-label" for="editDate">Date</label>
+              <input class="form-input" type="date" id="editDate" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="editCategory">Category</label>
+            <select class="form-select" id="editCategory"></select>
+          </div>
+          <label class="toggle-container">
+            <input type="checkbox" id="editIsRecurring" class="toggle-input">
+            <div class="toggle-switch"></div>
+            <span class="toggle-label">Monthly Recurring</span>
+          </label>
+        </div>
+
+        <!-- Investment fields -->
+        <div id="editInvestmentFields" style="display:none;">
+          <div class="form-group">
+            <label class="form-label" for="editInvName">Asset / Policy Name</label>
+            <input class="form-input" type="text" id="editInvName" required>
+          </div>
+          <div class="form-group horizontal">
+            <div>
+              <label class="form-label" for="editInvType">Type</label>
+              <select class="form-select" id="editInvType">
+                <option value="sip">Mutual Fund (Monthly SIP)</option>
+                <option value="lump-sum">Mutual Fund / FD (One-time)</option>
+                <option value="stocks">Stocks / Equities</option>
+                <option value="lic">LIC / Insurance Policy</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label" for="editInvDate">Start Date</label>
+              <input class="form-input" type="date" id="editInvDate" required>
+            </div>
+          </div>
+          <div class="form-group horizontal">
+            <div>
+              <label class="form-label" for="editInvAmount">Amount (₹)</label>
+              <input class="form-input" type="number" min="1" id="editInvAmount" required>
+            </div>
+            <div>
+              <label class="form-label" for="editInvRate">Annual Rate (%)</label>
+              <input class="form-input" type="number" step="0.1" min="0" id="editInvRate" required>
+            </div>
+          </div>
+          <div class="form-group horizontal" id="editCompoundingGroup">
+            <div>
+              <label class="form-label" for="editInvCompounding">Compounding</label>
+              <select class="form-select" id="editInvCompounding">
+                <option value="12">Monthly</option>
+                <option value="4">Quarterly</option>
+                <option value="2">Half-Yearly</option>
+                <option value="1">Annually</option>
+                <option value="0">Simple Interest</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label" for="editInvDuration">Duration (Years)</label>
+              <input class="form-input" type="number" min="1" id="editInvDuration" required>
+            </div>
+          </div>
+          <div id="editLicFields" style="display:none;">
+            <h3 class="form-label" style="border-bottom: 1px dashed var(--border-color); padding-bottom: 0.25rem; margin-bottom: 0.75rem; color: var(--color-maroon);">LIC / Insurance Details</h3>
+            <div class="form-group horizontal">
+              <div>
+                <label class="form-label" for="editLicPolicyNum">Policy Number</label>
+                <input class="form-input" type="text" id="editLicPolicyNum">
+              </div>
+              <div>
+                <label class="form-label" for="editLicSumAssured">Sum Assured (₹)</label>
+                <input class="form-input" type="number" min="0" id="editLicSumAssured">
+              </div>
+            </div>
+            <div class="form-group horizontal">
+              <div>
+                <label class="form-label" for="editLicPremiumFreq">Premium Frequency</label>
+                <select class="form-select" id="editLicPremiumFreq">
+                  <option value="annually">Annually</option>
+                  <option value="half-yearly">Half-Yearly</option>
+                  <option value="quarterly">Quarterly</option>
+                  <option value="monthly">Monthly</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label" for="editLicPremiumDue">Next Premium Due</label>
+                <input class="form-input" type="date" id="editLicPremiumDue">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:0.75rem; margin-top:1.25rem;">
+          <button type="submit" class="btn btn-primary" style="flex:1;">Save Changes</button>
+          <button type="button" id="editModalCancelBtn" class="btn btn-secondary" style="flex:1;">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Screen reader accessible table alternate data for accessibility compliance -->
   <div class="sr-only" style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0;" id="accessibleSummary">
     Aurelia Wealth Dashboard tracks your personal expenses and investments.

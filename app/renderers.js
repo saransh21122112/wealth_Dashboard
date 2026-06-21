@@ -1,4 +1,7 @@
-export function createRenderers({ dom, store, calculations, formatCurrency, saveAccounts, admin }) {
+const EDIT_ICON = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>`;
+const DELETE_ICON = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
+
+export function createRenderers({ dom, store, calculations, formatCurrency, saveAccounts, admin, openEdit, renderCalendar }) {
   const { calculateInvestmentValue } = calculations;
 
   function renderExpenses() {
@@ -34,15 +37,20 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
         <td>${new Date(expense.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
         <td>${expense.isRecurring ? 'Recurring' : 'Extra'}</td>
         <td style="font-weight: 600;">₹${parseFloat(expense.amount).toLocaleString('en-IN')}</td>
-        <td>
-          <button class="action-btn delete-exp" data-id="${expense.id}" aria-label="Delete expense">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-          </button>
+        <td style="display:flex;gap:0.35rem;">
+          <button class="action-btn edit-exp" data-id="${expense.id}" aria-label="Edit expense">${EDIT_ICON}</button>
+          <button class="action-btn delete-exp" data-id="${expense.id}" aria-label="Delete expense">${DELETE_ICON}</button>
         </td>
       `;
       dom.expensesTableBody.appendChild(row);
     });
 
+    document.querySelectorAll('.edit-exp').forEach((button) => {
+      button.addEventListener('click', () => {
+        const item = store.state.currentUser.expenses.find((e) => e.id === button.getAttribute('data-id'));
+        if (item && openEdit) openEdit('expense', item);
+      });
+    });
     document.querySelectorAll('.delete-exp').forEach((button) => {
       button.addEventListener('click', () => {
         store.state.currentUser.expenses = store.state.currentUser.expenses.filter((expense) => expense.id !== button.getAttribute('data-id'));
@@ -92,15 +100,20 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
             ${profit >= 0 ? '+' : ''}${Math.round(profit).toLocaleString('en-IN')} (${returnsPct.toFixed(1)}%)
           </div>
         </td>
-        <td>
-          <button class="action-btn delete-inv" data-id="${investment.id}" aria-label="Delete investment">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-          </button>
+        <td style="display:flex;gap:0.35rem;">
+          <button class="action-btn edit-inv" data-id="${investment.id}" aria-label="Edit investment">${EDIT_ICON}</button>
+          <button class="action-btn delete-inv" data-id="${investment.id}" aria-label="Delete investment">${DELETE_ICON}</button>
         </td>
       `;
       dom.investmentsTableBody.appendChild(row);
     });
 
+    document.querySelectorAll('.edit-inv').forEach((button) => {
+      button.addEventListener('click', () => {
+        const item = store.state.currentUser.investments.find((i) => i.id === button.getAttribute('data-id'));
+        if (item && openEdit) openEdit('investment', item);
+      });
+    });
     document.querySelectorAll('.delete-inv').forEach((button) => {
       button.addEventListener('click', () => {
         store.state.currentUser.investments = store.state.currentUser.investments.filter((investment) => investment.id !== button.getAttribute('data-id'));
@@ -143,15 +156,20 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
         <td>${new Date(inc.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
         <td>${inc.isRecurring ? 'Recurring' : 'Extra'}</td>
         <td style="font-weight: 600; color: var(--color-success);">+₹${parseFloat(inc.amount).toLocaleString('en-IN')}</td>
-        <td>
-          <button class="action-btn delete-inc" data-id="${inc.id}" aria-label="Delete income">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-          </button>
+        <td style="display:flex;gap:0.35rem;">
+          <button class="action-btn edit-inc" data-id="${inc.id}" aria-label="Edit income">${EDIT_ICON}</button>
+          <button class="action-btn delete-inc" data-id="${inc.id}" aria-label="Delete income">${DELETE_ICON}</button>
         </td>
       `;
       dom.incomeTableBody.appendChild(row);
     });
 
+    document.querySelectorAll('.edit-inc').forEach((button) => {
+      button.addEventListener('click', () => {
+        const item = store.state.currentUser.income.find((i) => i.id === button.getAttribute('data-id'));
+        if (item && openEdit) openEdit('income', item);
+      });
+    });
     document.querySelectorAll('.delete-inc').forEach((button) => {
       button.addEventListener('click', () => {
         store.state.currentUser.income = store.state.currentUser.income.filter((inc) => inc.id !== button.getAttribute('data-id'));
@@ -191,6 +209,18 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
     const profit = totalCurrentValue - totalInvested;
     const absoluteReturn = totalInvested > 0 ? (profit / totalInvested) * 100 : 0;
 
+    // Monthly investment outgo (normalised to per-month)
+    const monthlyInvestmentOutgo = (currentUser.investments || []).reduce((sum, inv) => {
+      if (inv.type === 'sip') return sum + parseFloat(inv.amount);
+      if (inv.type === 'lic') {
+        const freq = inv.licPremiumFreq || 'annually';
+        const divisor = freq === 'monthly' ? 1 : freq === 'quarterly' ? 3 : freq === 'half-yearly' ? 6 : 12;
+        return sum + parseFloat(inv.amount) / divisor;
+      }
+      return sum;
+    }, 0);
+    const leftPerMonth = recurringIncome - totalRecurring - monthlyInvestmentOutgo;
+
     if (dom.netWorthVal) dom.netWorthVal.textContent = formatCurrency(netWorth);
     if (dom.investmentsVal) dom.investmentsVal.textContent = formatCurrency(totalCurrentValue);
     if (dom.investmentsGrowth) {
@@ -201,6 +231,14 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
     if (dom.recurringIncomeMeta) dom.recurringIncomeMeta.textContent = `${formatCurrency(recurringIncome)} recurring income`;
     if (dom.expensesVal) dom.expensesVal.textContent = formatCurrency(totalExpenses);
     if (dom.recurringExpensesMeta) dom.recurringExpensesMeta.textContent = `${formatCurrency(totalRecurring)} recurring expenses`;
+
+    const leftEl = document.getElementById('leftPerMonthVal');
+    const leftMeta = document.getElementById('leftPerMonthMeta');
+    if (leftEl) {
+      leftEl.textContent = formatCurrency(leftPerMonth);
+      leftEl.style.color = leftPerMonth >= 0 ? 'var(--color-success)' : 'var(--color-error)';
+    }
+    if (leftMeta) leftMeta.textContent = `${formatCurrency(recurringIncome)} − ${formatCurrency(totalRecurring)} exp − ${formatCurrency(Math.round(monthlyInvestmentOutgo))} inv`;
   }
 
   function renderLICAlerts() {
@@ -252,6 +290,8 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
     if (store.state.currentUser && store.state.currentUser.role === 'admin') {
       admin.renderAdminDashboard();
     }
+
+    if (renderCalendar) renderCalendar();
 
     if (window.updateDashboardCharts) {
       window.updateDashboardCharts();

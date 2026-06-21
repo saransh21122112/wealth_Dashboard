@@ -11,6 +11,8 @@ import { createAuthModule } from './auth.js';
 import { setupForms } from './forms.js';
 import { setupBackupHandlers } from './backup.js';
 import { setupAIBridge } from './ai-bridge.js';
+import { setupEditModal } from './edit-modal.js';
+import { setupCalendar } from './calendar.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   const dom = getDom();
@@ -32,13 +34,23 @@ document.addEventListener('DOMContentLoaded', () => {
     saveAccounts: store.saveAccounts
   });
 
+  const { renderCalendar } = setupCalendar({ store, formatCurrency });
+
+  const { openEdit } = setupEditModal({
+    store,
+    saveAccounts: store.saveAccounts,
+    renderAll: (...args) => renderers.renderAll(...args)
+  });
+
   const renderers = createRenderers({
     dom,
     store,
     calculations: { calculateInvestmentValue },
     formatCurrency,
     saveAccounts: store.saveAccounts,
-    admin
+    admin,
+    openEdit,
+    renderCalendar
   });
 
   const auth = createAuthModule({
