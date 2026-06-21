@@ -32,8 +32,17 @@ router.post('/api/ai/chat', authMiddleware, aiLimiter, async (req, res) => {
   } catch (error) {
     const statusCode = error.status || 500;
     const message = error?.error?.message || error.message || 'Unknown OpenAI error';
+    const hint = statusCode === 502 || statusCode === 503
+      ? 'OpenAI is temporarily unavailable. Please try again in a moment.'
+      : statusCode === 429
+      ? 'OpenAI rate limit reached. Please wait before sending another message.'
+      : null;
 
-    return res.status(statusCode).json({ error: message });
+    console.error(`[AI] OpenAI error ${statusCode}: ${message}`);
+    console.error('[AI] Full error:', JSON.stringify(error?.error ?? error, null, 2));
+    if (error.stack) console.error('[AI] Stack:', error.stack);
+
+    return res.status(statusCode).json({ error: message, hint });
   }
 });
 

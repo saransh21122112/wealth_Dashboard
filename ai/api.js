@@ -16,17 +16,25 @@ export async function requestAICompletion(messages, tools) {
 
   if (!response.ok) {
     let errorMessage = `API Error: ${response.status} ${response.statusText}`;
+    let hint = null;
 
     try {
-      const errorPayload = await response.json();
-      if (errorPayload?.error) {
-        errorMessage = errorPayload.error;
+      const rawText = await response.text();
+      try {
+        const errorPayload = JSON.parse(rawText);
+        if (errorPayload?.error) errorMessage = errorPayload.error;
+        if (errorPayload?.hint) hint = errorPayload.hint;
+      } catch (_parseError) {
+        if (rawText) errorMessage = `API Error ${response.status}: ${rawText.slice(0, 200)}`;
       }
-    } catch (_error) {
-      // Ignore JSON parse issues and use the default message.
+    } catch (_readError) {
+      // Use default message if body can't be read.
     }
 
-    throw new Error(errorMessage);
+    const err = new Error(errorMessage);
+    err.hint = hint;
+    err.status = response.status;
+    throw err;
   }
 
   return response.json();
