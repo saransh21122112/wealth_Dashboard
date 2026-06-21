@@ -56,10 +56,22 @@ export function calculateInvestmentValue(inv) {
       const paymentsMade = Math.floor(elapsedMonths / frequencyMonths) + 1;
       principalInvested = principalInput * paymentsMade;
 
-      for (let index = 0; index < paymentsMade; index += 1) {
-        const monthsSincePayment = elapsedMonths - (index * frequencyMonths);
-        const yearsSincePayment = monthsSincePayment / 12;
-        currentValue += principalInput * Math.pow(1 + annualRate, yearsSincePayment);
+      const maturityValue = inv.licSumAssured && Number(inv.licSumAssured) > 0
+        ? Number(inv.licSumAssured)
+        : null;
+
+      if (maturityValue) {
+        // Proportional growth toward maturity — accurate for endowment plans
+        const totalMonths = parseFloat(inv.duration) * 12;
+        const progress = Math.min(elapsedMonths / totalMonths, 1);
+        currentValue = maturityValue * progress;
+      } else {
+        // Fallback: compound interest on each payment
+        for (let index = 0; index < paymentsMade; index += 1) {
+          const monthsSincePayment = elapsedMonths - (index * frequencyMonths);
+          const yearsSincePayment = monthsSincePayment / 12;
+          currentValue += principalInput * Math.pow(1 + annualRate, yearsSincePayment);
+        }
       }
       break;
     }
