@@ -11,6 +11,31 @@ const EXPENSE_CATEGORIES = [
   ['miscellaneous', 'Miscellaneous']
 ];
 
+// Bisection search for implied annual IRR given monthly SIP → maturity value
+function calcImpliedRate(monthlyPremium, maturityValue, durationYears) {
+  const n = durationYears * 12;
+  if (!monthlyPremium || !maturityValue || !durationYears || n <= 0) return null;
+
+  function fv(r) {
+    if (r < 0.000001) return monthlyPremium * n;
+    return monthlyPremium * ((Math.pow(1 + r, n) - 1) / r) * (1 + r);
+  }
+
+  // if even at 0% rate we exceed maturity, something is off
+  if (fv(0) >= maturityValue) return null;
+
+  let lo = 0.000001, hi = 0.05; // monthly rate: ~0.001% to 5% → 0.01%–80% annual
+  for (let i = 0; i < 300; i++) {
+    const mid = (lo + hi) / 2;
+    if (fv(mid) < maturityValue) lo = mid;
+    else hi = mid;
+  }
+
+  const monthlyRate = (lo + hi) / 2;
+  const annualRate = (Math.pow(1 + monthlyRate, 12) - 1) * 100;
+  return Math.round(annualRate * 10) / 10;
+}
+
 export function setupEditModal({ store, saveAccounts, renderAll }) {
   const modal = document.getElementById('editModal');
   if (!modal) return { openEdit: () => {} };
@@ -21,22 +46,49 @@ export function setupEditModal({ store, saveAccounts, renderAll }) {
   const invTypeSelect = document.getElementById('editInvType');
 
   function close() { modal.style.display = 'none'; }
-
   closeBtn.addEventListener('click', close);
   cancelBtn.addEventListener('click', close);
   modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
-
-  invTypeSelect.addEventListener('change', () => {
-    const isLic = invTypeSelect.value === 'lic';
-    document.getElementById('editLicFields').style.display = isLic ? 'block' : 'none';
-    document.getElementById('editCompoundingGroup').style.display = isLic ? 'none' : 'flex';
-  });
 
   function populateSelect(selectEl, options, selected) {
     selectEl.innerHTML = options.map(([val, label]) =>
       `<option value="${val}" ${val === selected ? 'selected' : ''}>${label}</option>`
     ).join('');
   }
+
+  function updateLICRateDisplay() {
+    const amount = parseFloat(document.getElementById('editInvAmount').value);
+    const maturity = parseFloat(document.getElementById('editLicSumAssured').value);
+    const duration = parseInt(document.getElementById('editInvDuration').value, 10);
+    const rateEl = document.getElementById('editLicRateValue');
+    const rateInput = document.getElementById('editInvRate');
+
+    const rate = calcImpliedRate(amount, maturity, duration);
+    if (rate !== null) {
+      rateEl.textContent = `${rate}% p.a.`;
+      rateEl.style.color = 'var(--color-success)';
+      rateInput.value = rate;
+    } else {
+      rateEl.textContent = '— (fill amount, maturity & duration)';
+      rateEl.style.color = 'var(--text-muted)';
+    }
+  }
+
+  function switchInvType(type) {
+    const isLic = type === 'lic';
+    document.getElementById('editLicFields').style.display = isLic ? 'block' : 'none';
+    document.getElementById('editRateManualGroup').style.display = isLic ? 'none' : 'flex';
+    if (isLic) updateLICRateDisplay();
+  }
+
+  invTypeSelect.addEventListener('change', () => switchInvType(invTypeSelect.value));
+
+  // Auto-recalculate rate when LIC inputs change
+  ['editInvAmount', 'editLicSumAssured', 'editInvDuration'].forEach((id) => {
+    document.getElementById(id)?.addEventListener('input', () => {
+      if (invTypeSelect.value === 'lic') updateLICRateDisplay();
+    });
+  });
 
   function openEdit(type, item) {
     document.getElementById('editItemId').value = item.id;
@@ -49,7 +101,6 @@ export function setupEditModal({ store, saveAccounts, renderAll }) {
       commonFields.style.display = 'block';
       investmentFields.style.display = 'none';
       document.getElementById('editModalTitle').textContent = type === 'income' ? 'Edit Income' : 'Edit Expense';
-
       populateSelect(
         document.getElementById('editCategory'),
         type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES,
@@ -68,20 +119,18 @@ export function setupEditModal({ store, saveAccounts, renderAll }) {
       document.getElementById('editInvName').value = item.name;
       document.getElementById('editInvDate').value = item.startDate;
       document.getElementById('editInvAmount').value = item.amount;
+      document.getElementById('editInvDuration').value = item.duration || 10;
       document.getElementById('editInvRate').value = item.rate;
       document.getElementById('editInvCompounding').value = item.compounding || '12';
-      document.getElementById('editInvDuration').value = item.duration || 10;
 
-      const isLic = item.type === 'lic';
-      document.getElementById('editLicFields').style.display = isLic ? 'block' : 'none';
-      document.getElementById('editCompoundingGroup').style.display = isLic ? 'none' : 'flex';
-
-      if (isLic) {
-        document.getElementById('editLicPolicyNum').value = item.licPolicyNum || '';
+      if (item.type === 'lic') {
         document.getElementById('editLicSumAssured').value = item.licSumAssured || '';
-        document.getElementById('editLicPremiumFreq').value = item.licPremiumFreq || 'annually';
+        document.getElementById('editLicPolicyNum').value = item.licPolicyNum || '';
+        document.getElementById('editLicPremiumFreq').value = item.licPremiumFreq || 'monthly';
         document.getElementById('editLicPremiumDue').value = item.licPremiumDue || '';
       }
+
+      switchInvType(item.type);
     }
 
     modal.style.display = 'flex';
@@ -128,15 +177,19 @@ export function setupEditModal({ store, saveAccounts, renderAll }) {
           type: invType,
           startDate: document.getElementById('editInvDate').value,
           amount: parseFloat(document.getElementById('editInvAmount').value),
-          rate: parseFloat(document.getElementById('editInvRate').value),
-          compounding: invType === 'lic' ? '1' : document.getElementById('editInvCompounding').value,
-          duration: parseInt(document.getElementById('editInvDuration').value, 10) || 10
+          duration: parseInt(document.getElementById('editInvDuration').value, 10) || 10,
+          rate: parseFloat(document.getElementById('editInvRate').value) || 0,
+          compounding: invType === 'lic' ? '1' : document.getElementById('editInvCompounding').value
         };
         if (invType === 'lic') {
+          const maturity = parseFloat(document.getElementById('editLicSumAssured').value) || null;
+          updated.licSumAssured = maturity;
           updated.licPolicyNum = document.getElementById('editLicPolicyNum').value.trim() || null;
-          updated.licSumAssured = parseFloat(document.getElementById('editLicSumAssured').value) || null;
           updated.licPremiumFreq = document.getElementById('editLicPremiumFreq').value;
           updated.licPremiumDue = document.getElementById('editLicPremiumDue').value || null;
+          // Recalculate implied rate on save
+          const implied = calcImpliedRate(updated.amount, maturity, updated.duration);
+          if (implied !== null) updated.rate = implied;
         }
         currentUser.investments[idx] = updated;
       }

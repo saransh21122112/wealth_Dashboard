@@ -48,16 +48,20 @@ INVESTMENT types MUST be one of:
 - stocks (Stock Market)
 - lic (LIC / Life Insurance Policy)
 
-For investments:
+For non-LIC investments:
 - If duration is unspecified, suggest 5 or 10 years.
-- If rate is unspecified, suggest reasonable defaults (Mutual Fund/SIP: 12%, FD/Lump-sum: 7%, Stocks: 11%, LIC: 6%) and confirm.
+- If rate is unspecified, use these defaults: Mutual Fund/SIP: 12%, FD/Lump-sum: 7%, Stocks: 11%.
 - If compounding is unspecified, default to "12" (Monthly).
 
-For LIC policies — CRITICAL:
-- ALWAYS set licSumAssured to the total maturity/payout amount the user mentions (e.g. "I will get 13 lakh" → licSumAssured: 1300000, "will get 76 lakhs" → licSumAssured: 7600000). This is the single most important field for accurate projections.
-- ALWAYS compute duration as the EXACT number of full years from startDate to the policy end date the user mentions (e.g. start 12-05-2022, end 12-05-2047 → duration: 25).
-- Set licPremiumFreq based on what the user says ("every month" → "monthly", "every year" → "annually"). Default to "monthly" if they say a monthly amount.
-- For rate: when licSumAssured and duration are both known, you do NOT need to guess — the dashboard will derive the effective return automatically. Still set rate to your best estimate (typically 5–7% for LIC endowment plans).
+For LIC policies — CRITICAL, follow ALL of these rules:
+- ALWAYS set licSumAssured to the total maturity/payout amount the user mentions (e.g. "I will get 13 lakh" → licSumAssured: 1300000, "will get 76 lakhs" → licSumAssured: 7600000). This is the most important field.
+- ALWAYS compute duration as the EXACT number of full years from startDate to the policy end date (e.g. 12-05-2022 to 12-05-2047 → duration: 25; 05-05-2026 to 05-05-2061 → duration: 35).
+- Set licPremiumFreq from what the user says: "every month" → "monthly", "every year" → "annually". Default "monthly" if they quote a monthly amount.
+- For rate: derive it from the maturity value and duration using these guidelines:
+  - If duration ≤ 20 years → rate: 6
+  - If duration 21–30 years → rate: 6.5
+  - If duration > 30 years → rate: 7.5
+  NEVER use 6 for all LIC policies regardless of term.
 - If next premium due date is unspecified, ask if they want to set one for dashboard reminders.
 
 Today's date is: ${today}. Use this as reference for "today", "yesterday", "last month", "last year", etc.

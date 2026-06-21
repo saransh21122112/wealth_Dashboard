@@ -1113,6 +1113,7 @@
             <label class="form-label" for="editInvName">Asset / Policy Name</label>
             <input class="form-input" type="text" id="editInvName" required>
           </div>
+
           <div class="form-group horizontal">
             <div>
               <label class="form-label" for="editInvType">Type</label>
@@ -1128,17 +1129,20 @@
               <input class="form-input" type="date" id="editInvDate" required>
             </div>
           </div>
+
           <div class="form-group horizontal">
             <div>
-              <label class="form-label" for="editInvAmount">Amount (₹)</label>
+              <label class="form-label" id="editInvAmountLabel" for="editInvAmount">Amount (₹)</label>
               <input class="form-input" type="number" min="1" id="editInvAmount" required>
             </div>
             <div>
-              <label class="form-label" for="editInvRate">Annual Rate (%)</label>
-              <input class="form-input" type="number" step="0.1" min="0" id="editInvRate" required>
+              <label class="form-label" for="editInvDuration">Duration (Years)</label>
+              <input class="form-input" type="number" min="1" id="editInvDuration" required>
             </div>
           </div>
-          <div class="form-group horizontal" id="editCompoundingGroup">
+
+          <!-- Rate row: manual for SIP/stocks, auto-calculated for LIC -->
+          <div class="form-group horizontal" id="editRateManualGroup">
             <div>
               <label class="form-label" for="editInvCompounding">Compounding</label>
               <select class="form-select" id="editInvCompounding">
@@ -1150,36 +1154,44 @@
               </select>
             </div>
             <div>
-              <label class="form-label" for="editInvDuration">Duration (Years)</label>
-              <input class="form-input" type="number" min="1" id="editInvDuration" required>
+              <label class="form-label" for="editInvRate">Annual Rate (%)</label>
+              <input class="form-input" type="number" step="0.1" min="0" id="editInvRate">
             </div>
           </div>
+
+          <!-- LIC-specific fields -->
           <div id="editLicFields" style="display:none;">
-            <h3 class="form-label" style="border-bottom: 1px dashed var(--border-color); padding-bottom: 0.25rem; margin-bottom: 0.75rem; color: var(--color-maroon);">LIC / Insurance Details</h3>
+            <div class="edit-lic-header">
+              <span>LIC / Insurance Details</span>
+            </div>
             <div class="form-group horizontal">
               <div>
-                <label class="form-label" for="editLicPolicyNum">Policy Number</label>
-                <input class="form-input" type="text" id="editLicPolicyNum">
+                <label class="form-label" for="editLicSumAssured">Maturity Value (₹)</label>
+                <input class="form-input" type="number" min="0" id="editLicSumAssured" placeholder="e.g. 1300000">
               </div>
               <div>
-                <label class="form-label" for="editLicSumAssured">Sum Assured (₹)</label>
-                <input class="form-input" type="number" min="0" id="editLicSumAssured">
+                <label class="form-label" for="editLicPolicyNum">Policy Number</label>
+                <input class="form-input" type="text" id="editLicPolicyNum" placeholder="Optional">
               </div>
             </div>
             <div class="form-group horizontal">
               <div>
                 <label class="form-label" for="editLicPremiumFreq">Premium Frequency</label>
                 <select class="form-select" id="editLicPremiumFreq">
-                  <option value="annually">Annually</option>
-                  <option value="half-yearly">Half-Yearly</option>
-                  <option value="quarterly">Quarterly</option>
                   <option value="monthly">Monthly</option>
+                  <option value="quarterly">Quarterly</option>
+                  <option value="half-yearly">Half-Yearly</option>
+                  <option value="annually">Annually</option>
                 </select>
               </div>
               <div>
                 <label class="form-label" for="editLicPremiumDue">Next Premium Due</label>
                 <input class="form-input" type="date" id="editLicPremiumDue">
               </div>
+            </div>
+            <div class="edit-lic-rate-row" id="editLicRateDisplay">
+              <span class="edit-lic-rate-label">Implied Annual Return</span>
+              <span class="edit-lic-rate-value" id="editLicRateValue">— %</span>
             </div>
           </div>
         </div>
