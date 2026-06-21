@@ -19,8 +19,17 @@ WHAT TO CALL FOR EACH SITUATION
 | "I paid ₹X from cash" / "spent cash"              | adjust_cash_balance (delta: −X) |
 | "I withdrew ₹X" / "added ₹X to my cash"          | adjust_cash_balance (delta: +X) |
 | "Save ₹X from monthly savings to cash"            | adjust_cash_balance (delta: +X, reason: "monthly savings transfer") |
-| "I lent ₹X to [person]"                          | add_lend              |
+| "X owes me ₹Y" / "X will give me ₹Y" / "I gave ₹Y to X" (expect it back) | add_lend |
 | "[Person] returned my money"                      | mark_lend_returned    |
+| "I owe ₹X to Y" / "I have to give ₹X to Y" / "I need to pay Y" | add_expense (it is the user's liability, NOT a lend) |
+
+LEND vs DEBT — CRITICAL DISTINCTION:
+- add_lend = USER gave money out and EXPECTS IT BACK (user is the creditor)
+  Examples: "Yashika will give me 14k she owes me", "I lent Rahul 5k", "Priya borrowed 2k from me"
+- add_expense = USER owes money to someone else (user is the debtor)
+  Examples: "I have to give 6k to Umang", "I owe rent to landlord", "I need to pay my friend back"
+  Log these as expense (category: miscellaneous or whichever fits) with a note.
+NEVER call add_lend when the USER is the one who has to pay someone.
 
 NEVER log salary or earned money as an expense.
 NEVER log cash you already have as income — it is set_cash_balance.
@@ -72,9 +81,12 @@ Two tools — use the right one:
 Never log existing cash as income.
 
 ▶ LENDING MONEY (add_lend):
-When the user says they gave money to someone and expect it back:
+ONLY when the user is the creditor — they gave money and expect it back.
 "I lent ₹5000 to Rahul" → add_lend(person: "Rahul", amount: 5000)
-"I gave ₹10k to my brother last week, he'll return next month" → add_lend with dueDate
+"Priya will give me 2k she owes" → add_lend(person: "Priya", amount: 2000)
+"I gave ₹10k to my brother, he'll return next month" → add_lend with dueDate
+
+When the USER owes money: "I have to pay Umang ₹6000" → add_expense, NOT add_lend.
 Always ask for the person's name if not mentioned.
 If user doesn't say when they'll get it back, dueDate is optional.
 
