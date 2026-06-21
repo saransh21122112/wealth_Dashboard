@@ -1,15 +1,11 @@
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 const sqlite3 = require('sqlite3').verbose();
 
 const dataDir = path.resolve(__dirname, '../../data');
 const dbPath = path.join(dataDir, 'aurelia.db');
-
-const defaultUsers = [
-  { username: 'user', password: 'user123', role: 'user' },
-  { username: 'john', password: 'john123', role: 'user' },
-  { username: 'admin', password: 'admin123', role: 'admin' }
-];
 
 let db;
 
@@ -116,12 +112,16 @@ async function initializeDatabase() {
 
   const countRow = await get('SELECT COUNT(*) AS count FROM users');
   if (countRow.count === 0) {
-    for (const user of defaultUsers) {
-      await run(
-        'INSERT INTO users (username, password, role, created_at) VALUES (?, ?, ?, ?)',
-        [user.username, user.password, user.role, new Date().toISOString()]
-      );
+    let adminPassword = process.env.ADMIN_PASSWORD;
+    if (!adminPassword) {
+      adminPassword = crypto.randomBytes(12).toString('base64url');
+      console.warn(`[Aurelia] ADMIN_PASSWORD not set. Generated one-time password for admin: ${adminPassword}`);
     }
+    const hashed = await bcrypt.hash(adminPassword, 12);
+    await run(
+      'INSERT INTO users (username, password, role, created_at) VALUES (?, ?, ?, ?)',
+      ['admin', hashed, 'admin', new Date().toISOString()]
+    );
   }
 }
 

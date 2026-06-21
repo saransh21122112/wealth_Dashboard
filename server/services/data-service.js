@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 const { run, get, all } = require('../db/sqlite');
 
 function mapExpense(row) {
@@ -57,11 +58,16 @@ async function buildUserPayload(userRow) {
 }
 
 async function createUser(username, password) {
+  const hashed = await bcrypt.hash(password, 12);
   await run(
     'INSERT INTO users (username, password, role, created_at) VALUES (?, ?, ?, ?)',
-    [username, password, 'user', new Date().toISOString()]
+    [username, hashed, 'user', new Date().toISOString()]
   );
   return getUserByUsername(username);
+}
+
+async function verifyPassword(plaintext, hash) {
+  return bcrypt.compare(plaintext, hash);
 }
 
 async function createSession(userId) {
@@ -144,6 +150,7 @@ module.exports = {
   getUserById,
   buildUserPayload,
   createUser,
+  verifyPassword,
   createSession,
   deleteSession,
   getSessionUser,

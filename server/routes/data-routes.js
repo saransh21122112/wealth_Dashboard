@@ -3,6 +3,7 @@ const {
   getUserByUsername,
   buildUserPayload,
   createUser,
+  verifyPassword,
   createSession,
   deleteSession,
   getSessionUser,
@@ -18,7 +19,7 @@ function setSessionCookie(res, token) {
   res.cookie(SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: 'lax',
-    secure: false,
+    secure: process.env.NODE_ENV === 'production',
     maxAge: 1000 * 60 * 60 * 24 * 7
   });
 }
@@ -69,7 +70,7 @@ router.post('/api/auth/login', async (req, res) => {
     const password = String(req.body?.password || '');
 
     const user = await getUserByUsername(username);
-    if (!user || user.password !== password) {
+    if (!user || !(await verifyPassword(password, user.password))) {
       return res.status(401).json({ error: 'Invalid username or password.' });
     }
 
