@@ -2,63 +2,43 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
-const sqlite3 = require('sqlite3').verbose();
+const { createClient } = require('@libsql/client');
 
-const dataDir = path.resolve(__dirname, '../../data');
-const dbPath = path.join(dataDir, 'aurelia.db');
+let client;
 
-let db;
+function getClient() {
+  if (client) return client;
 
-function openDatabase() {
-  if (db) return db;
+  const tursoUrl = process.env.TURSO_DATABASE_URL;
+  const tursoToken = process.env.TURSO_AUTH_TOKEN;
 
-  fs.mkdirSync(dataDir, { recursive: true });
-  db = new sqlite3.Database(dbPath);
-  return db;
+  if (tursoUrl) {
+    client = createClient({ url: tursoUrl, authToken: tursoToken });
+  } else {
+    const dataDir = path.resolve(__dirname, '../../data');
+    fs.mkdirSync(dataDir, { recursive: true });
+    client = createClient({ url: `file:${path.join(dataDir, 'aurelia.db')}` });
+  }
+
+  return client;
 }
 
-function run(sql, params = []) {
-  const database = openDatabase();
-  return new Promise((resolve, reject) => {
-    database.run(sql, params, function onRun(err) {
-      if (err) {
-        reject(err);
-        return;
-      }
-      resolve({ lastID: this.lastID, changes: this.changes });
-    });
-  });
+async function run(sql, params = []) {
+  const result = await getClient().execute({ sql, args: params });
+  return { lastID: Number(result.lastInsertRowid), changes: result.rowsAffected };
 }
 
-function get(sql, params = []) {
-  const database = openDatabase();
-  return new Promise((resolve, reject) => {
-    database.get(sql, params, (err, row) => {
-      if (err) {
-        reject(err);
-        return;
-      }
-      resolve(row);
-    });
-  });
+async function get(sql, params = []) {
+  const result = await getClient().execute({ sql, args: params });
+  return result.rows[0] ?? null;
 }
 
-function all(sql, params = []) {
-  const database = openDatabase();
-  return new Promise((resolve, reject) => {
-    database.all(sql, params, (err, rows) => {
-      if (err) {
-        reject(err);
-        return;
-      }
-      resolve(rows);
-    });
-  });
+async function all(sql, params = []) {
+  const result = await getClient().execute({ sql, args: params });
+  return result.rows;
 }
 
 async function initializeDatabase() {
-  openDatabase();
-
   await run(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -124,7 +104,7 @@ async function initializeDatabase() {
   `);
 
   const countRow = await get('SELECT COUNT(*) AS count FROM users');
-  if (countRow.count === 0) {
+  if (Number(countRow.count) === 0) {
     let adminPassword = process.env.ADMIN_PASSWORD;
     if (!adminPassword) {
       adminPassword = crypto.randomBytes(12).toString('base64url');
