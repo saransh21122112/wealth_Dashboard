@@ -203,9 +203,12 @@ export function setupEditModal({ store, saveAccounts, renderAll }) {
           updated.licPolicyNum = document.getElementById('editLicPolicyNum').value.trim() || null;
           updated.licPremiumFreq = document.getElementById('editLicPremiumFreq').value;
           updated.licPremiumDue = document.getElementById('editLicPremiumDue').value || null;
-          // Recalculate if maturity & duration known and rate not manually overridden
-          const implied = calcImpliedRate(updated.amount, maturity, updated.duration);
-          if (implied !== null && rateVal === 0) updated.rate = implied;
+          // Always recalculate with correct frequency — user can still override via the rate field
+          const freqMonths = FREQ_MONTHS[updated.licPremiumFreq] || 12;
+          const implied = calcImpliedRate(updated.amount, maturity, updated.duration, freqMonths);
+          if (implied !== null) updated.rate = implied;
+          // If user manually changed rate field, use that instead
+          if (rateVal > 0) updated.rate = rateVal;
         }
 
         currentUser.investments[idx] = updated;

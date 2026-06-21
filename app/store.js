@@ -42,7 +42,9 @@ export function createStore() {
         body: JSON.stringify({
           income: state.currentUser.income || [],
           expenses: state.currentUser.expenses || [],
-          investments: state.currentUser.investments || []
+          investments: state.currentUser.investments || [],
+          lends: state.currentUser.lends || [],
+          cashBalance: state.currentUser.cashBalance || null
         })
       });
     } catch (error) {

@@ -9,7 +9,9 @@ function mapExpense(row) {
     amount: Number(row.amount),
     date: row.date,
     category: row.category,
-    isRecurring: Boolean(row.is_recurring)
+    isRecurring: Boolean(row.is_recurring),
+    recurringDay: row.recurring_day ?? null,
+    endDate: row.end_date ?? null
   };
 }
 
@@ -23,10 +25,25 @@ function mapInvestment(row) {
     rate: Number(row.rate),
     compounding: row.compounding,
     duration: Number(row.duration),
-    licPolicyNum: row.lic_policy_num || null,
+    endDate: row.end_date ?? null,
+    recurringDay: row.recurring_day ?? null,
+    licPolicyNum: row.lic_policy_num ?? null,
     licSumAssured: row.lic_sum_assured == null ? null : Number(row.lic_sum_assured),
-    licPremiumFreq: row.lic_premium_freq || null,
-    licPremiumDue: row.lic_premium_due || null
+    licPremiumFreq: row.lic_premium_freq ?? null,
+    licPremiumDue: row.lic_premium_due ?? null
+  };
+}
+
+function mapLend(row) {
+  return {
+    id: row.id,
+    person: row.person,
+    amount: Number(row.amount),
+    date: row.date,
+    dueDate: row.due_date ?? null,
+    note: row.note ?? null,
+    returned: Boolean(row.returned),
+    returnedAmount: Number(row.returned_amount) || 0
   };
 }
 
@@ -56,17 +73,30 @@ async function getIncomeByUserId(userId) {
     amount: Number(row.amount),
     date: row.date,
     category: row.category,
-    isRecurring: Boolean(row.is_recurring)
+    isRecurring: Boolean(row.is_recurring),
+    recurringDay: row.recurring_day ?? null
   }));
 }
 
+async function getLendsByUserId(userId) {
+  const rows = await all('SELECT * FROM lends WHERE user_id = ?', [userId]);
+  return rows.map(mapLend);
+}
+
 async function buildUserPayload(userRow) {
+  const cashAmt = userRow.cash_balance_amount;
+  const cashBalance = (cashAmt != null && Number(cashAmt) > 0)
+    ? { amount: Number(cashAmt), note: userRow.cash_balance_note ?? null, updatedAt: userRow.cash_balance_updated_at ?? null }
+    : null;
+
   return {
     username: userRow.username,
     role: userRow.role,
     income: await getIncomeByUserId(userRow.id),
     expenses: await getExpensesByUserId(userRow.id),
-    investments: await getInvestmentsByUserId(userRow.id)
+    investments: await getInvestmentsByUserId(userRow.id),
+    lends: await getLendsByUserId(userRow.id),
+    cashBalance
   };
 }
 
@@ -110,26 +140,34 @@ async function getSessionUser(token) {
   return getUserById(session.user_id);
 }
 
-async function replaceUserData(userId, expenses, income, investments) {
+async function replaceUserData(userId, expenses, income, investments, lends = [], cashBalance = null) {
   const statements = [
     { sql: 'DELETE FROM expenses WHERE user_id = ?', args: [userId] },
     { sql: 'DELETE FROM income WHERE user_id = ?', args: [userId] },
-    { sql: 'DELETE FROM investments WHERE user_id = ?', args: [userId] }
+    { sql: 'DELETE FROM investments WHERE user_id = ?', args: [userId] },
+    { sql: 'DELETE FROM lends WHERE user_id = ?', args: [userId] }
   ];
+
+  if (cashBalance != null) {
+    statements.push({
+      sql: 'UPDATE users SET cash_balance_amount = ?, cash_balance_note = ?, cash_balance_updated_at = ? WHERE id = ?',
+      args: [Number(cashBalance.amount) || 0, cashBalance.note ?? null, cashBalance.updatedAt ?? null, userId]
+    });
+  }
 
   for (const inc of income) {
     statements.push({
-      sql: `INSERT INTO income (id, user_id, description, amount, date, category, is_recurring)
-            VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      args: [inc.id, userId, inc.description, Number(inc.amount), inc.date, inc.category, inc.isRecurring ? 1 : 0]
+      sql: `INSERT INTO income (id, user_id, description, amount, date, category, is_recurring, recurring_day)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [inc.id, userId, inc.description, Number(inc.amount), inc.date, inc.category, inc.isRecurring ? 1 : 0, inc.recurringDay ?? null]
     });
   }
 
   for (const expense of expenses) {
     statements.push({
-      sql: `INSERT INTO expenses (id, user_id, description, amount, date, category, is_recurring)
-            VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      args: [expense.id, userId, expense.description, Number(expense.amount), expense.date, expense.category, expense.isRecurring ? 1 : 0]
+      sql: `INSERT INTO expenses (id, user_id, description, amount, date, category, is_recurring, recurring_day, end_date)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [expense.id, userId, expense.description, Number(expense.amount), expense.date, expense.category, expense.isRecurring ? 1 : 0, expense.recurringDay ?? null, expense.endDate ?? null]
     });
   }
 
@@ -137,14 +175,29 @@ async function replaceUserData(userId, expenses, income, investments) {
     statements.push({
       sql: `INSERT INTO investments (
               id, user_id, name, type, start_date, amount, rate, compounding, duration,
+              end_date, recurring_day,
               lic_policy_num, lic_sum_assured, lic_premium_freq, lic_premium_due
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         investment.id, userId, investment.name, investment.type, investment.startDate,
         Number(investment.amount), Number(investment.rate), String(investment.compounding ?? '12'),
-        Number(investment.duration ?? 10), investment.licPolicyNum ?? null,
+        Number(investment.duration ?? 10),
+        investment.endDate ?? null, investment.recurringDay ?? null,
+        investment.licPolicyNum ?? null,
         investment.licSumAssured == null ? null : Number(investment.licSumAssured),
         investment.licPremiumFreq ?? null, investment.licPremiumDue ?? null
+      ]
+    });
+  }
+
+  for (const lend of lends) {
+    statements.push({
+      sql: `INSERT INTO lends (id, user_id, person, amount, date, due_date, note, returned, returned_amount)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [
+        lend.id, userId, lend.person, Number(lend.amount), lend.date,
+        lend.dueDate ?? null, lend.note ?? null,
+        lend.returned ? 1 : 0, Number(lend.returnedAmount) || 0
       ]
     });
   }
@@ -177,5 +230,6 @@ module.exports = {
   getSessionUser,
   replaceUserData,
   getAllUsersWithData,
-  updateUserRole
+  updateUserRole,
+  getLendsByUserId
 };

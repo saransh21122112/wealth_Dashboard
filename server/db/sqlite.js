@@ -110,10 +110,36 @@ async function initializeDatabase() {
     )
   `);
 
-  try {
-    await run('ALTER TABLE sessions ADD COLUMN expires_at TEXT');
-  } catch (_e) {
-    // Column already exists — safe to ignore.
+  // Lends table
+  await run(`
+    CREATE TABLE IF NOT EXISTS lends (
+      id TEXT PRIMARY KEY,
+      user_id INTEGER NOT NULL,
+      person TEXT NOT NULL,
+      amount REAL NOT NULL,
+      date TEXT NOT NULL,
+      due_date TEXT,
+      note TEXT,
+      returned INTEGER NOT NULL DEFAULT 0,
+      returned_amount REAL NOT NULL DEFAULT 0,
+      FOREIGN KEY(user_id) REFERENCES users(id)
+    )
+  `);
+
+  // Migrations — safe ALTER TABLE statements, each wrapped individually
+  const migrations = [
+    'ALTER TABLE sessions ADD COLUMN expires_at TEXT',
+    'ALTER TABLE users ADD COLUMN cash_balance_amount REAL DEFAULT 0',
+    'ALTER TABLE users ADD COLUMN cash_balance_note TEXT',
+    'ALTER TABLE users ADD COLUMN cash_balance_updated_at TEXT',
+    'ALTER TABLE income ADD COLUMN recurring_day INTEGER',
+    'ALTER TABLE expenses ADD COLUMN recurring_day INTEGER',
+    'ALTER TABLE expenses ADD COLUMN end_date TEXT',
+    'ALTER TABLE investments ADD COLUMN end_date TEXT',
+    'ALTER TABLE investments ADD COLUMN recurring_day INTEGER'
+  ];
+  for (const sql of migrations) {
+    try { await run(sql); } catch (_e) { /* column already exists — safe to ignore */ }
   }
 
   const countRow = await get('SELECT COUNT(*) AS count FROM users');

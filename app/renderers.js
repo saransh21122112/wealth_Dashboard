@@ -209,7 +209,13 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
     const totalOutstandingLends = (currentUser.lends || [])
       .filter(l => !l.returned)
       .reduce((s, l) => s + (parseFloat(l.amount) - (parseFloat(l.returnedAmount) || 0)), 0);
-    const netWorth = totalIncome - totalExpenses + totalCurrentValue + cashBalance + totalOutstandingLends;
+
+    // Net worth = estimated bank savings + investment current value + cash + receivables
+    // Savings = income earned − expenses paid − capital deployed into investments
+    // (avoids double-counting: invested principal is already inside totalIncome)
+    const estimatedSavings = totalIncome - totalExpenses - totalInvested;
+    const netWorth = estimatedSavings + totalCurrentValue + cashBalance + totalOutstandingLends;
+
     const profit = totalCurrentValue - totalInvested;
     const absoluteReturn = totalInvested > 0 ? (profit / totalInvested) * 100 : 0;
 
@@ -226,6 +232,11 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
     const leftPerMonth = recurringIncome - totalRecurring - monthlyInvestmentOutgo;
 
     if (dom.netWorthVal) dom.netWorthVal.textContent = formatCurrency(netWorth);
+    const netWorthMeta = document.getElementById('netWorthMeta');
+    if (netWorthMeta) {
+      const savingsLabel = estimatedSavings >= 0 ? `${formatCurrency(estimatedSavings)} savings` : `${formatCurrency(-estimatedSavings)} overspent`;
+      netWorthMeta.textContent = `${savingsLabel} + ${formatCurrency(totalCurrentValue)} investments + ${formatCurrency(cashBalance + totalOutstandingLends)} other`;
+    }
     if (dom.investmentsVal) dom.investmentsVal.textContent = formatCurrency(totalCurrentValue);
 
     // Cash card
