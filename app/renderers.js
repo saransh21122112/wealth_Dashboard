@@ -210,11 +210,9 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
       .filter(l => !l.returned)
       .reduce((s, l) => s + (parseFloat(l.amount) - (parseFloat(l.returnedAmount) || 0)), 0);
 
-    // Net worth = estimated bank savings + investment current value + cash + receivables
-    // Savings = income earned − expenses paid − capital deployed into investments
-    // (avoids double-counting: invested principal is already inside totalIncome)
-    const estimatedSavings = totalIncome - totalExpenses - totalInvested;
-    const netWorth = estimatedSavings + totalCurrentValue + cashBalance + totalOutstandingLends;
+    // Net worth = assets only (investment value + cash + receivables)
+    // Income/expenses are flow metrics shown separately — not mixed into balance sheet
+    const netWorth = totalCurrentValue + cashBalance + totalOutstandingLends;
 
     const profit = totalCurrentValue - totalInvested;
     const absoluteReturn = totalInvested > 0 ? (profit / totalInvested) * 100 : 0;
@@ -234,8 +232,10 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
     if (dom.netWorthVal) dom.netWorthVal.textContent = formatCurrency(netWorth);
     const netWorthMeta = document.getElementById('netWorthMeta');
     if (netWorthMeta) {
-      const savingsLabel = estimatedSavings >= 0 ? `${formatCurrency(estimatedSavings)} savings` : `${formatCurrency(-estimatedSavings)} overspent`;
-      netWorthMeta.textContent = `${savingsLabel} + ${formatCurrency(totalCurrentValue)} investments + ${formatCurrency(cashBalance + totalOutstandingLends)} other`;
+      const parts = [`${formatCurrency(totalCurrentValue)} investments`];
+      if (cashBalance > 0) parts.push(`${formatCurrency(cashBalance)} cash`);
+      if (totalOutstandingLends > 0) parts.push(`${formatCurrency(totalOutstandingLends)} receivable`);
+      netWorthMeta.textContent = parts.join(' + ');
     }
     if (dom.investmentsVal) dom.investmentsVal.textContent = formatCurrency(totalCurrentValue);
 
