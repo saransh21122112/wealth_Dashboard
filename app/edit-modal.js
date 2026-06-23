@@ -1,14 +1,17 @@
 const INCOME_CATEGORIES = [
   ['salary', 'Salary / Wages'], ['freelance', 'Freelance / Contract'],
   ['bonus', 'Bonus / Commission'], ['rental', 'Rental Income'],
-  ['gift', 'Gift / Inheritance'], ['other', 'Other']
+  ['dividend', 'Dividend'], ['interest', 'Interest Income'],
+  ['refund', 'Tax / IT Refund'], ['cashback', 'Cashback'],
+  ['sale', 'Sale of Asset'], ['gift', 'Gift / Inheritance'], ['other', 'Other']
 ];
 const EXPENSE_CATEGORIES = [
   ['housing', 'Housing / Rent'], ['groceries', 'Groceries / Food'],
-  ['utilities', 'Utilities / Bills'], ['entertainment', 'Entertainment'],
-  ['lic', 'LIC / Insurance'], ['health', 'Health & Medical'],
-  ['travel', 'Travel / Commute'], ['extra', 'Extra / Splurge'],
-  ['miscellaneous', 'Miscellaneous']
+  ['utilities', 'Utilities / Bills'], ['transport', 'Transport / Commute'],
+  ['entertainment', 'Entertainment / Dining'], ['insurance', 'Insurance Premium'],
+  ['subscription', 'Subscription / Recharge'], ['health', 'Health & Medical'],
+  ['lic', 'LIC Premium (Expense)'], ['travel', 'Travel'],
+  ['extra', 'Extra / Splurge'], ['miscellaneous', 'Miscellaneous']
 ];
 
 const FREQ_MONTHS = { monthly: 1, quarterly: 3, 'half-yearly': 6, annually: 12 };

@@ -200,6 +200,51 @@ export function setupAIBridge({ store, saveAccounts, renderAll }) {
     return { ...borrow, paidNow: paid };
   };
 
+  // ── Delete entry ─────────────────────────────────────────────────────
+  window.deleteEntryFromAI = (type, description) => {
+    if (!store.state.currentUser) return { error: true, message: 'Not logged in.' };
+    const needle = description.toLowerCase();
+    let arr, field;
+    if (type === 'income') { arr = store.state.currentUser.income || []; field = 'income'; }
+    else if (type === 'expense') { arr = store.state.currentUser.expenses || []; field = 'expenses'; }
+    else if (type === 'investment') { arr = store.state.currentUser.investments || []; field = 'investments'; }
+    else return { error: true, message: `Unknown type "${type}". Must be income, expense, or investment.` };
+
+    const idx = arr.findIndex(e =>
+      (e.description || e.name || '').toLowerCase().includes(needle)
+    );
+    if (idx === -1) return { error: true, message: `No ${type} found matching "${description}".` };
+    const [removed] = arr.splice(idx, 1);
+    store.state.currentUser[field] = arr;
+    saveAccounts(); renderAll();
+    return { deleted: true, entry: removed };
+  };
+
+  // ── Stop recurring expense/income ────────────────────────────────────
+  window.stopRecurringFromAI = (description, endDate) => {
+    if (!store.state.currentUser) return { error: true, message: 'Not logged in.' };
+    const needle = description.toLowerCase();
+    const today  = new Date().toISOString().split('T')[0];
+    const stopAt = endDate || today;
+
+    // Search expenses first, then income
+    const sources = [
+      { arr: store.state.currentUser.expenses || [], label: 'expense' },
+      { arr: store.state.currentUser.income   || [], label: 'income'  }
+    ];
+    for (const { arr, label } of sources) {
+      const match = arr.find(e =>
+        e.isRecurring && (e.description || '').toLowerCase().includes(needle)
+      );
+      if (match) {
+        match.endDate = stopAt;
+        saveAccounts(); renderAll();
+        return { stopped: true, description: match.description, endDate: stopAt, type: label };
+      }
+    }
+    return { error: true, message: `No active recurring expense or income found matching "${description}". Check the name.` };
+  };
+
   window.markLendReturnedFromAI = (person, returnedAmount) => {
     if (!store.state.currentUser) return { error: true, message: 'Not logged in.' };
     const lends = store.state.currentUser.lends || [];

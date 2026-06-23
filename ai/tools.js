@@ -182,5 +182,35 @@ export const AI_TOOLS = [
         required: ['name', 'proceeds']
       }
     }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'delete_entry',
+      description: 'Permanently delete an income, expense, or investment entry. Use only when the user asks to delete, remove, or undo a specific entry by name. For salary hikes, delete the old recurring salary entry then add the new one.',
+      parameters: {
+        type: 'object',
+        properties: {
+          type: { type: 'string', enum: ['income', 'expense', 'investment'], description: 'Type of entry to delete.' },
+          description: { type: 'string', description: 'Name or description of the entry to delete. Matched case-insensitively (partial match). For investments, use the investment name.' }
+        },
+        required: ['type', 'description']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'stop_recurring',
+      description: 'Stop a recurring expense or income by setting its end date to today. Use when user says "my EMI is done", "I cancelled Netflix", "my subscription ended", "loan is paid off". Does NOT delete the entry — just marks it as ended.',
+      parameters: {
+        type: 'object',
+        properties: {
+          description: { type: 'string', description: 'Name or description of the recurring expense/income to stop. Matched case-insensitively (partial match).' },
+          endDate: { type: 'string', description: 'Date to stop the recurring item in YYYY-MM-DD. Defaults to today if not specified.' }
+        },
+        required: ['description']
+      }
+    }
   }
 ];

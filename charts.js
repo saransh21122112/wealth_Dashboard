@@ -1,113 +1,111 @@
 document.addEventListener('DOMContentLoaded', () => {
-  let expensesChart = null;
+  let expensesChart   = null;
   let projectionChart = null;
-  let projectionYears = 5; // default projection years
+  let allocationChart = null;
+  let projectionYears = 5;
 
-  // Helper: Get theme-specific colors
   function getThemeColors() {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     return {
-      text: isDark ? '#b69fa2' : '#745c60',
-      grid: isDark ? '#361f23' : '#e8deda',
-      maroon: isDark ? '#b3002d' : '#800020',
-      gold: isDark ? '#f3cd4c' : '#d4af37',
-      goldGlow: isDark ? 'rgba(243, 205, 76, 0.2)' : 'rgba(212, 175, 55, 0.1)',
-      maroonGlow: isDark ? 'rgba(179, 0, 45, 0.2)' : 'rgba(128, 0, 32, 0.05)',
-      
-      // Chart colors palette matching maroon and gold
-      palette: [
-        isDark ? '#b3002d' : '#800020', // Maroon
-        isDark ? '#f3cd4c' : '#d4af37', // Gold
-        isDark ? '#d60036' : '#a30029', // Mid Maroon/Red
-        isDark ? '#ffd966' : '#e5c05c', // Light Gold
-        isDark ? '#846e71' : '#a08c90', // Greyish Maroon
-        isDark ? '#4a111a' : '#5d0016', // Dark Maroon
-        isDark ? '#ab9598' : '#745c60', // Darker Greyish
-        isDark ? '#ffe082' : '#f5be41'  // Pale Gold
-      ]
+      text:      isDark ? '#b69fa2' : '#745c60',
+      grid:      isDark ? '#361f23' : '#e8deda',
+      maroon:    isDark ? '#b3002d' : '#800020',
+      gold:      isDark ? '#f3cd4c' : '#d4af37',
+      goldGlow:  isDark ? 'rgba(243,205,76,0.2)'  : 'rgba(212,175,55,0.1)',
+      maroonGlow:isDark ? 'rgba(179,0,45,0.2)'    : 'rgba(128,0,32,0.05)',
     };
   }
 
-  // ==============================================
-  // 1. EXPENSES BREAKDOWN CHART
-  // ==============================================
+  // ── full 12-category palette (fixed, no theme variation for pie slices) ──
+  const CAT_COLORS = {
+    housing:       '#800020', // brand maroon
+    groceries:     '#2d7a2d', // forest green
+    utilities:     '#1565c0', // navy blue
+    transport:     '#e65100', // deep orange
+    entertainment: '#6a1b9a', // purple
+    insurance:     '#c62828', // brick red
+    subscription:  '#00838f', // teal
+    lic:           '#4e342e', // dark brown
+    health:        '#2e7d32', // medium green
+    travel:        '#d4af37', // brand gold
+    extra:         '#5d4037', // warm brown
+    miscellaneous: '#757575', // neutral grey
+  };
+
+  const CAT_LABELS = {
+    housing:       'Housing / Rent',
+    groceries:     'Groceries / Food',
+    utilities:     'Utilities / Bills',
+    transport:     'Transport',
+    entertainment: 'Entertainment',
+    insurance:     'Insurance',
+    subscription:  'Subscriptions',
+    lic:           'LIC Premium',
+    health:        'Health & Medical',
+    travel:        'Travel',
+    extra:         'Extra / Splurge',
+    miscellaneous: 'Miscellaneous',
+  };
+
+  // ── allocation palette per investment type ────────────────────────────
+  const ALLOC_COLORS = {
+    sip:      '#d4af37', // gold
+    'lump-sum':'#c0392b', // warm red
+    stocks:   '#1565c0', // blue
+    lic:      '#800020', // maroon
+  };
+  const ALLOC_LABELS = {
+    sip:       'Mutual Fund SIP',
+    'lump-sum':'FD / Lump-sum',
+    stocks:    'Stocks',
+    lic:       'LIC / Insurance',
+  };
+
+  // ==========================================================
+  // 1. EXPENSE BREAKDOWN CHART — all 12 categories
+  // ==========================================================
   function drawExpensesChart() {
     const canvas = document.getElementById('expensesChart');
     if (!canvas) return;
 
     const expenses = window.getExpenses ? window.getExpenses() : [];
-    const colors = getThemeColors();
+    const colors   = getThemeColors();
 
-    // Group expenses by category
-    const categories = {
-      housing: 0,
-      groceries: 0,
-      utilities: 0,
-      entertainment: 0,
-      lic: 0,
-      health: 0,
-      travel: 0,
-      extra: 0,
-      miscellaneous: 0
-    };
-
+    // Bucket every expense into one of the 12 known categories
+    const buckets = Object.fromEntries(Object.keys(CAT_COLORS).map(k => [k, 0]));
     let total = 0;
+
     expenses.forEach(exp => {
       const amt = parseFloat(exp.amount) || 0;
-      if (categories[exp.category] !== undefined) {
-        categories[exp.category] += amt;
-        total += amt;
-      } else {
-        categories.miscellaneous += amt;
-        total += amt;
+      const cat = CAT_COLORS[exp.category] !== undefined ? exp.category : 'miscellaneous';
+      buckets[cat] += amt;
+      total += amt;
+    });
+
+    const labels = [], data = [], bgColors = [];
+    Object.keys(buckets).forEach(cat => {
+      if (buckets[cat] > 0) {
+        labels.push(CAT_LABELS[cat]);
+        data.push(buckets[cat]);
+        bgColors.push(CAT_COLORS[cat]);
       }
     });
 
-    // Prepare data
-    const labels = [];
-    const data = [];
-    const backgroundColors = [];
-
-    // Map categories to user-friendly titles and colors
-    const categoryConfigs = {
-      housing: { label: 'Housing/Rent', color: colors.palette[0] },
-      groceries: { label: 'Groceries/Food', color: colors.palette[2] },
-      utilities: { label: 'Utilities/Bills', color: colors.palette[4] },
-      entertainment: { label: 'Entertainment', color: colors.palette[1] },
-      lic: { label: 'LIC/Insurance', color: colors.palette[3] },
-      health: { label: 'Health & Medical', color: colors.palette[7] },
-      travel: { label: 'Travel/Commute', color: colors.palette[6] },
-      extra: { label: 'Extra/Splurge', color: colors.palette[5] },
-      miscellaneous: { label: 'Miscellaneous', color: '#888888' }
-    };
-
-    Object.keys(categories).forEach(cat => {
-      if (categories[cat] > 0) {
-        labels.push(categoryConfigs[cat].label);
-        data.push(categories[cat]);
-        backgroundColors.push(categoryConfigs[cat].color);
-      }
-    });
-
-    // If no expenses, show placeholder
     if (total === 0) {
       labels.push('No Expenses Logged');
       data.push(1);
-      backgroundColors.push(colors.grid);
+      bgColors.push(colors.grid);
     }
 
-    if (expensesChart) {
-      expensesChart.destroy();
-    }
+    if (expensesChart) expensesChart.destroy();
 
-    // Render Doughnut Chart
     expensesChart = new Chart(canvas, {
       type: 'doughnut',
       data: {
-        labels: labels,
+        labels,
         datasets: [{
-          data: data,
-          backgroundColor: backgroundColors,
+          data,
+          backgroundColor: bgColors,
           borderWidth: document.documentElement.getAttribute('data-theme') === 'dark' ? 2 : 1,
           borderColor: document.documentElement.getAttribute('data-theme') === 'dark' ? '#1a0c0f' : '#ffffff'
         }]
@@ -120,132 +118,134 @@ document.addEventListener('DOMContentLoaded', () => {
             position: 'bottom',
             labels: {
               color: colors.text,
-              font: {
-                family: 'Inter',
-                size: 11
-              },
-              padding: 15,
+              font: { family: 'Inter', size: 11 },
+              padding: 12,
               usePointStyle: true
             }
           },
           tooltip: {
             enabled: total > 0,
             callbacks: {
-              label: function(context) {
-                const val = context.raw;
-                const pct = ((val / total) * 100).toFixed(1);
-                return ` ${context.label}: ₹${val.toLocaleString('en-IN')} (${pct}%)`;
+              label: (ctx) => {
+                const pct = ((ctx.raw / total) * 100).toFixed(1);
+                return ` ${ctx.label}: ₹${ctx.raw.toLocaleString('en-IN')} (${pct}%)`;
               }
             }
           }
         },
-        cutout: '70%'
+        cutout: '68%'
       }
     });
   }
 
-  // ==============================================
-  // 2. WEALTH PROJECTION CHART
-  // ==============================================
+  // ==========================================================
+  // 2. WEALTH PROJECTION CHART — effective monthly rate + maturity cap
+  // ==========================================================
   function drawProjectionChart() {
     const canvas = document.getElementById('projectionChart');
     if (!canvas) return;
 
-    const investments = window.getInvestments ? window.getInvestments() : [];
+    const investments = (window.getInvestments ? window.getInvestments() : [])
+      .filter(inv => inv.status !== 'closed');
     const colors = getThemeColors();
-    
-    const labels = [];
-    const totalWealthData = [];
-    const principalData = [];
-    
-    // Project wealth year by year
+
+    const labels = [], totalWealthData = [], principalData = [];
+
     for (let y = 0; y <= projectionYears; y++) {
-      labels.push(`Year ${y}`);
+      labels.push(y === 0 ? 'Now' : `+${y}Y`);
       let totalPortfolioVal = 0;
       let totalPrincipalVal = 0;
 
       investments.forEach(inv => {
-        // Current value of this asset today (elapsed time from start to today)
-        const currentVals = window.calculateInvestmentValue(inv);
+        const currentVals = window.calculateInvestmentValue ? window.calculateInvestmentValue(inv) : { principal: 0, currentValue: 0, elapsedMonths: 0 };
+        if (currentVals.closed) return;
+
         let assetPrincipal = currentVals.principal;
-        let assetVal = currentVals.currentValue;
+        let assetVal       = currentVals.currentValue;
 
         if (y > 0) {
           const r = parseFloat(inv.rate) / 100;
-          const monthlyRate = r / 12;
+          // FIXED: effective monthly rate, not nominal r/12
+          const monthlyRate    = Math.pow(1 + r, 1 / 12) - 1;
           const principalInput = parseFloat(inv.amount);
-          
+          const projMonths     = y * 12;
+
           switch (inv.type) {
             case 'sip': {
-              // SIP continues for remaining duration
-              const elapsedMonths = currentVals.elapsedMonths;
-              const remainingMonths = Math.max(0, (inv.duration * 12) - elapsedMonths);
-              const projectionMonths = y * 12;
-              
-              // Months of future contributions we will make in the next y years
-              const activeContribMonths = Math.min(remainingMonths, projectionMonths);
-              // Months that will compound as a lump sum after contributions stop
-              const compoundingOnlyMonths = Math.max(0, projectionMonths - activeContribMonths);
+              const elapsedM    = currentVals.elapsedMonths;
+              const maxM        = parseFloat(inv.duration || 999) * 12;
+              const remainingM  = Math.max(0, maxM - elapsedM);
+              const activeM     = Math.min(remainingM, projMonths);
+              const compoundM   = Math.max(0, projMonths - activeM);
 
-              // 1. Grow current value as a lump sum for y years
-              let futVal = assetVal * Math.pow(1 + monthlyRate, projectionMonths);
+              // Grow existing corpus as lump sum
+              let futVal = assetVal * Math.pow(1 + monthlyRate, projMonths);
 
-              // 2. Add future contributions (SIP future value compounding from their start date)
-              if (activeContribMonths > 0) {
-                let futureContribVal = principalInput * ((Math.pow(1 + monthlyRate, activeContribMonths) - 1) / monthlyRate) * (1 + monthlyRate);
-                // Compound those contributions for any remaining months in the projection timeline
-                if (compoundingOnlyMonths > 0) {
-                  futureContribVal = futureContribVal * Math.pow(1 + monthlyRate, compoundingOnlyMonths);
-                }
-                futVal += futureContribVal;
+              // Add future SIP contributions (FV of annuity due)
+              if (activeM > 0 && monthlyRate >= 0.000001) {
+                let futContrib = principalInput * ((Math.pow(1 + monthlyRate, activeM) - 1) / monthlyRate) * (1 + monthlyRate);
+                if (compoundM > 0) futContrib *= Math.pow(1 + monthlyRate, compoundM);
+                futVal += futContrib;
+              } else if (activeM > 0) {
+                futVal += principalInput * activeM;
               }
 
               assetVal = futVal;
-              assetPrincipal += principalInput * activeContribMonths;
+              assetPrincipal += principalInput * activeM;
               break;
             }
 
             case 'lump-sum':
             case 'stocks': {
-              // One-time investment compounding from today for y years
-              const n = parseInt(inv.compounding) || 12;
-              if (n === 0) {
-                // Simple Interest
-                assetVal = assetVal + (currentVals.principal * r * y);
-              } else {
-                assetVal = assetVal * Math.pow(1 + r/n, n * y);
+              const n = parseInt(inv.compounding, 10) || 12;
+              // FIXED: cap at maturity date if endDate exists
+              let projY = y;
+              if (inv.endDate) {
+                const endMs  = new Date(inv.endDate).getTime();
+                const nowMs  = Date.now();
+                const futMs  = nowMs + y * 365.25 * 24 * 3600 * 1000;
+                if (futMs > endMs && endMs > nowMs) {
+                  projY = (endMs - nowMs) / (365.25 * 24 * 3600 * 1000);
+                } else if (endMs <= nowMs) {
+                  projY = 0; // already matured — don't compound further
+                }
               }
-              // Principal remains constant for one-time investments
+              if (n === 0) {
+                assetVal = assetVal + (currentVals.principal * r * projY);
+              } else {
+                assetVal = assetVal * Math.pow(1 + r / n, n * projY);
+              }
               break;
             }
 
             case 'lic': {
-              // LIC Premium additions
-              let freqMonths = 12;
-              if (inv.licPremiumFreq === 'half-yearly') freqMonths = 6;
-              if (inv.licPremiumFreq === 'quarterly') freqMonths = 3;
-              if (inv.licPremiumFreq === 'monthly') freqMonths = 1;
+              // FIXED: cap at licSumAssured once past maturity
+              const totalPolicyMonths = parseFloat(inv.duration || 0) * 12;
+              const elapsedM          = currentVals.elapsedMonths;
+              const futureElapsedM    = elapsedM + projMonths;
 
-              const elapsedMonths = currentVals.elapsedMonths;
-              const remainingMonths = Math.max(0, (inv.duration * 12) - elapsedMonths);
-              const projectionMonths = y * 12;
-              
-              // Future payments in the next y years
-              const activeMonths = Math.min(remainingMonths, projectionMonths);
-              const futurePaymentsCount = Math.floor(activeMonths / freqMonths);
+              if (inv.licSumAssured && futureElapsedM >= totalPolicyMonths) {
+                // Matured — return the guaranteed payout, no further growth
+                assetVal = parseFloat(inv.licSumAssured);
+              } else {
+                let freqM = 1;
+                if (inv.licPremiumFreq === 'quarterly')   freqM = 3;
+                if (inv.licPremiumFreq === 'half-yearly') freqM = 6;
+                if (inv.licPremiumFreq === 'annually')    freqM = 12;
 
-              // 1. Compound current value annually
-              let futVal = assetVal * Math.pow(1 + r, y);
+                const remainingM = Math.max(0, totalPolicyMonths - elapsedM);
+                const activeM    = Math.min(remainingM, projMonths);
+                const futPmtCount = Math.floor(activeM / freqM);
 
-              // 2. Accumulate future premium payments
-              for (let i = 1; i <= futurePaymentsCount; i++) {
-                const monthsSincePayment = projectionMonths - (i * freqMonths);
-                const yearsSincePayment = monthsSincePayment / 12;
-                futVal += principalInput * Math.pow(1 + r, yearsSincePayment);
+                let futVal = assetVal * Math.pow(1 + r, y);
+                for (let i = 1; i <= futPmtCount; i++) {
+                  const mSince    = projMonths - i * freqM;
+                  const ySince    = mSince / 12;
+                  futVal += principalInput * Math.pow(1 + r, ySince);
+                }
+                assetVal = Math.min(futVal, inv.licSumAssured ? parseFloat(inv.licSumAssured) : futVal);
+                assetPrincipal += principalInput * futPmtCount;
               }
-
-              assetVal = futVal;
-              assetPrincipal += principalInput * futurePaymentsCount;
               break;
             }
           }
@@ -259,15 +259,12 @@ document.addEventListener('DOMContentLoaded', () => {
       principalData.push(Math.round(totalPrincipalVal));
     }
 
-    if (projectionChart) {
-      projectionChart.destroy();
-    }
+    if (projectionChart) projectionChart.destroy();
 
-    // Render Line Chart
     projectionChart = new Chart(canvas, {
       type: 'line',
       data: {
-        labels: labels,
+        labels,
         datasets: [
           {
             label: 'Projected Value',
@@ -299,16 +296,11 @@ document.addEventListener('DOMContentLoaded', () => {
         plugins: {
           legend: {
             position: 'top',
-            labels: {
-              color: colors.text,
-              font: { family: 'Outfit', weight: '500' }
-            }
+            labels: { color: colors.text, font: { family: 'Outfit', weight: '500' } }
           },
           tooltip: {
             callbacks: {
-              label: function(context) {
-                return ` ${context.dataset.label}: ₹${context.raw.toLocaleString('en-IN')}`;
-              }
+              label: (ctx) => ` ${ctx.dataset.label}: ₹${ctx.raw.toLocaleString('en-IN')}`
             }
           }
         },
@@ -322,11 +314,11 @@ document.addEventListener('DOMContentLoaded', () => {
             ticks: {
               color: colors.text,
               font: { family: 'Inter' },
-              callback: function(value) {
-                if (value >= 10000000) return '₹' + (value / 10000000).toFixed(1) + ' Cr';
-                if (value >= 100000) return '₹' + (value / 100000).toFixed(1) + ' L';
-                if (value >= 1000) return '₹' + (value / 1000).toFixed(0) + ' K';
-                return '₹' + value;
+              callback: (v) => {
+                if (v >= 10000000) return '₹' + (v / 10000000).toFixed(1) + ' Cr';
+                if (v >= 100000)   return '₹' + (v / 100000).toFixed(1) + ' L';
+                if (v >= 1000)     return '₹' + (v / 1000).toFixed(0) + ' K';
+                return '₹' + v;
               }
             }
           }
@@ -335,20 +327,99 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Central trigger exposed to the dashboard app modules
-  window.updateDashboardCharts = function() {
+  // ==========================================================
+  // 3. INVESTMENT ALLOCATION DONUT — current value by type
+  // ==========================================================
+  function drawAllocationChart() {
+    const canvas = document.getElementById('allocationChart');
+    if (!canvas) return;
+
+    const investments = (window.getInvestments ? window.getInvestments() : [])
+      .filter(inv => inv.status !== 'closed');
+    const colors = getThemeColors();
+
+    const buckets = { sip: 0, 'lump-sum': 0, stocks: 0, lic: 0 };
+    let total = 0;
+
+    investments.forEach(inv => {
+      const val = window.calculateInvestmentValue
+        ? (window.calculateInvestmentValue(inv)?.currentValue || 0)
+        : 0;
+      const t = buckets[inv.type] !== undefined ? inv.type : 'lump-sum';
+      buckets[t] += val;
+      total += val;
+    });
+
+    const labels = [], data = [], bgColors = [];
+    Object.keys(buckets).forEach(t => {
+      if (buckets[t] > 0) {
+        labels.push(ALLOC_LABELS[t]);
+        data.push(Math.round(buckets[t]));
+        bgColors.push(ALLOC_COLORS[t]);
+      }
+    });
+
+    if (total === 0) {
+      labels.push('No Investments Yet');
+      data.push(1);
+      bgColors.push(colors.grid);
+    }
+
+    if (allocationChart) allocationChart.destroy();
+
+    allocationChart = new Chart(canvas, {
+      type: 'doughnut',
+      data: {
+        labels,
+        datasets: [{
+          data,
+          backgroundColor: bgColors,
+          borderWidth: document.documentElement.getAttribute('data-theme') === 'dark' ? 2 : 1,
+          borderColor: document.documentElement.getAttribute('data-theme') === 'dark' ? '#1a0c0f' : '#ffffff'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: colors.text,
+              font: { family: 'Inter', size: 11 },
+              padding: 14,
+              usePointStyle: true
+            }
+          },
+          tooltip: {
+            enabled: total > 0,
+            callbacks: {
+              label: (ctx) => {
+                const pct = ((ctx.raw / total) * 100).toFixed(1);
+                return ` ${ctx.label}: ₹${ctx.raw.toLocaleString('en-IN')} (${pct}%)`;
+              }
+            }
+          }
+        },
+        cutout: '68%'
+      }
+    });
+  }
+
+  // Central trigger exposed to the dashboard modules
+  window.updateDashboardCharts = function () {
     drawExpensesChart();
     drawProjectionChart();
+    drawAllocationChart();
   };
 
-  // Timeline buttons listener
+  // Timeline button listeners
   const timelinePicker = document.getElementById('timelinePicker');
   if (timelinePicker) {
     timelinePicker.querySelectorAll('button').forEach(btn => {
       btn.addEventListener('click', () => {
         timelinePicker.querySelectorAll('button').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        
         projectionYears = parseInt(btn.getAttribute('data-years')) || 5;
         drawProjectionChart();
       });

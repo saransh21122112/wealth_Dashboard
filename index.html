@@ -336,12 +336,29 @@
           <div class="ai-chat-container">
             <div class="ai-chat-messages" id="aiChatMessages" role="log" aria-live="polite">
               <div class="ai-message assistant">
-                Hi! I'm Aurelia AI, your personal financial assistant. Tell me about your <strong>income</strong> (salary, freelance, bonus), <strong>expenses</strong>, or <strong>investments</strong> and I'll log them directly. Try: <em>"My monthly salary is ₹80,000"</em>, <em>"I spent ₹1500 on groceries today"</em>, or <em>"I started a SIP of ₹5000 in Nifty Index at 12% for 10 years"</em>.
+                Hi! I'm Aurelia AI, your personal financial assistant. Tell me about your <strong>income</strong>, <strong>expenses</strong>, or <strong>investments</strong> — or <strong>upload a document</strong> (salary slip, LIC policy, FD receipt, bank statement, bill) and I'll extract and log everything automatically.
               </div>
             </div>
+            <!-- Hidden file input — images only; PDF users should screenshot -->
+            <input type="file" id="aiFileInput" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none" aria-hidden="true">
+            <!-- Attachment preview bar (shown when file is selected) -->
+            <div class="ai-attachment-bar" id="aiAttachmentBar" style="display:none" aria-live="polite">
+              <img id="aiAttachThumb" src="" alt="Attached document preview" class="ai-attach-thumb">
+              <div class="ai-attach-info">
+                <span id="aiAttachName" class="ai-attach-filename"></span>
+                <span class="ai-attach-hint">AI will extract and log all financial data</span>
+              </div>
+              <button type="button" id="aiAttachRemove" class="ai-attach-remove" title="Remove attachment" aria-label="Remove attachment">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </div>
             <form id="aiChatForm" class="ai-chat-form">
-              <input type="text" id="aiChatInput" placeholder="Describe your expense or investment, or ask a question..." aria-label="Type message to Aurelia AI Assistant" required autocomplete="off">
-              <button type="submit" class="btn btn-primary" style="min-height: auto; padding: 0.5rem 1.25rem;">Send</button>
+              <!-- Attach button -->
+              <button type="button" id="aiAttachBtn" class="ai-attach-btn" title="Upload document photo (salary slip, LIC policy, FD receipt, bill, bank statement)" aria-label="Attach document">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+              </button>
+              <input type="text" id="aiChatInput" placeholder="Describe finances, or upload a document and ask me to extract…" aria-label="Type message to Aurelia AI Assistant" autocomplete="off">
+              <button type="submit" class="btn btn-primary" id="aiSendBtn" style="min-height: auto; padding: 0.5rem 1.25rem;">Send</button>
             </form>
           </div>
         </section>
@@ -598,6 +615,17 @@
           <h1 class="page-title">Investments & Insurance</h1>
           <p class="page-subtitle">Track your wealth corpus: Mutual Funds (SIPs), Fixed Deposits, Stocks, and LIC Policies.</p>
         </header>
+
+        <!-- Portfolio Allocation Chart -->
+        <section class="card chart-card" aria-label="Portfolio Allocation" style="margin-bottom:1.5rem">
+          <div class="chart-header">
+            <h2 class="chart-title">Portfolio Allocation</h2>
+            <span class="chart-subtitle" style="font-size:0.8rem;color:var(--text-muted)">By current value &mdash; active investments</span>
+          </div>
+          <div class="chart-container" style="height:260px">
+            <canvas id="allocationChart"></canvas>
+          </div>
+        </section>
 
         <div class="management-layout">
           <!-- Add Investment Form -->

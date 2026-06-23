@@ -97,5 +97,22 @@ export function executeToolCall(toolCall, appendSystemStatus) {
     return { name, content: JSON.stringify({ status: 'success', message: 'Investment closed and proceeds moved to cash.' }) };
   }
 
+  if (name === 'delete_entry') {
+    if (!window.deleteEntryFromAI) return { name, content: JSON.stringify({ status: 'error', message: 'Dashboard API unavailable.' }) };
+    const r = window.deleteEntryFromAI(args.type, args.description);
+    if (r?.error) return { name, content: JSON.stringify({ status: 'error', message: r.message }) };
+    const label = r.entry.description || r.entry.name || args.description;
+    appendSystemStatus(`🗑️ Deleted ${args.type}: <strong>${label}</strong>`);
+    return { name, content: JSON.stringify({ status: 'success', message: `${args.type} deleted.` }) };
+  }
+
+  if (name === 'stop_recurring') {
+    if (!window.stopRecurringFromAI) return { name, content: JSON.stringify({ status: 'error', message: 'Dashboard API unavailable.' }) };
+    const r = window.stopRecurringFromAI(args.description, args.endDate);
+    if (r?.error) return { name, content: JSON.stringify({ status: 'error', message: r.message }) };
+    appendSystemStatus(`⏹️ Stopped recurring ${r.type}: <strong>${r.description}</strong> · ended ${r.endDate}`);
+    return { name, content: JSON.stringify({ status: 'success', message: `Recurring ${r.type} stopped from ${r.endDate}.` }) };
+  }
+
   return { name, content: JSON.stringify({ status: 'error', message: `Unsupported tool: ${name}` }) };
 }

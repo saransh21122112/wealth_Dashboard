@@ -15,6 +15,7 @@ export function calculateInvestmentValue(inv) {
   if (inv.status === 'closed') {
     return { principal: 0, currentValue: 0, elapsedMonths: 0, closed: true };
   }
+
   const today = new Date();
   const start = new Date(inv.startDate);
   if (start > today) {
@@ -34,35 +35,66 @@ export function calculateInvestmentValue(inv) {
       // Effective monthly rate from annual CAGR: (1 + r_annual)^(1/12) − 1
       const monthlyRate = Math.pow(1 + annualRate, 1 / 12) - 1;
       const maxInstallments = Math.floor(parseFloat(inv.duration || 999) * 12);
-      const totalInstallments = Math.min(Math.floor(elapsedMonths) + 1, maxInstallments);
-      principalInvested = principalInput * totalInstallments;
-      currentValue = monthlyRate === 0
-        ? principalInvested
-        : principalInput * ((Math.pow(1 + monthlyRate, totalInstallments) - 1) / monthlyRate) * (1 + monthlyRate);
+
+      if (elapsedMonths < maxInstallments) {
+        // Still in contribution phase
+        const n = Math.floor(elapsedMonths) + 1;
+        principalInvested = principalInput * n;
+        currentValue = monthlyRate < 0.000001
+          ? principalInvested
+          : principalInput * ((Math.pow(1 + monthlyRate, n) - 1) / monthlyRate) * (1 + monthlyRate);
+      } else {
+        // Contribution phase over — full corpus compounds without new deposits
+        principalInvested = principalInput * maxInstallments;
+        const corpusAtEnd = monthlyRate < 0.000001
+          ? principalInvested
+          : principalInput * ((Math.pow(1 + monthlyRate, maxInstallments) - 1) / monthlyRate) * (1 + monthlyRate);
+        const extraMonths = elapsedMonths - maxInstallments;
+        currentValue = corpusAtEnd * Math.pow(1 + monthlyRate, extraMonths);
+      }
       break;
     }
+
     case 'lump-sum':
     case 'stocks': {
       principalInvested = principalInput;
       const frequency = parseInt(inv.compounding, 10) || 12;
+
+      // Cap at maturity/endDate — e.g. FD does not keep compounding after it matures
+      let calcYears = elapsedYears;
+      if (inv.endDate && today > new Date(inv.endDate)) {
+        calcYears = getMonthsBetweenDates(inv.startDate, inv.endDate) / 12;
+      }
+
       currentValue = frequency === 0
-        ? principalInput * (1 + annualRate * elapsedYears)
-        : principalInput * Math.pow(1 + annualRate / frequency, frequency * elapsedYears);
+        ? principalInput * (1 + annualRate * calcYears)           // simple interest
+        : principalInput * Math.pow(1 + annualRate / frequency, frequency * calcYears);
       break;
     }
+
     case 'lic': {
       let frequencyMonths = 12;
       if (inv.licPremiumFreq === 'monthly') frequencyMonths = 1;
       else if (inv.licPremiumFreq === 'quarterly') frequencyMonths = 3;
       else if (inv.licPremiumFreq === 'half-yearly') frequencyMonths = 6;
 
-      // Cap payments at policy term
-      const maxPeriods = Math.floor(parseFloat(inv.duration) * 12 / frequencyMonths);
+      const totalPolicyMonths = parseFloat(inv.duration) * 12;
+      const maxPeriods = Math.floor(totalPolicyMonths / frequencyMonths);
+
+      // Policy matured — return sum assured
+      if (elapsedMonths >= totalPolicyMonths && inv.licSumAssured) {
+        return {
+          principal: principalInput * maxPeriods,
+          currentValue: parseFloat(inv.licSumAssured),
+          elapsedMonths,
+          matured: true
+        };
+      }
+
+      // Active — SIP FV with period-adjusted effective rate
       const n = Math.min(Math.floor(elapsedMonths / frequencyMonths) + 1, maxPeriods);
       principalInvested = principalInput * n;
 
-      // Period rate derived from the effective annual rate
-      // (the annual rate was derived via monthly SIP FV bisection: annual = (1+r_monthly)^12 − 1)
       const periodsPerYear = 12 / frequencyMonths;
       const periodRate = Math.pow(1 + annualRate, 1 / periodsPerYear) - 1;
 

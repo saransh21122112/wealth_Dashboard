@@ -183,28 +183,48 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
     const { currentUser } = store.state;
     if (!currentUser) return;
 
+    const today = new Date();
+    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+
+    // ── Investments ──────────────────────────────────────────────────────
     let totalInvested = 0;
     let totalCurrentValue = 0;
-    (currentUser.investments || []).forEach((investment) => {
-      const values = calculateInvestmentValue(investment);
-      totalInvested += values.principal;
-      totalCurrentValue += values.currentValue;
+    (currentUser.investments || []).forEach((inv) => {
+      const v = calculateInvestmentValue(inv);
+      totalInvested += v.principal;
+      totalCurrentValue += v.currentValue;
     });
 
+    // ── Expenses ─────────────────────────────────────────────────────────
     let totalExpenses = 0;
+    // Only count recurring expenses that haven't expired
     let totalRecurring = 0;
-    (currentUser.expenses || []).forEach((expense) => {
-      totalExpenses += parseFloat(expense.amount);
-      if (expense.isRecurring) totalRecurring += parseFloat(expense.amount);
+    // One-time expenses logged this calendar month
+    let oneTimeExpensesThisMonth = 0;
+    (currentUser.expenses || []).forEach((e) => {
+      const amt = parseFloat(e.amount);
+      totalExpenses += amt;
+      if (e.isRecurring) {
+        // Exclude EMIs/subscriptions whose term has ended
+        const expired = e.endDate && new Date(e.endDate) < today;
+        if (!expired) totalRecurring += amt;
+      } else {
+        if (new Date(e.date) >= monthStart) oneTimeExpensesThisMonth += amt;
+      }
     });
 
+    // ── Income ───────────────────────────────────────────────────────────
     let totalIncome = 0;
     let recurringIncome = 0;
-    (currentUser.income || []).forEach((inc) => {
-      totalIncome += parseFloat(inc.amount);
-      if (inc.isRecurring) recurringIncome += parseFloat(inc.amount);
+    let oneTimeIncomeThisMonth = 0;
+    (currentUser.income || []).forEach((i) => {
+      const amt = parseFloat(i.amount);
+      totalIncome += amt;
+      if (i.isRecurring) recurringIncome += amt;
+      else if (new Date(i.date) >= monthStart) oneTimeIncomeThisMonth += amt;
     });
 
+    // ── Receivables & Liabilities ────────────────────────────────────────
     const cashBalance = currentUser.cashBalance?.amount || 0;
     const totalOutstandingLends = (currentUser.lends || [])
       .filter(l => !l.returned)
@@ -213,21 +233,48 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
       .filter(b => !b.repaid)
       .reduce((s, b) => s + (parseFloat(b.amount) - (parseFloat(b.repaidAmount) || 0)), 0);
 
-    // Monthly investment outgo (normalised to per-month) — needed for leftPerMonth
-    const monthlyInvestmentOutgo = (currentUser.investments || []).reduce((sum, inv) => {
-      if (inv.type === 'sip') return sum + parseFloat(inv.amount);
-      if (inv.type === 'lic') {
+    // ── Monthly Cash Flow ─────────────────────────────────────────────────
+    // Only count active SIP/LIC outgo (skip investments whose term has ended)
+    let monthlyInvestmentOutgo = 0;
+    (currentUser.investments || []).forEach((inv) => {
+      if (inv.status === 'closed') return;
+      const ended = inv.endDate && new Date(inv.endDate) < today;
+      if (ended) return; // contribution period over
+      if (inv.type === 'sip') {
+        monthlyInvestmentOutgo += parseFloat(inv.amount);
+      } else if (inv.type === 'lic') {
         const freq = inv.licPremiumFreq || 'annually';
         const divisor = freq === 'monthly' ? 1 : freq === 'quarterly' ? 3 : freq === 'half-yearly' ? 6 : 12;
-        return sum + parseFloat(inv.amount) / divisor;
+        monthlyInvestmentOutgo += parseFloat(inv.amount) / divisor;
       }
-      return sum;
-    }, 0);
-    const leftPerMonth = recurringIncome - totalRecurring - monthlyInvestmentOutgo;
+    });
 
-    // Net worth = current investment value + cash + receivables − liabilities + monthly surplus
-    const netWorth = totalCurrentValue + cashBalance + totalOutstandingLends - totalOutstandingBorrows + Math.max(0, leftPerMonth);
+    // Lump-sum/stocks investments deployed this month are a one-time cash outgo
+    const lumpSumDeployedThisMonth = (currentUser.investments || [])
+      .filter(inv => (inv.type === 'lump-sum' || inv.type === 'stocks') && new Date(inv.startDate) >= monthStart)
+      .reduce((s, inv) => s + parseFloat(inv.amount), 0);
 
+    // Monthly cash flow = recurring income + one-time income this month
+    //                   − recurring fixed expenses − monthly investment contributions
+    //                   − one-time expenses this month − lump-sum investments this month
+    const leftPerMonth = recurringIncome + oneTimeIncomeThisMonth
+      - totalRecurring - monthlyInvestmentOutgo
+      - oneTimeExpensesThisMonth - lumpSumDeployedThisMonth;
+
+    // ── Net Worth (Balance Sheet) ─────────────────────────────────────────
+    // Assets − Liabilities: what you own today, not what you generate.
+    // Cash flow (leftPerMonth) is a separate metric — do NOT mix into net worth.
+    const netWorth = totalCurrentValue + cashBalance + totalOutstandingLends - totalOutstandingBorrows;
+
+    // ── Financial Health Ratios ───────────────────────────────────────────
+    // Savings rate = what % of income goes toward savings + investments
+    const monthlySaved = leftPerMonth + monthlyInvestmentOutgo; // cash left + what went to investments
+    const savingsRate = recurringIncome > 0 ? (monthlySaved / recurringIncome) * 100 : 0;
+    // Emergency fund = how many months of expenses covered by liquid cash
+    const monthlyExpenseBase = totalRecurring + (oneTimeExpensesThisMonth / Math.max(1, today.getDate()) * 30);
+    const emergencyMonths = monthlyExpenseBase > 0 ? cashBalance / monthlyExpenseBase : 0;
+
+    // ── Render ────────────────────────────────────────────────────────────
     const profit = totalCurrentValue - totalInvested;
     const absoluteReturn = totalInvested > 0 ? (profit / totalInvested) * 100 : 0;
 
@@ -236,7 +283,6 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
     if (netWorthMeta) {
       const parts = [`${formatCurrency(totalCurrentValue)} investments`];
       if (cashBalance > 0) parts.push(`${formatCurrency(cashBalance)} cash`);
-      if (leftPerMonth > 0) parts.push(`${formatCurrency(Math.round(leftPerMonth))} monthly surplus`);
       if (totalOutstandingLends > 0) parts.push(`${formatCurrency(totalOutstandingLends)} receivable`);
       if (totalOutstandingBorrows > 0) parts.push(`−${formatCurrency(totalOutstandingBorrows)} owed`);
       netWorthMeta.textContent = parts.join(' + ');
@@ -257,20 +303,24 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
           const dateStr = cb.updatedAt
             ? `Updated ${new Date(cb.updatedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`
             : 'Updated today';
-          cashMeta.textContent = `${dateStr}${noteStr}`;
+          const efNote = emergencyMonths > 0
+            ? ` · ${emergencyMonths.toFixed(1)} months emergency runway`
+            : '';
+          cashMeta.textContent = `${dateStr}${noteStr}${efNote}`;
         }
       } else {
         cashCard.style.display = 'none';
       }
     }
+
     if (dom.investmentsGrowth) {
       dom.investmentsGrowth.className = profit >= 0 ? 'trend-up' : 'trend-down';
       dom.investmentsGrowth.textContent = `${profit >= 0 ? '+' : ''}${formatCurrency(profit)} (${absoluteReturn.toFixed(1)}% abs. return)`;
     }
     if (dom.incomeVal) dom.incomeVal.textContent = formatCurrency(totalIncome);
-    if (dom.recurringIncomeMeta) dom.recurringIncomeMeta.textContent = `${formatCurrency(recurringIncome)} recurring income`;
+    if (dom.recurringIncomeMeta) dom.recurringIncomeMeta.textContent = `${formatCurrency(recurringIncome)} recurring · ${formatCurrency(oneTimeIncomeThisMonth > 0 ? oneTimeIncomeThisMonth : totalIncome - recurringIncome)} one-time`;
     if (dom.expensesVal) dom.expensesVal.textContent = formatCurrency(totalExpenses);
-    if (dom.recurringExpensesMeta) dom.recurringExpensesMeta.textContent = `${formatCurrency(totalRecurring)} recurring expenses`;
+    if (dom.recurringExpensesMeta) dom.recurringExpensesMeta.textContent = `${formatCurrency(totalRecurring)} fixed monthly · ${formatCurrency(oneTimeExpensesThisMonth)} this month`;
 
     const leftEl = document.getElementById('leftPerMonthVal');
     const leftMeta = document.getElementById('leftPerMonthMeta');
@@ -278,7 +328,16 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
       leftEl.textContent = formatCurrency(leftPerMonth);
       leftEl.style.color = leftPerMonth >= 0 ? 'var(--color-success)' : 'var(--color-error)';
     }
-    if (leftMeta) leftMeta.textContent = `${formatCurrency(recurringIncome)} − ${formatCurrency(totalRecurring)} exp − ${formatCurrency(Math.round(monthlyInvestmentOutgo))} inv`;
+    if (leftMeta) {
+      const srStr = savingsRate > 0 ? ` · ${savingsRate.toFixed(0)}% savings rate` : '';
+      let parts = [`${formatCurrency(recurringIncome)} income`];
+      parts.push(`−${formatCurrency(totalRecurring)} fixed`);
+      parts.push(`−${formatCurrency(Math.round(monthlyInvestmentOutgo))} investments`);
+      if (oneTimeExpensesThisMonth > 0) parts.push(`−${formatCurrency(Math.round(oneTimeExpensesThisMonth))} extra`);
+      if (lumpSumDeployedThisMonth > 0) parts.push(`−${formatCurrency(lumpSumDeployedThisMonth)} deployed`);
+      if (oneTimeIncomeThisMonth > 0) parts.push(`+${formatCurrency(Math.round(oneTimeIncomeThisMonth))} extra income`);
+      leftMeta.textContent = parts.join(' ') + srStr;
+    }
   }
 
   function renderLends() {

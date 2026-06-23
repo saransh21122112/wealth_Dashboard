@@ -11,6 +11,20 @@ export function createAIChatUI(aiChatMessages) {
     scrollToBottom();
   }
 
+  // Shows a user message with an attached image thumbnail
+  function appendUserMessageWithImage(text, dataUrl, filename) {
+    const bubble = document.createElement('div');
+    bubble.className = 'ai-message user';
+    let html = '';
+    if (text) html += `<span>${escapeHtml(text)}</span>`;
+    // Thumbnail — clicking opens full image in new tab
+    html += `<img class="chat-attachment-img" src="${dataUrl}" alt="${escapeHtml(filename)}"
+      title="Click to view full image" onclick="window.open(this.src,'_blank')">`;
+    bubble.innerHTML = html;
+    aiChatMessages.appendChild(bubble);
+    scrollToBottom();
+  }
+
   function appendSystemStatus(text) {
     const statusBubble = document.createElement('div');
     statusBubble.className = 'ai-message system-status';
@@ -45,8 +59,17 @@ export function createAIChatUI(aiChatMessages) {
     aiChatMessages.innerHTML = '';
   }
 
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
   return {
     appendMessage,
+    appendUserMessageWithImage,
     appendSystemStatus,
     setTypingIndicator,
     resetMessages

@@ -1121,6 +1121,107 @@ tr:hover td {
   box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
 }
 
+/* ── Document Upload UI ──────────────────────────────────────────────── */
+.ai-attach-btn {
+  flex-shrink: 0;
+  background: var(--surface-color);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.5rem 0.65rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.ai-attach-btn:hover {
+  color: var(--color-maroon);
+  border-color: var(--color-maroon);
+  background: var(--color-gold-light);
+}
+.ai-attach-btn.active {
+  color: var(--color-maroon);
+  border-color: var(--color-maroon);
+  background: var(--color-gold-light);
+}
+
+/* Attachment preview bar above the form */
+.ai-attachment-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.45rem 0.7rem;
+  background: var(--color-gold-light);
+  border: 1px solid var(--color-gold);
+  border-radius: var(--border-radius-sm);
+  font-size: 0.82rem;
+  animation: messageFadeIn 0.2s ease forwards;
+}
+.ai-attach-thumb {
+  height: 36px;
+  width: 36px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid rgba(212,175,55,0.4);
+  flex-shrink: 0;
+}
+.ai-attach-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.ai-attach-filename {
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ai-attach-hint {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+.ai-attach-remove {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 0.25rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s, background 0.15s;
+}
+.ai-attach-remove:hover {
+  color: var(--color-error);
+  background: rgba(211,47,47,0.08);
+}
+
+/* Image thumbnail inside user chat bubble */
+.ai-message.user .chat-attachment-img {
+  display: block;
+  max-width: 200px;
+  max-height: 130px;
+  object-fit: contain;
+  border-radius: 6px;
+  margin-top: 0.5rem;
+  border: 1px solid rgba(255,255,255,0.25);
+  cursor: pointer;
+}
+.ai-message.user .chat-attachment-img:hover { opacity: 0.9; }
+
+/* Doc upload hint banner */
+.ai-doc-hint {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  padding: 0.3rem 0;
+}
+
 /* Typing bubble loading indicator */
 .typing-dots {
   display: flex;

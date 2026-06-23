@@ -22,7 +22,7 @@ function createApp() {
 
   app.set('trust proxy', 1);
   app.use(helmet({ contentSecurityPolicy: false }));
-  app.use(express.json({ limit: '1mb' }));
+  app.use(express.json({ limit: '25mb' })); // large enough for base64-encoded document images (~10MB → ~14MB base64)
   app.use(cookieParser());
   app.use(requestLogger);
   app.use(express.static(rootDir));
