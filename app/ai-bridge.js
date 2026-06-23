@@ -9,6 +9,7 @@ export function setupAIBridge({ store, saveAccounts, renderAll }) {
   window.getExpenses = () => (store.state.currentUser?.expenses || []);
   window.getInvestments = () => (store.state.currentUser?.investments || []);
   window.getLends = () => (store.state.currentUser?.lends || []);
+  window.getBorrows = () => (store.state.currentUser?.borrows || []);
   window.getCashBalance = () => (store.state.currentUser?.cashBalance || null);
 
   // ── Income ──────────────────────────────────────────────────────────
@@ -112,6 +113,29 @@ export function setupAIBridge({ store, saveAccounts, renderAll }) {
     return { ...store.state.currentUser.cashBalance, previous: current, delta: parseFloat(delta) };
   };
 
+  // ── Investment Close / Redemption ────────────────────────────────────
+  window.closeInvestmentFromAI = (name, proceeds, date) => {
+    if (!store.state.currentUser) return { error: true, message: 'Not logged in.' };
+    const investments = store.state.currentUser.investments || [];
+    const match = investments
+      .filter(i => i.status !== 'closed')
+      .find(i => i.name.toLowerCase().includes(name.toLowerCase()));
+    if (!match) return { error: true, message: `No active investment found matching "${name}".` };
+    match.status = 'closed';
+    match.closedAt = date || new Date().toISOString().split('T')[0];
+    match.closedProceeds = parseFloat(proceeds) || 0;
+    if (match.closedProceeds > 0) {
+      const current = store.state.currentUser.cashBalance?.amount || 0;
+      store.state.currentUser.cashBalance = {
+        amount: current + match.closedProceeds,
+        note: store.state.currentUser.cashBalance?.note || null,
+        updatedAt: match.closedAt
+      };
+    }
+    saveAccounts(); renderAll();
+    return { name: match.name, closedAt: match.closedAt, proceeds: match.closedProceeds };
+  };
+
   // ── Lend ────────────────────────────────────────────────────────────
   window.addLendFromAI = (person, amount, date, dueDate, note) => {
     if (!store.state.currentUser) return { error: true, message: 'Not logged in.' };
@@ -130,6 +154,50 @@ export function setupAIBridge({ store, saveAccounts, renderAll }) {
     store.state.currentUser.lends.push(entry);
     saveAccounts(); renderAll();
     return entry;
+  };
+
+  // ── Borrow ───────────────────────────────────────────────────────────
+  window.addBorrowFromAI = (person, amount, date, dueDate, note) => {
+    if (!store.state.currentUser) return { error: true, message: 'Not logged in.' };
+    if (!person) return { error: true, message: 'Missing person name. Ask who you borrowed from.' };
+    const entry = {
+      id: Date.now().toString(),
+      person: person.trim(),
+      amount: parseFloat(amount),
+      date: date || new Date().toISOString().split('T')[0],
+      dueDate: dueDate || null,
+      note: note || null,
+      repaid: false,
+      repaidAmount: 0
+    };
+    store.state.currentUser.borrows ||= [];
+    store.state.currentUser.borrows.push(entry);
+    saveAccounts(); renderAll();
+    return entry;
+  };
+
+  window.markBorrowRepaidFromAI = (person, repaidAmount, paidFromCash) => {
+    if (!store.state.currentUser) return { error: true, message: 'Not logged in.' };
+    const borrows = store.state.currentUser.borrows || [];
+    const outstanding = borrows
+      .filter(b => !b.repaid && b.person.toLowerCase() === person.toLowerCase())
+      .sort((a, b) => new Date(b.date) - new Date(a.date));
+    if (outstanding.length === 0) return { error: true, message: `No outstanding borrow found for "${person}".` };
+    const borrow = outstanding[0];
+    const remaining = borrow.amount - borrow.repaidAmount;
+    const paid = repaidAmount != null ? Math.min(parseFloat(repaidAmount), remaining) : remaining;
+    borrow.repaidAmount += paid;
+    if (borrow.repaidAmount >= borrow.amount) borrow.repaid = true;
+    if (paidFromCash) {
+      const current = store.state.currentUser.cashBalance?.amount || 0;
+      store.state.currentUser.cashBalance = {
+        amount: Math.max(0, current - paid),
+        note: store.state.currentUser.cashBalance?.note || null,
+        updatedAt: new Date().toISOString().split('T')[0]
+      };
+    }
+    saveAccounts(); renderAll();
+    return { ...borrow, paidNow: paid };
   };
 
   window.markLendReturnedFromAI = (person, returnedAmount) => {

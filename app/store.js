@@ -44,6 +44,7 @@ export function createStore() {
           expenses: state.currentUser.expenses || [],
           investments: state.currentUser.investments || [],
           lends: state.currentUser.lends || [],
+          borrows: state.currentUser.borrows || [],
           cashBalance: state.currentUser.cashBalance || null
         })
       });

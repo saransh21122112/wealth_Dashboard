@@ -110,7 +110,7 @@ async function initializeDatabase() {
     )
   `);
 
-  // Lends table
+  // Lends table — money user gave out (asset / receivable)
   await run(`
     CREATE TABLE IF NOT EXISTS lends (
       id TEXT PRIMARY KEY,
@@ -126,6 +126,22 @@ async function initializeDatabase() {
     )
   `);
 
+  // Borrows table — money user received from others (liability)
+  await run(`
+    CREATE TABLE IF NOT EXISTS borrows (
+      id TEXT PRIMARY KEY,
+      user_id INTEGER NOT NULL,
+      person TEXT NOT NULL,
+      amount REAL NOT NULL,
+      date TEXT NOT NULL,
+      due_date TEXT,
+      note TEXT,
+      repaid INTEGER NOT NULL DEFAULT 0,
+      repaid_amount REAL NOT NULL DEFAULT 0,
+      FOREIGN KEY(user_id) REFERENCES users(id)
+    )
+  `);
+
   // Migrations — safe ALTER TABLE statements, each wrapped individually
   const migrations = [
     'ALTER TABLE sessions ADD COLUMN expires_at TEXT',
@@ -136,7 +152,10 @@ async function initializeDatabase() {
     'ALTER TABLE expenses ADD COLUMN recurring_day INTEGER',
     'ALTER TABLE expenses ADD COLUMN end_date TEXT',
     'ALTER TABLE investments ADD COLUMN end_date TEXT',
-    'ALTER TABLE investments ADD COLUMN recurring_day INTEGER'
+    'ALTER TABLE investments ADD COLUMN recurring_day INTEGER',
+    'ALTER TABLE investments ADD COLUMN status TEXT DEFAULT \'active\'',
+    'ALTER TABLE investments ADD COLUMN closed_at TEXT',
+    'ALTER TABLE investments ADD COLUMN closed_proceeds REAL'
   ];
   for (const sql of migrations) {
     try { await run(sql); } catch (_e) { /* column already exists — safe to ignore */ }

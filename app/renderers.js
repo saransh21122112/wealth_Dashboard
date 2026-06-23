@@ -209,15 +209,11 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
     const totalOutstandingLends = (currentUser.lends || [])
       .filter(l => !l.returned)
       .reduce((s, l) => s + (parseFloat(l.amount) - (parseFloat(l.returnedAmount) || 0)), 0);
+    const totalOutstandingBorrows = (currentUser.borrows || [])
+      .filter(b => !b.repaid)
+      .reduce((s, b) => s + (parseFloat(b.amount) - (parseFloat(b.repaidAmount) || 0)), 0);
 
-    // Net worth = assets only (investment value + cash + receivables)
-    // Income/expenses are flow metrics shown separately — not mixed into balance sheet
-    const netWorth = totalCurrentValue + cashBalance + totalOutstandingLends;
-
-    const profit = totalCurrentValue - totalInvested;
-    const absoluteReturn = totalInvested > 0 ? (profit / totalInvested) * 100 : 0;
-
-    // Monthly investment outgo (normalised to per-month)
+    // Monthly investment outgo (normalised to per-month) — needed for leftPerMonth
     const monthlyInvestmentOutgo = (currentUser.investments || []).reduce((sum, inv) => {
       if (inv.type === 'sip') return sum + parseFloat(inv.amount);
       if (inv.type === 'lic') {
@@ -229,12 +225,20 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
     }, 0);
     const leftPerMonth = recurringIncome - totalRecurring - monthlyInvestmentOutgo;
 
+    // Net worth = current investment value + cash + receivables − liabilities + monthly surplus
+    const netWorth = totalCurrentValue + cashBalance + totalOutstandingLends - totalOutstandingBorrows + Math.max(0, leftPerMonth);
+
+    const profit = totalCurrentValue - totalInvested;
+    const absoluteReturn = totalInvested > 0 ? (profit / totalInvested) * 100 : 0;
+
     if (dom.netWorthVal) dom.netWorthVal.textContent = formatCurrency(netWorth);
     const netWorthMeta = document.getElementById('netWorthMeta');
     if (netWorthMeta) {
       const parts = [`${formatCurrency(totalCurrentValue)} investments`];
       if (cashBalance > 0) parts.push(`${formatCurrency(cashBalance)} cash`);
+      if (leftPerMonth > 0) parts.push(`${formatCurrency(Math.round(leftPerMonth))} monthly surplus`);
       if (totalOutstandingLends > 0) parts.push(`${formatCurrency(totalOutstandingLends)} receivable`);
+      if (totalOutstandingBorrows > 0) parts.push(`−${formatCurrency(totalOutstandingBorrows)} owed`);
       netWorthMeta.textContent = parts.join(' + ');
     }
     if (dom.investmentsVal) dom.investmentsVal.textContent = formatCurrency(totalCurrentValue);
@@ -359,6 +363,88 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
     });
   }
 
+  function renderBorrows() {
+    const { currentUser } = store.state;
+    const section = document.getElementById('borrowsSection');
+    const tbody = document.getElementById('borrowsTableBody');
+    const badge = document.getElementById('borrowsOutstandingBadge');
+    if (!section || !tbody || !currentUser) return;
+
+    const borrows = (currentUser.borrows || []).slice().sort((a, b) => new Date(b.date) - new Date(a.date));
+    const outstanding = borrows.filter(b => !b.repaid);
+
+    if (borrows.length === 0) { section.style.display = 'none'; return; }
+    section.style.display = '';
+
+    const totalOwed = outstanding.reduce((s, b) => s + (b.amount - (b.repaidAmount || 0)), 0);
+    if (badge) badge.textContent = `${formatCurrency(totalOwed)} outstanding`;
+
+    tbody.innerHTML = '';
+    borrows.forEach(borrow => {
+      const remaining = borrow.amount - (borrow.repaidAmount || 0);
+      const isOverdue = borrow.dueDate && !borrow.repaid && new Date(borrow.dueDate) < new Date();
+      const dueDateStr = borrow.dueDate
+        ? new Date(borrow.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+        : '—';
+      const borrowDateStr = new Date(borrow.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+
+      const row = document.createElement('tr');
+      if (borrow.repaid) row.style.opacity = '0.5';
+      row.innerHTML = `
+        <td>
+          <div style="font-weight:600;">${borrow.person}</div>
+          ${borrow.note ? `<div style="font-size:0.78rem;color:var(--text-muted);">${borrow.note}</div>` : ''}
+        </td>
+        <td style="font-weight:600;">₹${parseFloat(borrow.amount).toLocaleString('en-IN')}</td>
+        <td>${borrowDateStr}</td>
+        <td style="color:${isOverdue ? 'var(--color-error)' : 'inherit'};">
+          ${dueDateStr}${isOverdue ? ' <span style="font-size:0.7rem;font-weight:700;">OVERDUE</span>' : ''}
+        </td>
+        <td style="font-weight:700;color:${borrow.repaid ? 'var(--color-success)' : 'var(--color-error)'};">
+          ${borrow.repaid ? 'Repaid ✓' : formatCurrency(remaining)}
+        </td>
+        <td>
+          ${borrow.repaid
+            ? '<span class="category-tag" style="background:rgba(46,125,50,0.1);color:var(--color-success);">Settled</span>'
+            : borrow.repaidAmount > 0
+              ? `<span class="category-tag tag-housing">Partial (₹${borrow.repaidAmount.toLocaleString('en-IN')})</span>`
+              : '<span class="category-tag tag-extra">Pending</span>'}
+        </td>
+        <td style="display:flex;gap:0.35rem;">
+          ${!borrow.repaid ? `<button class="action-btn borrow-repay-btn" data-id="${borrow.id}" title="Mark as repaid" style="color:var(--color-success);">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </button>` : ''}
+          <button class="action-btn delete-borrow" data-id="${borrow.id}" title="Delete" aria-label="Delete borrow">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          </button>
+        </td>
+      `;
+      tbody.appendChild(row);
+    });
+
+    document.querySelectorAll('.borrow-repay-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const borrow = currentUser.borrows.find(b => b.id === btn.dataset.id);
+        if (!borrow) return;
+        const remaining = borrow.amount - (borrow.repaidAmount || 0);
+        const input = prompt(`How much did you repay to ${borrow.person}? (Outstanding: ₹${remaining.toLocaleString('en-IN')})\nLeave blank for full amount.`);
+        if (input === null) return;
+        const paid = input.trim() === '' ? remaining : parseFloat(input);
+        if (isNaN(paid) || paid <= 0) return;
+        borrow.repaidAmount = (borrow.repaidAmount || 0) + Math.min(paid, remaining);
+        if (borrow.repaidAmount >= borrow.amount) borrow.repaid = true;
+        saveAccounts(); renderAll();
+      });
+    });
+
+    document.querySelectorAll('.delete-borrow').forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentUser.borrows = currentUser.borrows.filter(b => b.id !== btn.dataset.id);
+        saveAccounts(); renderAll();
+      });
+    });
+  }
+
   function renderLICAlerts() {
     const { currentUser } = store.state;
     if (!dom.licAlertBanner || !dom.licAlertList || !currentUser) return;
@@ -403,6 +489,7 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
     renderIncome();
     renderInvestments();
     renderLends();
+    renderBorrows();
     renderMetrics();
     renderLICAlerts();
 

@@ -296,6 +296,35 @@
           </div>
         </section>
 
+        <!-- Money I Owe (Borrows) -->
+        <section class="card" id="borrowsSection" style="display:none;" aria-labelledby="borrowsSectionTitle">
+          <div class="card-header">
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+              <h2 class="card-title" id="borrowsSectionTitle">Money I Owe</h2>
+              <span class="investment-tag" style="background:rgba(211,47,47,0.1);color:var(--color-error);" id="borrowsOutstandingBadge">₹0 outstanding</span>
+            </div>
+            <div class="card-icon" style="background-color:rgba(211,47,47,0.1);color:var(--color-error);">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Person</th>
+                  <th>Amount Borrowed</th>
+                  <th>Date</th>
+                  <th>Due Date</th>
+                  <th>Still Owe</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="borrowsTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+
         <!-- AI Financial Assistant Card -->
         <section class="card primary ai-assistant-card" aria-labelledby="aiAssistantTitle">
           <div class="card-header">

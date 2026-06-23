@@ -10,7 +10,7 @@ export const AI_TOOLS = [
           description: { type: 'string', description: 'Name or description of the income source.' },
           amount: { type: 'number', description: 'Income amount in Indian Rupees (₹).' },
           date: { type: 'string', description: 'Date received in YYYY-MM-DD. Default to today if unspecified.' },
-          category: { type: 'string', enum: ['salary', 'freelance', 'bonus', 'rental', 'gift', 'other'] },
+          category: { type: 'string', enum: ['salary', 'freelance', 'bonus', 'rental', 'dividend', 'interest', 'refund', 'cashback', 'sale', 'gift', 'other'] },
           isRecurring: { type: 'boolean', description: 'True if this income arrives every month (e.g. salary).' },
           recurringDay: { type: 'number', description: 'Day of the month (1–31) this income is credited. E.g. salary on 1st → 1.' }
         },
@@ -29,7 +29,7 @@ export const AI_TOOLS = [
           description: { type: 'string', description: 'Name or description of the expense.' },
           amount: { type: 'number', description: 'Expense amount in Indian Rupees (₹).' },
           date: { type: 'string', description: 'Date in YYYY-MM-DD. For recurring, use first payment date.' },
-          category: { type: 'string', enum: ['housing', 'groceries', 'utilities', 'entertainment', 'lic', 'health', 'travel', 'extra', 'miscellaneous'] },
+          category: { type: 'string', enum: ['housing', 'groceries', 'utilities', 'transport', 'entertainment', 'insurance', 'subscription', 'lic', 'health', 'travel', 'extra', 'miscellaneous'] },
           isRecurring: { type: 'boolean', description: 'True if fixed monthly (Rent, EMI, subscription).' },
           recurringDay: { type: 'number', description: 'Day of the month (1–31) this expense is deducted. E.g. EMI on 5th → 5.' },
           endDate: { type: 'string', description: 'For EMIs/loans: date when this expense ends in YYYY-MM-DD. REQUIRED for any EMI.' }
@@ -130,6 +130,56 @@ export const AI_TOOLS = [
           returnedAmount: { type: 'number', description: 'Amount returned in ₹. If not specified and user says "fully returned", use the full outstanding amount.' }
         },
         required: ['person']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'add_borrow',
+      description: 'Record money the user borrowed from someone else. This is a LIABILITY — user owes this money back. Use when user says "I borrowed X from Y", "I took a loan from Y", "Y gave me X which I need to return", "I owe X to Y" (when it\'s a personal informal loan).',
+      parameters: {
+        type: 'object',
+        properties: {
+          person: { type: 'string', description: 'Name of the person or entity who lent you the money.' },
+          amount: { type: 'number', description: 'Amount borrowed in ₹.' },
+          date: { type: 'string', description: 'Date borrowed in YYYY-MM-DD. Default to today.' },
+          dueDate: { type: 'string', description: 'When you plan to repay, in YYYY-MM-DD (optional).' },
+          note: { type: 'string', description: 'Reason or context for the loan (optional).' }
+        },
+        required: ['person', 'amount']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'mark_borrow_repaid',
+      description: 'Record that the user repaid some or all of a borrowed amount. Deducts from cash if paid in cash.',
+      parameters: {
+        type: 'object',
+        properties: {
+          person: { type: 'string', description: 'Name of the person you repaid.' },
+          repaidAmount: { type: 'number', description: 'Amount repaid in ₹. If user says "fully repaid", use the full outstanding amount.' },
+          paidFromCash: { type: 'boolean', description: 'True if the user paid from cash/wallet. Will also deduct from cash balance.' }
+        },
+        required: ['person']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'close_investment',
+      description: 'Mark an investment as redeemed or closed. Use when user says "I redeemed my SIP", "FD matured", "I closed my mutual fund", "I sold my stocks". Automatically adds proceeds to cash balance.',
+      parameters: {
+        type: 'object',
+        properties: {
+          name: { type: 'string', description: 'Name (or partial name) of the investment to close. Matched case-insensitively.' },
+          proceeds: { type: 'number', description: 'Amount received on redemption/maturity in ₹.' },
+          date: { type: 'string', description: 'Date of redemption in YYYY-MM-DD. Default to today.' }
+        },
+        required: ['name', 'proceeds']
       }
     }
   }

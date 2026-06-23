@@ -12,6 +12,9 @@ export function getMonthsBetweenDates(startDate, endDate) {
 }
 
 export function calculateInvestmentValue(inv) {
+  if (inv.status === 'closed') {
+    return { principal: 0, currentValue: 0, elapsedMonths: 0, closed: true };
+  }
   const today = new Date();
   const start = new Date(inv.startDate);
   if (start > today) {

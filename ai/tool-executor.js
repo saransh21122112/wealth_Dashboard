@@ -70,5 +70,32 @@ export function executeToolCall(toolCall, appendSystemStatus) {
     return { name, content: JSON.stringify({ status: 'success', message: 'Loan updated.' }) };
   }
 
+  if (name === 'add_borrow') {
+    if (!window.addBorrowFromAI) return { name, content: JSON.stringify({ status: 'error', message: 'Dashboard API unavailable.' }) };
+    const r = window.addBorrowFromAI(args.person, args.amount, args.date, args.dueDate, args.note);
+    if (r?.error) return { name, content: JSON.stringify({ status: 'error', message: r.message }) };
+    const dueNote = r.dueDate ? ` · due ${r.dueDate}` : '';
+    appendSystemStatus(`🔴 Borrow logged: <strong>₹${r.amount.toLocaleString('en-IN')} from ${r.person}</strong>${dueNote}`);
+    return { name, content: JSON.stringify({ status: 'success', message: 'Borrow recorded.' }) };
+  }
+
+  if (name === 'mark_borrow_repaid') {
+    if (!window.markBorrowRepaidFromAI) return { name, content: JSON.stringify({ status: 'error', message: 'Dashboard API unavailable.' }) };
+    const r = window.markBorrowRepaidFromAI(args.person, args.repaidAmount, args.paidFromCash);
+    if (r?.error) return { name, content: JSON.stringify({ status: 'error', message: r.message }) };
+    const cashNote = args.paidFromCash ? ' · deducted from cash' : '';
+    const status = r.repaid ? 'Fully repaid ✓' : `Partial (₹${r.repaidAmount.toLocaleString('en-IN')} of ₹${r.amount.toLocaleString('en-IN')})`;
+    appendSystemStatus(`✅ Repaid ₹${r.paidNow.toLocaleString('en-IN')} to ${r.person} · ${status}${cashNote}`);
+    return { name, content: JSON.stringify({ status: 'success', message: 'Repayment recorded.' }) };
+  }
+
+  if (name === 'close_investment') {
+    if (!window.closeInvestmentFromAI) return { name, content: JSON.stringify({ status: 'error', message: 'Dashboard API unavailable.' }) };
+    const r = window.closeInvestmentFromAI(args.name, args.proceeds, args.date);
+    if (r?.error) return { name, content: JSON.stringify({ status: 'error', message: r.message }) };
+    appendSystemStatus(`🏁 Investment closed: <strong>${r.name}</strong> · ₹${r.proceeds.toLocaleString('en-IN')} added to cash`);
+    return { name, content: JSON.stringify({ status: 'success', message: 'Investment closed and proceeds moved to cash.' }) };
+  }
+
   return { name, content: JSON.stringify({ status: 'error', message: `Unsupported tool: ${name}` }) };
 }

@@ -27,6 +27,9 @@ function mapInvestment(row) {
     duration: Number(row.duration),
     endDate: row.end_date ?? null,
     recurringDay: row.recurring_day ?? null,
+    status: row.status ?? 'active',
+    closedAt: row.closed_at ?? null,
+    closedProceeds: row.closed_proceeds == null ? null : Number(row.closed_proceeds),
     licPolicyNum: row.lic_policy_num ?? null,
     licSumAssured: row.lic_sum_assured == null ? null : Number(row.lic_sum_assured),
     licPremiumFreq: row.lic_premium_freq ?? null,
@@ -44,6 +47,19 @@ function mapLend(row) {
     note: row.note ?? null,
     returned: Boolean(row.returned),
     returnedAmount: Number(row.returned_amount) || 0
+  };
+}
+
+function mapBorrow(row) {
+  return {
+    id: row.id,
+    person: row.person,
+    amount: Number(row.amount),
+    date: row.date,
+    dueDate: row.due_date ?? null,
+    note: row.note ?? null,
+    repaid: Boolean(row.repaid),
+    repaidAmount: Number(row.repaid_amount) || 0
   };
 }
 
@@ -83,6 +99,11 @@ async function getLendsByUserId(userId) {
   return rows.map(mapLend);
 }
 
+async function getBorrowsByUserId(userId) {
+  const rows = await all('SELECT * FROM borrows WHERE user_id = ?', [userId]);
+  return rows.map(mapBorrow);
+}
+
 async function buildUserPayload(userRow) {
   const cashAmt = userRow.cash_balance_amount;
   const cashBalance = (cashAmt != null && Number(cashAmt) > 0)
@@ -96,6 +117,7 @@ async function buildUserPayload(userRow) {
     expenses: await getExpensesByUserId(userRow.id),
     investments: await getInvestmentsByUserId(userRow.id),
     lends: await getLendsByUserId(userRow.id),
+    borrows: await getBorrowsByUserId(userRow.id),
     cashBalance
   };
 }
@@ -140,12 +162,13 @@ async function getSessionUser(token) {
   return getUserById(session.user_id);
 }
 
-async function replaceUserData(userId, expenses, income, investments, lends = [], cashBalance = null) {
+async function replaceUserData(userId, expenses, income, investments, lends = [], cashBalance = null, borrows = []) {
   const statements = [
     { sql: 'DELETE FROM expenses WHERE user_id = ?', args: [userId] },
     { sql: 'DELETE FROM income WHERE user_id = ?', args: [userId] },
     { sql: 'DELETE FROM investments WHERE user_id = ?', args: [userId] },
-    { sql: 'DELETE FROM lends WHERE user_id = ?', args: [userId] }
+    { sql: 'DELETE FROM lends WHERE user_id = ?', args: [userId] },
+    { sql: 'DELETE FROM borrows WHERE user_id = ?', args: [userId] }
   ];
 
   if (cashBalance != null) {
@@ -175,14 +198,16 @@ async function replaceUserData(userId, expenses, income, investments, lends = []
     statements.push({
       sql: `INSERT INTO investments (
               id, user_id, name, type, start_date, amount, rate, compounding, duration,
-              end_date, recurring_day,
+              end_date, recurring_day, status, closed_at, closed_proceeds,
               lic_policy_num, lic_sum_assured, lic_premium_freq, lic_premium_due
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         investment.id, userId, investment.name, investment.type, investment.startDate,
         Number(investment.amount), Number(investment.rate), String(investment.compounding ?? '12'),
         Number(investment.duration ?? 10),
         investment.endDate ?? null, investment.recurringDay ?? null,
+        investment.status ?? 'active', investment.closedAt ?? null,
+        investment.closedProceeds == null ? null : Number(investment.closedProceeds),
         investment.licPolicyNum ?? null,
         investment.licSumAssured == null ? null : Number(investment.licSumAssured),
         investment.licPremiumFreq ?? null, investment.licPremiumDue ?? null
@@ -198,6 +223,18 @@ async function replaceUserData(userId, expenses, income, investments, lends = []
         lend.id, userId, lend.person, Number(lend.amount), lend.date,
         lend.dueDate ?? null, lend.note ?? null,
         lend.returned ? 1 : 0, Number(lend.returnedAmount) || 0
+      ]
+    });
+  }
+
+  for (const borrow of borrows) {
+    statements.push({
+      sql: `INSERT INTO borrows (id, user_id, person, amount, date, due_date, note, repaid, repaid_amount)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [
+        borrow.id, userId, borrow.person, Number(borrow.amount), borrow.date,
+        borrow.dueDate ?? null, borrow.note ?? null,
+        borrow.repaid ? 1 : 0, Number(borrow.repaidAmount) || 0
       ]
     });
   }
@@ -231,5 +268,6 @@ module.exports = {
   replaceUserData,
   getAllUsersWithData,
   updateUserRole,
-  getLendsByUserId
+  getLendsByUserId,
+  getBorrowsByUserId
 };

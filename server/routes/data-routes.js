@@ -94,7 +94,8 @@ router.put('/api/user/data', authMiddleware, async (req, res) => {
     const investments = Array.isArray(req.body?.investments) ? req.body.investments : [];
     const lends = Array.isArray(req.body?.lends) ? req.body.lends : [];
     const cashBalance = req.body?.cashBalance ?? null;
-    await replaceUserData(req.user.id, expenses, income, investments, lends, cashBalance);
+    const borrows = Array.isArray(req.body?.borrows) ? req.body.borrows : [];
+    await replaceUserData(req.user.id, expenses, income, investments, lends, cashBalance, borrows);
     return res.json({ ok: true });
   } catch (error) {
     console.error('[DATA] Failed to save user data:', error);
