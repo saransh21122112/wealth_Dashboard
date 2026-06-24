@@ -845,7 +845,7 @@ tbody tr {
   background: var(--surface-color);
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  padding: 1rem 1.5rem;
+  padding: 0.85rem 1.25rem 0.85rem 1.5rem;
   margin-bottom: 0.65rem;
   box-shadow: 0 2px 6px rgba(0,0,0,0.03);
   transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), 
@@ -882,6 +882,7 @@ tbody tr td:nth-child(1) {
   flex: 2; /* Description / Name */
   font-weight: 600;
   font-size: 1rem;
+  padding-right: 6rem !important; /* reserve space for the 2 absolute action buttons */
 }
 
 tbody tr td:nth-child(2) {
@@ -973,16 +974,20 @@ tbody tr td:nth-child(6) {
   background-color: var(--surface-hover);
 }
 
-/* Action column td: flex row, vertically centred, pinned right/end */
+/* Action cell: absolutely pinned to top-right of each card row on desktop
+   (mirrors the mobile treatment so buttons are always in a predictable spot) */
 .action-cell {
-  flex: 0 0 80px !important;
+  position: absolute !important;
+  top: 0.55rem !important;
+  right: 0.75rem !important;
+  width: auto !important;
+  flex: none !important;
   flex-shrink: 0 !important;
   display: flex !important;
   flex-direction: row !important;
-  justify-content: flex-end !important;
   align-items: center !important;
-  gap: 0.5rem !important;
-  padding: 0 0.5rem !important;
+  gap: 0.25rem !important;
+  padding: 0 !important;
 }
 
 .empty-state {
@@ -1104,6 +1109,17 @@ tbody tr td:nth-child(6) {
     height: calc(100vh - 60px);
     overflow-y: auto;
     z-index: 200;
+  }
+
+  /* Hide duplicate brand logo inside sidebar on mobile —
+     the mobile-top-bar already shows AureliaWealth */
+  .sidebar .brand-section {
+    display: none !important;
+  }
+
+  /* Remove the gap that brand-section normally occupies */
+  .sidebar .sidebar-top {
+    padding-top: 0.5rem;
   }
 
   .sidebar.open {
