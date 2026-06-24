@@ -782,20 +782,29 @@ body {
   display: block;
 }
 
-/* Data Tables */
-.data-table-container {
-  background-color: var(--surface-color);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-md);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+/* Data Tables Redesign: Card-Row Layout (matching working mobile UX structure) */
+.data-table-container,
+#lendsSection,
+#borrowsSection {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+  padding: 0 !important;
+  display: block;
 }
 
-.table-header {
+/* Keep headers styled as standalone cards */
+.table-header,
+#lendsSection .card-header,
+#borrowsSection .card-header {
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  margin-bottom: 0.75rem;
   padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -819,39 +828,80 @@ body {
   overflow: visible;
 }
 
-table {
+table, tbody {
+  display: block;
   width: 100%;
-  border-collapse: collapse;
-  text-align: left;
 }
 
-th {
-  background-color: var(--bg-color);
-  padding: 0.85rem 1rem;
-  font-family: var(--font-heading);
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--text-secondary);
-  border-bottom: 1px solid var(--border-color);
+thead {
+  display: none !important; /* Hide column headers - layout relies on structured card-rows */
 }
 
-td {
-  padding: 0.85rem 1rem;
-  font-size: 0.92rem;
-  border-bottom: 1px solid var(--border-color);
-  color: var(--text-primary);
-  vertical-align: middle;
-  word-break: break-word;
+/* Redesigned Table Rows - Each is a premium interactive card */
+tbody tr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 0.65rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), 
+              box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1), 
+              background-color 0.15s ease;
+  position: relative;
 }
 
-tr:last-child td {
-  border-bottom: none;
+tbody tr:last-child {
+  margin-bottom: 0;
 }
 
-tr:hover td {
+tbody tr:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
   background-color: var(--surface-hover);
+}
+
+/* Cells inside card-row */
+td {
+  display: flex;
+  flex-direction: column;
+  padding: 0.25rem 0.5rem !important;
+  border: none !important;
+  font-size: 0.94rem;
+  color: var(--text-primary);
+  white-space: normal;
+  word-break: break-word;
+  vertical-align: middle;
+}
+
+/* Column distribution weights for desktop */
+tbody tr td:nth-child(1) {
+  flex: 2; /* Description / Name */
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+tbody tr td:nth-child(2) {
+  flex: 1.2; /* Category / Type */
+}
+
+tbody tr td:nth-child(3) {
+  flex: 1.2; /* Date / Invested Amount */
+}
+
+tbody tr td:nth-child(4) {
+  flex: 1; /* Type / Rate */
+}
+
+tbody tr td:nth-child(5) {
+  flex: 1.5; /* Amount / Current Value / Outstanding */
+}
+
+tbody tr td:nth-child(6) {
+  flex: 1.2; /* Status */
 }
 
 .category-tag {
@@ -923,12 +973,16 @@ tr:hover td {
   background-color: var(--surface-hover);
 }
 
-/* Action column td: flex row, vertically centred regardless of row height */
+/* Action column td: flex row, vertically centred, pinned right/end */
 .action-cell {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.5rem 0.75rem;
+  flex: 0 0 80px !important;
+  flex-shrink: 0 !important;
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  padding: 0 0.5rem !important;
 }
 
 .empty-state {
@@ -1122,33 +1176,128 @@ tr:hover td {
     gap: 0;
   }
 
-  /* ── Table: allow horizontal scroll on mobile ────── */
+  /* ── Tables → Card layout on mobile ─────────────────
+     Each row becomes a self-contained card with all data
+     visible — no horizontal scrolling required          */
+
   .table-wrapper {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    overflow: visible;
   }
 
-  /* Give tables a minimum width so columns don't squish and break words */
-  .data-table-container {
-    overflow: visible;  /* don't clip the scrolling table-wrapper */
+  .data-table-container,
+  #lendsSection,
+  #borrowsSection {
+    overflow: visible;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0;
   }
 
-  .data-table-container table {
-    min-width: 560px;
-    width: auto;
+  /* Keep the table header (title + filter) styled as a standalone card */
+  .table-header,
+  #lendsSection .card-header,
+  #borrowsSection .card-header {
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    margin-bottom: 0.65rem;
   }
 
-  /* Cells that should never break mid-word */
-  .data-table-container td {
-    white-space: nowrap;
-    word-break: normal;
+  /* Table elements → block so we can style freely */
+  .data-table-container table,
+  .data-table-container tbody,
+  #lendsSection table,
+  #lendsSection tbody,
+  #borrowsSection table,
+  #borrowsSection tbody {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
   }
 
-  /* Allow name/description column to wrap naturally */
-  .data-table-container td:first-child {
-    white-space: normal;
-    min-width: 100px;
-    max-width: 160px;
+  .data-table-container thead,
+  #lendsSection thead,
+  #borrowsSection thead {
+    display: none !important; /* column headers removed — labels via data-label */
+  }
+
+  /* ── Each row = an individual card ──────────────────── */
+  .data-table-container tbody tr,
+  #lendsSection tbody tr,
+  #borrowsSection tbody tr {
+    display: block !important;
+    flex-direction: column !important;
+    position: relative !important;
+    background: var(--surface-color) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 12px !important;
+    padding: 0.9rem 1rem 0.8rem !important;
+    margin-bottom: 0.55rem !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;
+  }
+
+  .data-table-container tbody tr:last-child,
+  #lendsSection tbody tr:last-child,
+  #borrowsSection tbody tr:last-child {
+    margin-bottom: 0 !important;
+  }
+
+  /* ── All cells: block with label prefix ─────────────── */
+  .data-table-container td,
+  #lendsSection td,
+  #borrowsSection td {
+    display: block !important;
+    flex: none !important;
+    width: 100% !important;
+    padding: 0.2rem 0 !important;
+    border: none !important;
+    font-size: 0.88rem !important;
+    color: var(--text-primary) !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+  }
+
+  /* Label text shown before each non-title cell */
+  .data-table-container td[data-label]:not([data-label=""])::before,
+  #lendsSection td[data-label]:not([data-label=""])::before,
+  #borrowsSection td[data-label]:not([data-label=""])::before {
+    content: attr(data-label) " " !important;
+    font-size: 0.67rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.45px !important;
+    color: var(--text-muted) !important;
+  }
+
+  /* ── First cell = card title row ────────────────────── */
+  .data-table-container td:first-child,
+  #lendsSection td:first-child,
+  #borrowsSection td:first-child {
+    font-size: 0.97rem !important;
+    font-weight: 600 !important;
+    padding: 0 6.5rem 0.55rem 0 !important; /* 6.5rem reserves space for 2x 44px action buttons */
+    margin-bottom: 0.3rem !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    white-space: normal !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* ── Action buttons: pinned top-right of each card ── */
+  /* Note: later touch-target rules also affect .action-cell; position/top/right are stable */
+  .action-cell {
+    position: absolute !important;
+    top: 0.75rem !important;
+    right: 0.5rem !important;
+    gap: 0 !important;
+    padding: 0 !important;
+    min-height: unset !important;
+    min-width: unset !important;
+    align-items: center !important;
+    display: flex !important;
+    flex-direction: row !important;
   }
 
   /* ── Tab heading ─────────────────────────────────── */

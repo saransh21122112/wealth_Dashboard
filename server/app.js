@@ -25,6 +25,17 @@ function createApp() {
   app.use(express.json({ limit: '25mb' })); // large enough for base64-encoded document images (~10MB → ~14MB base64)
   app.use(cookieParser());
   app.use(requestLogger);
+
+  // Disable caching for JS/CSS files so code updates apply immediately
+  app.use((req, res, next) => {
+    if (req.path.endsWith('.js') || req.path.endsWith('.css')) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+    next();
+  });
+
   app.use(express.static(rootDir));
 
   app.use(healthRoutes);

@@ -4,6 +4,85 @@ const DELETE_ICON = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none"
 export function createRenderers({ dom, store, calculations, formatCurrency, saveAccounts, admin, openEdit, renderCalendar }) {
   const { calculateInvestmentValue } = calculations;
 
+  // ── Event delegation: one stable listener on document.body ──
+  function setupEventDelegation() {
+    document.body.addEventListener('click', (e) => {
+      const u = store.state.currentUser; if (!u) return;
+
+      // Expenses
+      const editExpBtn = e.target.closest('.edit-exp');
+      const deleteExpBtn = e.target.closest('.delete-exp');
+      if (editExpBtn) {
+        const item = (u.expenses || []).find(ex => String(ex.id) === String(editExpBtn.dataset.id));
+        if (item && openEdit) openEdit('expense', item);
+      } else if (deleteExpBtn) {
+        u.expenses = (u.expenses || []).filter(ex => String(ex.id) !== String(deleteExpBtn.dataset.id));
+        saveAccounts(); renderAll();
+      }
+
+      // Investments
+      const editInvBtn = e.target.closest('.edit-inv');
+      const deleteInvBtn = e.target.closest('.delete-inv');
+      if (editInvBtn) {
+        const item = (u.investments || []).find(i => String(i.id) === String(editInvBtn.dataset.id));
+        if (item && openEdit) openEdit('investment', item);
+      } else if (deleteInvBtn) {
+        u.investments = (u.investments || []).filter(i => String(i.id) !== String(deleteInvBtn.dataset.id));
+        saveAccounts(); renderAll();
+      }
+
+      // Income
+      const editIncBtn = e.target.closest('.edit-inc');
+      const deleteIncBtn = e.target.closest('.delete-inc');
+      if (editIncBtn) {
+        const item = (u.income || []).find(i => String(i.id) === String(editIncBtn.dataset.id));
+        if (item && openEdit) openEdit('income', item);
+      } else if (deleteIncBtn) {
+        u.income = (u.income || []).filter(i => String(i.id) !== String(deleteIncBtn.dataset.id));
+        saveAccounts(); renderAll();
+      }
+
+      // Lends
+      const lendReturnBtn = e.target.closest('.lend-return-btn');
+      const deleteLendBtn = e.target.closest('.delete-lend');
+      if (lendReturnBtn) {
+        const lend = (u.lends || []).find(l => String(l.id) === String(lendReturnBtn.dataset.id));
+        if (!lend) return;
+        const remaining = lend.amount - (lend.returnedAmount || 0);
+        const input = prompt(`How much did ${lend.person} return? (Outstanding: ₹${remaining.toLocaleString('en-IN')})\nLeave blank for full amount.`);
+        if (input === null) return;
+        const paid = input.trim() === '' ? remaining : parseFloat(input);
+        if (isNaN(paid) || paid <= 0) return;
+        lend.returnedAmount = (lend.returnedAmount || 0) + Math.min(paid, remaining);
+        if (lend.returnedAmount >= lend.amount) lend.returned = true;
+        saveAccounts(); renderAll();
+      } else if (deleteLendBtn) {
+        u.lends = (u.lends || []).filter(l => String(l.id) !== String(deleteLendBtn.dataset.id));
+        saveAccounts(); renderAll();
+      }
+
+      // Borrows
+      const borrowRepayBtn = e.target.closest('.borrow-repay-btn');
+      const deleteBorrowBtn = e.target.closest('.delete-borrow');
+      if (borrowRepayBtn) {
+        const borrow = (u.borrows || []).find(b => String(b.id) === String(borrowRepayBtn.dataset.id));
+        if (!borrow) return;
+        const remaining = borrow.amount - (borrow.repaidAmount || 0);
+        const input = prompt(`How much did you repay to ${borrow.person}? (Outstanding: ₹${remaining.toLocaleString('en-IN')})\nLeave blank for full amount.`);
+        if (input === null) return;
+        const paid = input.trim() === '' ? remaining : parseFloat(input);
+        if (isNaN(paid) || paid <= 0) return;
+        borrow.repaidAmount = (borrow.repaidAmount || 0) + Math.min(paid, remaining);
+        if (borrow.repaidAmount >= borrow.amount) borrow.repaid = true;
+        saveAccounts(); renderAll();
+      } else if (deleteBorrowBtn) {
+        u.borrows = (u.borrows || []).filter(b => String(b.id) !== String(deleteBorrowBtn.dataset.id));
+        saveAccounts(); renderAll();
+      }
+    });
+  }
+  setupEventDelegation();
+
   function renderExpenses() {
     const { currentUser } = store.state;
     if (!dom.expensesTableBody || !currentUser) return;
@@ -32,12 +111,12 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
     filteredExpenses.forEach((expense) => {
       const row = document.createElement('tr');
       row.innerHTML = `
-        <td style="font-weight: 500;">${expense.description}</td>
-        <td><span class="category-tag tag-${expense.category}">${expense.category}</span></td>
-        <td>${new Date(expense.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
-        <td>${expense.isRecurring ? 'Recurring' : 'Extra'}</td>
-        <td style="font-weight: 600;">₹${parseFloat(expense.amount).toLocaleString('en-IN')}</td>
-        <td class="action-cell">
+        <td data-label="">${expense.description}</td>
+        <td data-label="Category"><span class="category-tag tag-${expense.category}">${expense.category}</span></td>
+        <td data-label="Date">${new Date(expense.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+        <td data-label="Type">${expense.isRecurring ? 'Recurring' : 'Extra'}</td>
+        <td data-label="Amount" style="font-weight: 600;">₹${parseFloat(expense.amount).toLocaleString('en-IN')}</td>
+        <td data-label="" class="action-cell">
           <button class="action-btn edit-exp" data-id="${expense.id}" aria-label="Edit expense">${EDIT_ICON}</button>
           <button class="action-btn delete-exp" data-id="${expense.id}" aria-label="Delete expense">${DELETE_ICON}</button>
         </td>
@@ -45,19 +124,6 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
       dom.expensesTableBody.appendChild(row);
     });
 
-    document.querySelectorAll('.edit-exp').forEach((button) => {
-      button.addEventListener('click', () => {
-        const item = store.state.currentUser.expenses.find((e) => e.id === button.getAttribute('data-id'));
-        if (item && openEdit) openEdit('expense', item);
-      });
-    });
-    document.querySelectorAll('.delete-exp').forEach((button) => {
-      button.addEventListener('click', () => {
-        store.state.currentUser.expenses = store.state.currentUser.expenses.filter((expense) => expense.id !== button.getAttribute('data-id'));
-        saveAccounts();
-        renderAll();
-      });
-    });
   }
 
   function renderInvestments() {
@@ -87,20 +153,20 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
 
       const row = document.createElement('tr');
       row.innerHTML = `
-        <td>
+        <td data-label="">
           <div style="font-weight: 600;">${investment.name}</div>
           ${investment.licPolicyNum ? `<div style="font-size: 0.8rem; color: var(--text-muted);">Policy: #${investment.licPolicyNum}</div>` : ''}
         </td>
-        <td><span class="investment-tag">${typeLabel}</span></td>
-        <td>₹${Math.round(principal).toLocaleString('en-IN')}</td>
-        <td>${investment.rate}%</td>
-        <td>
+        <td data-label="Type"><span class="investment-tag">${typeLabel}</span></td>
+        <td data-label="Invested">₹${Math.round(principal).toLocaleString('en-IN')}</td>
+        <td data-label="Rate">${investment.rate}%</td>
+        <td data-label="Current Value">
           <div style="font-weight: 700;">₹${Math.round(currentValue).toLocaleString('en-IN')}</div>
           <div style="font-size: 0.8rem;" class="${profit >= 0 ? 'trend-up' : 'trend-down'}">
             ${profit >= 0 ? '+' : ''}${Math.round(profit).toLocaleString('en-IN')} (${returnsPct.toFixed(1)}%)
           </div>
         </td>
-        <td class="action-cell">
+        <td data-label="" class="action-cell">
           <button class="action-btn edit-inv" data-id="${investment.id}" aria-label="Edit investment">${EDIT_ICON}</button>
           <button class="action-btn delete-inv" data-id="${investment.id}" aria-label="Delete investment">${DELETE_ICON}</button>
         </td>
@@ -108,19 +174,6 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
       dom.investmentsTableBody.appendChild(row);
     });
 
-    document.querySelectorAll('.edit-inv').forEach((button) => {
-      button.addEventListener('click', () => {
-        const item = store.state.currentUser.investments.find((i) => i.id === button.getAttribute('data-id'));
-        if (item && openEdit) openEdit('investment', item);
-      });
-    });
-    document.querySelectorAll('.delete-inv').forEach((button) => {
-      button.addEventListener('click', () => {
-        store.state.currentUser.investments = store.state.currentUser.investments.filter((investment) => investment.id !== button.getAttribute('data-id'));
-        saveAccounts();
-        renderAll();
-      });
-    });
   }
 
   function renderIncome() {
@@ -151,12 +204,12 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
     filtered.forEach((inc) => {
       const row = document.createElement('tr');
       row.innerHTML = `
-        <td style="font-weight: 500;">${inc.description}</td>
-        <td><span class="category-tag tag-${inc.category}">${inc.category}</span></td>
-        <td>${new Date(inc.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
-        <td>${inc.isRecurring ? 'Recurring' : 'Extra'}</td>
-        <td style="font-weight: 600; color: var(--color-success);">+₹${parseFloat(inc.amount).toLocaleString('en-IN')}</td>
-        <td class="action-cell">
+        <td data-label="">${inc.description}</td>
+        <td data-label="Category"><span class="category-tag tag-${inc.category}">${inc.category}</span></td>
+        <td data-label="Date">${new Date(inc.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+        <td data-label="Type">${inc.isRecurring ? 'Recurring' : 'Extra'}</td>
+        <td data-label="Amount" style="font-weight: 600; color: var(--color-success);">+₹${parseFloat(inc.amount).toLocaleString('en-IN')}</td>
+        <td data-label="" class="action-cell">
           <button class="action-btn edit-inc" data-id="${inc.id}" aria-label="Edit income">${EDIT_ICON}</button>
           <button class="action-btn delete-inc" data-id="${inc.id}" aria-label="Delete income">${DELETE_ICON}</button>
         </td>
@@ -164,19 +217,6 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
       dom.incomeTableBody.appendChild(row);
     });
 
-    document.querySelectorAll('.edit-inc').forEach((button) => {
-      button.addEventListener('click', () => {
-        const item = store.state.currentUser.income.find((i) => i.id === button.getAttribute('data-id'));
-        if (item && openEdit) openEdit('income', item);
-      });
-    });
-    document.querySelectorAll('.delete-inc').forEach((button) => {
-      button.addEventListener('click', () => {
-        store.state.currentUser.income = store.state.currentUser.income.filter((inc) => inc.id !== button.getAttribute('data-id'));
-        saveAccounts();
-        renderAll();
-      });
-    });
   }
 
   function renderMetrics() {
@@ -368,26 +408,26 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
       const row = document.createElement('tr');
       if (lend.returned) row.style.opacity = '0.5';
       row.innerHTML = `
-        <td>
+        <td data-label="">
           <div style="font-weight:600;">${lend.person}</div>
           ${lend.note ? `<div style="font-size:0.78rem;color:var(--text-muted);">${lend.note}</div>` : ''}
         </td>
-        <td style="font-weight:600;">₹${parseFloat(lend.amount).toLocaleString('en-IN')}</td>
-        <td>${lentDateStr}</td>
-        <td style="color:${isOverdue ? 'var(--color-error)' : 'inherit'};">
+        <td data-label="Amount" style="font-weight:600;">₹${parseFloat(lend.amount).toLocaleString('en-IN')}</td>
+        <td data-label="Lent">${lentDateStr}</td>
+        <td data-label="Due" style="color:${isOverdue ? 'var(--color-error)' : 'inherit'};">
           ${dueDateStr}${isOverdue ? ' <span style="font-size:0.7rem;font-weight:700;">OVERDUE</span>' : ''}
         </td>
-        <td style="font-weight:700;color:${lend.returned ? 'var(--color-success)' : 'var(--color-maroon)'};">
+        <td data-label="Outstanding" style="font-weight:700;color:${lend.returned ? 'var(--color-success)' : 'var(--color-maroon)'};">
           ${lend.returned ? 'Returned ✓' : formatCurrency(outstanding)}
         </td>
-        <td>
+        <td data-label="Status">
           ${lend.returned
             ? '<span class="category-tag" style="background:rgba(46,125,50,0.1);color:var(--color-success);">Settled</span>'
             : lend.returnedAmount > 0
               ? `<span class="category-tag tag-housing">Partial (₹${lend.returnedAmount.toLocaleString('en-IN')})</span>`
               : '<span class="category-tag tag-miscellaneous">Pending</span>'}
         </td>
-        <td class="action-cell">
+        <td data-label="" class="action-cell">
           ${!lend.returned ? `<button class="action-btn lend-return-btn" data-id="${lend.id}" title="Mark as returned" style="color:var(--color-success);">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
           </button>` : ''}
@@ -397,28 +437,6 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
         </td>
       `;
       tbody.appendChild(row);
-    });
-
-    document.querySelectorAll('.lend-return-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const lend = currentUser.lends.find(l => l.id === btn.dataset.id);
-        if (!lend) return;
-        const remaining = lend.amount - (lend.returnedAmount || 0);
-        const input = prompt(`How much did ${lend.person} return? (Outstanding: ₹${remaining.toLocaleString('en-IN')})\nLeave blank for full amount.`);
-        if (input === null) return; // cancelled
-        const paid = input.trim() === '' ? remaining : parseFloat(input);
-        if (isNaN(paid) || paid <= 0) return;
-        lend.returnedAmount = (lend.returnedAmount || 0) + Math.min(paid, remaining);
-        if (lend.returnedAmount >= lend.amount) lend.returned = true;
-        saveAccounts(); renderAll();
-      });
-    });
-
-    document.querySelectorAll('.delete-lend').forEach(btn => {
-      btn.addEventListener('click', () => {
-        currentUser.lends = currentUser.lends.filter(l => l.id !== btn.dataset.id);
-        saveAccounts(); renderAll();
-      });
     });
   }
 
@@ -450,26 +468,26 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
       const row = document.createElement('tr');
       if (borrow.repaid) row.style.opacity = '0.5';
       row.innerHTML = `
-        <td>
+        <td data-label="">
           <div style="font-weight:600;">${borrow.person}</div>
           ${borrow.note ? `<div style="font-size:0.78rem;color:var(--text-muted);">${borrow.note}</div>` : ''}
         </td>
-        <td style="font-weight:600;">₹${parseFloat(borrow.amount).toLocaleString('en-IN')}</td>
-        <td>${borrowDateStr}</td>
-        <td style="color:${isOverdue ? 'var(--color-error)' : 'inherit'};">
+        <td data-label="Amount" style="font-weight:600;">₹${parseFloat(borrow.amount).toLocaleString('en-IN')}</td>
+        <td data-label="Borrowed">${borrowDateStr}</td>
+        <td data-label="Due" style="color:${isOverdue ? 'var(--color-error)' : 'inherit'};">
           ${dueDateStr}${isOverdue ? ' <span style="font-size:0.7rem;font-weight:700;">OVERDUE</span>' : ''}
         </td>
-        <td style="font-weight:700;color:${borrow.repaid ? 'var(--color-success)' : 'var(--color-error)'};">
+        <td data-label="Remaining" style="font-weight:700;color:${borrow.repaid ? 'var(--color-success)' : 'var(--color-error)'};">
           ${borrow.repaid ? 'Repaid ✓' : formatCurrency(remaining)}
         </td>
-        <td>
+        <td data-label="Status">
           ${borrow.repaid
             ? '<span class="category-tag" style="background:rgba(46,125,50,0.1);color:var(--color-success);">Settled</span>'
             : borrow.repaidAmount > 0
               ? `<span class="category-tag tag-housing">Partial (₹${borrow.repaidAmount.toLocaleString('en-IN')})</span>`
               : '<span class="category-tag tag-extra">Pending</span>'}
         </td>
-        <td class="action-cell">
+        <td data-label="" class="action-cell">
           ${!borrow.repaid ? `<button class="action-btn borrow-repay-btn" data-id="${borrow.id}" title="Mark as repaid" style="color:var(--color-success);">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
           </button>` : ''}
@@ -479,28 +497,6 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
         </td>
       `;
       tbody.appendChild(row);
-    });
-
-    document.querySelectorAll('.borrow-repay-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const borrow = currentUser.borrows.find(b => b.id === btn.dataset.id);
-        if (!borrow) return;
-        const remaining = borrow.amount - (borrow.repaidAmount || 0);
-        const input = prompt(`How much did you repay to ${borrow.person}? (Outstanding: ₹${remaining.toLocaleString('en-IN')})\nLeave blank for full amount.`);
-        if (input === null) return;
-        const paid = input.trim() === '' ? remaining : parseFloat(input);
-        if (isNaN(paid) || paid <= 0) return;
-        borrow.repaidAmount = (borrow.repaidAmount || 0) + Math.min(paid, remaining);
-        if (borrow.repaidAmount >= borrow.amount) borrow.repaid = true;
-        saveAccounts(); renderAll();
-      });
-    });
-
-    document.querySelectorAll('.delete-borrow').forEach(btn => {
-      btn.addEventListener('click', () => {
-        currentUser.borrows = currentUser.borrows.filter(b => b.id !== btn.dataset.id);
-        saveAccounts(); renderAll();
-      });
     });
   }
 

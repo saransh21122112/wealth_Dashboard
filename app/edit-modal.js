@@ -157,7 +157,7 @@ export function setupEditModal({ store, saveAccounts, renderAll }) {
     if (!currentUser) return;
 
     if (type === 'income') {
-      const idx = currentUser.income.findIndex((i) => i.id === id);
+      const idx = currentUser.income.findIndex((i) => String(i.id) === String(id));
       if (idx !== -1) {
         currentUser.income[idx] = {
           ...currentUser.income[idx],
@@ -169,7 +169,7 @@ export function setupEditModal({ store, saveAccounts, renderAll }) {
         };
       }
     } else if (type === 'expense') {
-      const idx = currentUser.expenses.findIndex((ex) => ex.id === id);
+      const idx = currentUser.expenses.findIndex((ex) => String(ex.id) === String(id));
       if (idx !== -1) {
         currentUser.expenses[idx] = {
           ...currentUser.expenses[idx],
@@ -181,7 +181,7 @@ export function setupEditModal({ store, saveAccounts, renderAll }) {
         };
       }
     } else {
-      const idx = currentUser.investments.findIndex((i) => i.id === id);
+      const idx = currentUser.investments.findIndex((i) => String(i.id) === String(id));
       if (idx !== -1) {
         const invType = invTypeSelect.value;
         const isLic = invType === 'lic';
