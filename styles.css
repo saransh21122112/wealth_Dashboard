@@ -3658,7 +3658,15 @@ tr:hover td {
 .theme-toggle-btn {
   transition: background-color 0.15s ease, color 0.15s ease, transform 0.2s var(--spring);
 }
-.theme-toggle-btn:hover  { transform: rotate(20deg) scale(1.08); }
+.theme-toggle-btn svg {
+  transition: transform 0.35s var(--spring);
+}
+.theme-toggle-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+}
+.theme-toggle-btn:hover svg {
+  transform: rotate(45deg);
+}
 .theme-toggle-btn:active { transform: scale(0.9); transition-duration: 0.08s; }
 
 /* ── Tour launch button ── */
