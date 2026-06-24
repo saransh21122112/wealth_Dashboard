@@ -31,7 +31,7 @@ export function createAIChatUI(aiChatMessages) {
     // Inline code: `code`
     html = html.replace(/`([^`\n]+)`/g, '<code class="ai-inline-code">$1</code>');
 
-    // Process line by line for lists and paragraphs
+    // Process line by line for headings, lists and paragraphs
     const lines = html.split('\n');
     let inUL = false;
     let inOL = false;
@@ -39,6 +39,16 @@ export function createAIChatUI(aiChatMessages) {
 
     for (const raw of lines) {
       const line = raw.trimEnd();
+
+      // Headings: # h1  ## h2  ### h3  #### h4
+      const headingMatch = line.match(/^(#{1,4})\s+(.+)/);
+      if (headingMatch) {
+        if (inUL) { out.push('</ul>'); inUL = false; }
+        if (inOL) { out.push('</ol>'); inOL = false; }
+        const level = headingMatch[1].length;
+        out.push(`<h${level} class="ai-h${level}">${headingMatch[2]}</h${level}>`);
+        continue;
+      }
 
       // Unordered list item: "- text" or "• text"
       if (/^[-•]\s+/.test(line)) {

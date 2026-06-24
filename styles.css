@@ -2155,6 +2155,12 @@ td:nth-child(3) {
   font-size: 0.85em;
 }
 
+/* ── AI markdown headings ─────────────────────────── */
+.ai-message .ai-h1 { font-size: 1.15rem; font-weight: 700; margin: 0.6rem 0 0.25rem; }
+.ai-message .ai-h2 { font-size: 1.05rem; font-weight: 700; margin: 0.55rem 0 0.2rem; }
+.ai-message .ai-h3 { font-size: 0.97rem; font-weight: 700; margin: 0.5rem 0 0.15rem; }
+.ai-message .ai-h4 { font-size: 0.9rem;  font-weight: 600; margin: 0.4rem 0 0.1rem; color: var(--text-secondary); }
+
 /* ── Quick-action chips ───────────────────────────── */
 .ai-chips-row {
   display: flex;
