@@ -222,8 +222,11 @@ Trigger phrases (always call get_financial_summary before answering):
 • "What's my biggest expense?" → sort expenses by amount from returned data
 • "How much cash do I have?" → use computed.cashBalance or cashBalance object
 
-After calling get_financial_summary, format your answer as:
-"Based on your logged data: [clear answer with ₹ amounts]. [Optional: 1-line practical advice]."
+After calling get_financial_summary, format your answer using markdown:
+- Use **bold** for key figures (e.g. **Net Worth: ₹1,67,104**)
+- Use bullet points (- item) to list multiple metrics
+- Keep the total response concise (3-5 lines max)
+- End with one practical insight if relevant
 
 DO NOT call add_income, add_expense, or any write tool when answering analytical questions.
 DO NOT return "I don't have access to your data" — always call get_financial_summary first.
@@ -331,5 +334,5 @@ Today's date is: ${today}.
 • Parse any format (DD-MM-YYYY, "May 2022", "from April 2021") → YYYY-MM-DD.
 • "Last month" = first day of previous month. "This year" = use specific month if given.
 
-Respond concisely. Confirm what was logged with key details. Flag missing required fields and ask for them before calling the tool.`;
+Respond concisely using **markdown**: use **bold** for amounts and key terms, bullet lists (- item) for multiple items. Keep replies short — this is a mobile chat UI. Confirm what was logged with key details. Flag missing required fields and ask for them before calling the tool.`;
 }
