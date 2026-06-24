@@ -1277,7 +1277,7 @@ tbody tr td:nth-child(6) {
   #borrowsSection td:first-child {
     font-size: 0.97rem !important;
     font-weight: 600 !important;
-    padding: 0 6.5rem 0.55rem 0 !important; /* 6.5rem reserves space for 2x 44px action buttons */
+    padding: 0.5rem 6.5rem 1.3rem 0 !important; /* 6.5rem reserves space for 2x 44px action buttons */
     margin-bottom: 0.3rem !important;
     border-bottom: 1px solid var(--border-color) !important;
     white-space: normal !important;
@@ -1291,7 +1291,7 @@ tbody tr td:nth-child(6) {
   #lendsSection td.action-cell,
   #borrowsSection td.action-cell {
     position: absolute !important;
-    top: 0.75rem !important;
+    top: 0.5rem !important;
     right: 0.5rem !important;
     width: auto !important;
     gap: 0 !important;
@@ -1462,7 +1462,7 @@ tbody tr td:nth-child(6) {
   #lendsSection td.action-cell,
   #borrowsSection td.action-cell {
     gap: 0 !important;            /* buttons already 44px wide, no extra gap needed */
-    padding: 0.25rem 0.5rem !important;
+    padding: 0 !important;
   }
 
   .ai-chip {
