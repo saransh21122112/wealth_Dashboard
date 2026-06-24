@@ -857,6 +857,7 @@ tr:hover td {
   font-size: 0.8rem;
   font-weight: 600;
   text-transform: capitalize;
+  white-space: nowrap;
 }
 
 /* Distinct categories */
@@ -897,6 +898,7 @@ tr:hover td {
   font-weight: 700;
   background-color: var(--color-maroon-light);
   color: var(--color-maroon);
+  white-space: nowrap;
 }
 
 .action-btn {
@@ -1109,6 +1111,29 @@ tr:hover td {
   .table-wrapper {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+  }
+
+  /* Give tables a minimum width so columns don't squish and break words */
+  .data-table-container {
+    overflow: visible;  /* don't clip the scrolling table-wrapper */
+  }
+
+  .data-table-container table {
+    min-width: 560px;
+    width: auto;
+  }
+
+  /* Cells that should never break mid-word */
+  .data-table-container td {
+    white-space: nowrap;
+    word-break: normal;
+  }
+
+  /* Allow name/description column to wrap naturally */
+  .data-table-container td:first-child {
+    white-space: normal;
+    min-width: 100px;
+    max-width: 160px;
   }
 
   /* ── Tab heading ─────────────────────────────────── */

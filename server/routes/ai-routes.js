@@ -20,6 +20,82 @@ const aiLimiter = rateLimit({
   message: { error: 'Too many AI requests. Please slow down.' }
 });
 
+// ── Investment value calculation (mirrors calculations.js exactly) ────────────
+function getMonthsBetween(startStr, endDate) {
+  const start = new Date(startStr);
+  const end = endDate instanceof Date ? endDate : new Date(endDate);
+  let months = (end.getFullYear() - start.getFullYear()) * 12;
+  months -= start.getMonth();
+  months += end.getMonth();
+  const daysInEndMonth = new Date(end.getFullYear(), end.getMonth() + 1, 0).getDate();
+  months += (end.getDate() - start.getDate()) / daysInEndMonth;
+  return Math.max(0, months);
+}
+
+function calcInvestmentValue(inv, today) {
+  if (inv.status === 'closed') return { principal: 0, currentValue: 0 };
+  const start = new Date(inv.startDate);
+  if (start > today) return { principal: 0, currentValue: 0 };
+
+  const elapsedMonths = getMonthsBetween(inv.startDate, today);
+  const elapsedYears = elapsedMonths / 12;
+  const annualRate = parseFloat(inv.rate || 0) / 100;
+  const principalInput = parseFloat(inv.amount || 0);
+
+  let principalInvested = 0;
+  let currentValue = 0;
+
+  if (inv.type === 'sip') {
+    const monthlyRate = Math.pow(1 + annualRate, 1 / 12) - 1;
+    const maxInstallments = Math.floor(parseFloat(inv.duration || 999) * 12);
+    if (elapsedMonths < maxInstallments) {
+      const n = Math.floor(elapsedMonths) + 1;
+      principalInvested = principalInput * n;
+      currentValue = monthlyRate < 0.000001
+        ? principalInvested
+        : principalInput * ((Math.pow(1 + monthlyRate, n) - 1) / monthlyRate) * (1 + monthlyRate);
+    } else {
+      principalInvested = principalInput * maxInstallments;
+      const corpusAtEnd = monthlyRate < 0.000001
+        ? principalInvested
+        : principalInput * ((Math.pow(1 + monthlyRate, maxInstallments) - 1) / monthlyRate) * (1 + monthlyRate);
+      currentValue = corpusAtEnd * Math.pow(1 + monthlyRate, elapsedMonths - maxInstallments);
+    }
+  } else if (inv.type === 'lump-sum' || inv.type === 'stocks') {
+    principalInvested = principalInput;
+    const frequency = parseInt(inv.compounding, 10) || 12;
+    let calcYears = elapsedYears;
+    if (inv.endDate && today > new Date(inv.endDate)) {
+      calcYears = getMonthsBetween(inv.startDate, inv.endDate) / 12;
+    }
+    currentValue = frequency === 0
+      ? principalInput * (1 + annualRate * calcYears)
+      : principalInput * Math.pow(1 + annualRate / frequency, frequency * calcYears);
+  } else if (inv.type === 'lic') {
+    let frequencyMonths = 12;
+    if (inv.licPremiumFreq === 'monthly') frequencyMonths = 1;
+    else if (inv.licPremiumFreq === 'quarterly') frequencyMonths = 3;
+    else if (inv.licPremiumFreq === 'half-yearly') frequencyMonths = 6;
+
+    const totalPolicyMonths = parseFloat(inv.duration || 0) * 12;
+    const maxPeriods = Math.floor(totalPolicyMonths / frequencyMonths);
+
+    if (elapsedMonths >= totalPolicyMonths && inv.licSumAssured) {
+      return { principal: principalInput * maxPeriods, currentValue: parseFloat(inv.licSumAssured) };
+    }
+
+    const n = Math.min(Math.floor(elapsedMonths / frequencyMonths) + 1, maxPeriods);
+    principalInvested = principalInput * n;
+    const periodsPerYear = 12 / frequencyMonths;
+    const periodRate = Math.pow(1 + annualRate, 1 / periodsPerYear) - 1;
+    currentValue = periodRate < 0.000001
+      ? principalInvested
+      : principalInput * ((Math.pow(1 + periodRate, n) - 1) / periodRate) * (1 + periodRate);
+  }
+
+  return { principal: principalInvested, currentValue: Math.max(principalInvested, currentValue) };
+}
+
 // ── Guarded financial summary endpoint ────────────────────────────────────────
 // Data is ALWAYS fetched fresh from the DB using the authenticated user's ID.
 // The client never provides the data — preventing cross-user data injection.
@@ -69,26 +145,9 @@ router.get('/api/ai/financial-summary', authMiddleware, async (req, res) => {
     let totalCurrentValue = 0;
     let totalPrincipal = 0;
     for (const inv of investments.filter(i => i.status !== 'closed')) {
-      const rate = inv.rate || 0;
-      const start = new Date(inv.startDate);
-      const mElapsed = Math.max(0, (today - start) / (1000 * 60 * 60 * 24 * 30.44));
-      const r = rate / 100 / 12;
-      let val = 0;
-      if (inv.type === 'sip') {
-        val = r >= 0.000001
-          ? inv.amount * ((Math.pow(1 + r, mElapsed) - 1) / r)
-          : inv.amount * mElapsed;
-      } else if (inv.type === 'lump-sum' || inv.type === 'stocks') {
-        val = inv.amount * Math.pow(1 + rate / 100, mElapsed / 12);
-      } else if (inv.type === 'lic') {
-        const end = inv.endDate ? new Date(inv.endDate) : null;
-        if (end && end > today) {
-          const totalM = (end - start) / (1000 * 60 * 60 * 24 * 30.44);
-          val = (inv.licSumAssured || 0) * Math.min(1, mElapsed / totalM);
-        }
-      }
-      totalCurrentValue += val;
-      totalPrincipal += inv.amount;
+      const result = calcInvestmentValue(inv, today);
+      totalCurrentValue += result.currentValue || 0;
+      totalPrincipal += result.principal || 0;
     }
 
     const cashAmt = cashBalance?.amount || 0;
