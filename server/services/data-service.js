@@ -268,6 +268,9 @@ module.exports = {
   replaceUserData,
   getAllUsersWithData,
   updateUserRole,
+  getIncomeByUserId,
+  getExpensesByUserId,
+  getInvestmentsByUserId,
   getLendsByUserId,
   getBorrowsByUserId
 };

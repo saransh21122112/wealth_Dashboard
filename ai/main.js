@@ -167,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (message.tool_calls && message.tool_calls.length > 0) {
           for (const toolCall of message.tool_calls) {
-            const executionResult = executeToolCall(toolCall, appendSystemStatus);
+            const executionResult = await executeToolCall(toolCall, appendSystemStatus);
             messageHistory.push({
               role: 'tool',
               tool_call_id: toolCall.id,

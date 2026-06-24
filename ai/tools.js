@@ -2,6 +2,18 @@ export const AI_TOOLS = [
   {
     type: 'function',
     function: {
+      name: 'get_financial_summary',
+      description: 'Fetches ALL the user\'s logged financial data and computes key metrics (net worth, monthly surplus, investment values, outstanding debts). ALWAYS call this tool first before answering any analytical or summary question about the user\'s finances — net worth, spending, savings, investments, debt, etc.',
+      parameters: {
+        type: 'object',
+        properties: {},
+        required: []
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
       name: 'add_income',
       description: 'Log a new income entry (salary, freelance, bonus, rental, etc.) to the wealth dashboard.',
       parameters: {

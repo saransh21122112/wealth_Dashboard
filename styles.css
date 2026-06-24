@@ -1156,6 +1156,13 @@ tr:hover td {
     box-shadow: 0 8px 48px rgba(18, 8, 10, 0.22), 0 0 0 1px var(--border-color);
   }
 
+  /* Expanded on mobile = more height, same width */
+  .ai-widget.expanded {
+    width: auto; /* still left:12px right:12px */
+    max-height: calc(100vh - 112px);
+    bottom: 100px;
+  }
+
   /* Tour popover: bottom sheet on mobile */
   .tour-popover {
     position: fixed !important;
@@ -1480,6 +1487,14 @@ tr:hover td {
   margin-top: 0.15rem;
 }
 
+.ai-widget-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.ai-widget-resize-btn,
 .ai-widget-close-btn {
   background: rgba(255, 255, 255, 0.14);
   border: none;
@@ -1495,7 +1510,23 @@ tr:hover td {
   transition: background 0.15s ease;
 }
 
+.ai-widget-resize-btn:hover,
 .ai-widget-close-btn:hover { background: rgba(255, 255, 255, 0.28); }
+
+/* Icon swap for resize button */
+.ai-resize-icon-compress { display: none; }
+.ai-widget.expanded .ai-resize-icon-expand   { display: none; }
+.ai-widget.expanded .ai-resize-icon-compress { display: block; }
+
+/* Expanded state — larger widget */
+.ai-widget.expanded {
+  width: 540px;
+  max-height: 80vh;
+}
+
+.ai-float-root.open .ai-widget.expanded {
+  transform: scale(1) translateY(0);
+}
 
 /* ── Messages area ────────────────────────────────── */
 .ai-widget .ai-chat-messages {

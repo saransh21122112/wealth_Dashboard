@@ -1,6 +1,24 @@
-export function executeToolCall(toolCall, appendSystemStatus) {
+// executeToolCall is async because get_financial_summary fetches from the server.
+export async function executeToolCall(toolCall, appendSystemStatus) {
   const name = toolCall.function.name;
   const args = JSON.parse(toolCall.function.arguments);
+
+  if (name === 'get_financial_summary') {
+    // Data is fetched from the server endpoint — the session cookie is sent automatically.
+    // The server validates the session and only returns the authenticated user's data.
+    // This prevents any cross-user data injection via tampered client-side tool responses.
+    try {
+      const resp = await fetch('/api/ai/financial-summary', { credentials: 'include' });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        return { name, content: JSON.stringify({ error: err.error || 'Failed to fetch financial data.' }) };
+      }
+      const data = await resp.json();
+      return { name, content: JSON.stringify(data) };
+    } catch (e) {
+      return { name, content: JSON.stringify({ error: 'Network error fetching financial summary.' }) };
+    }
+  }
 
   if (name === 'add_income') {
     if (!window.addIncomeFromAI) return { name, content: JSON.stringify({ status: 'error', message: 'Dashboard API unavailable.' }) };
