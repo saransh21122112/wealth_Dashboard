@@ -37,7 +37,7 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
         <td>${new Date(expense.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
         <td>${expense.isRecurring ? 'Recurring' : 'Extra'}</td>
         <td style="font-weight: 600;">₹${parseFloat(expense.amount).toLocaleString('en-IN')}</td>
-        <td style="display:flex;gap:0.35rem;">
+        <td class="action-cell">
           <button class="action-btn edit-exp" data-id="${expense.id}" aria-label="Edit expense">${EDIT_ICON}</button>
           <button class="action-btn delete-exp" data-id="${expense.id}" aria-label="Delete expense">${DELETE_ICON}</button>
         </td>
@@ -100,7 +100,7 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
             ${profit >= 0 ? '+' : ''}${Math.round(profit).toLocaleString('en-IN')} (${returnsPct.toFixed(1)}%)
           </div>
         </td>
-        <td style="display:flex;gap:0.35rem;">
+        <td class="action-cell">
           <button class="action-btn edit-inv" data-id="${investment.id}" aria-label="Edit investment">${EDIT_ICON}</button>
           <button class="action-btn delete-inv" data-id="${investment.id}" aria-label="Delete investment">${DELETE_ICON}</button>
         </td>
@@ -156,7 +156,7 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
         <td>${new Date(inc.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
         <td>${inc.isRecurring ? 'Recurring' : 'Extra'}</td>
         <td style="font-weight: 600; color: var(--color-success);">+₹${parseFloat(inc.amount).toLocaleString('en-IN')}</td>
-        <td style="display:flex;gap:0.35rem;">
+        <td class="action-cell">
           <button class="action-btn edit-inc" data-id="${inc.id}" aria-label="Edit income">${EDIT_ICON}</button>
           <button class="action-btn delete-inc" data-id="${inc.id}" aria-label="Delete income">${DELETE_ICON}</button>
         </td>
@@ -387,7 +387,7 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
               ? `<span class="category-tag tag-housing">Partial (₹${lend.returnedAmount.toLocaleString('en-IN')})</span>`
               : '<span class="category-tag tag-miscellaneous">Pending</span>'}
         </td>
-        <td style="display:flex;gap:0.35rem;">
+        <td class="action-cell">
           ${!lend.returned ? `<button class="action-btn lend-return-btn" data-id="${lend.id}" title="Mark as returned" style="color:var(--color-success);">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
           </button>` : ''}
@@ -469,7 +469,7 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
               ? `<span class="category-tag tag-housing">Partial (₹${borrow.repaidAmount.toLocaleString('en-IN')})</span>`
               : '<span class="category-tag tag-extra">Pending</span>'}
         </td>
-        <td style="display:flex;gap:0.35rem;">
+        <td class="action-cell">
           ${!borrow.repaid ? `<button class="action-btn borrow-repay-btn" data-id="${borrow.id}" title="Mark as repaid" style="color:var(--color-success);">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
           </button>` : ''}

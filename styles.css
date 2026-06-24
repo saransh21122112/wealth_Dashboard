@@ -146,6 +146,11 @@ html[data-theme="dark"] .tag-extra         { background-color: #3e1b0c; color: #
   padding: 0;
 }
 
+/* Remove 300ms tap delay globally on all interactive elements */
+a, button, input, select, textarea, label, [role="button"] {
+  touch-action: manipulation;
+}
+
 body {
   font-family: var(--font-body);
   background-color: var(--bg-color);
@@ -918,6 +923,14 @@ tr:hover td {
   background-color: var(--surface-hover);
 }
 
+/* Action column td: flex row, vertically centred regardless of row height */
+.action-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 0.75rem;
+}
+
 .empty-state {
   padding: 3rem 1.5rem;
   text-align: center;
@@ -1010,7 +1023,7 @@ tr:hover td {
   /* ── Base layout ─────────────────────────────────── */
   body {
     flex-direction: column;
-    overflow-x: hidden;
+    overflow-x: clip; /* clip ≠ hidden: doesn't create scroll container, so pinch-zoom panning still works */
   }
 
   .app-container {
@@ -1021,7 +1034,9 @@ tr:hover td {
   .mobile-top-bar {
     display: flex;
     height: 60px;
-    padding: 0 1rem;
+    /* Safe area: respects notch/Dynamic Island on iPhone */
+    padding: 0 max(1rem, env(safe-area-inset-right)) 0 max(1rem, env(safe-area-inset-left));
+    padding-top: env(safe-area-inset-top, 0);
   }
 
   /* ── Sidebar: slides in from left ────────────────── */
@@ -1160,8 +1175,8 @@ tr:hover td {
      Root shrinks to FAB only; widget breaks out to
      its own fixed position so it never overflows.      */
   .ai-float-root {
-    bottom: 20px;
-    right: 16px;
+    bottom: max(20px, env(safe-area-inset-bottom, 20px)); /* stay above home-bar */
+    right: max(16px, env(safe-area-inset-right, 16px));
     width: 60px;
     height: 60px;
     display: block; /* not flex — only contains FAB */
@@ -1267,6 +1282,80 @@ tr:hover td {
     padding: 1.25rem 1.5rem 2rem !important;
     box-shadow: 0 -6px 40px rgba(0, 0, 0, 0.25) !important;
     z-index: 2010 !important;
+  }
+}
+
+/* ── Mobile touch & zoom support ─────────────────────────────── */
+@media (max-width: 768px) {
+
+  /* ── Prevent iOS auto-zoom on input focus (requires font-size ≥ 16px) ── */
+  .form-input,
+  .form-select,
+  .ai-widget-input,
+  .ai-chat-form input,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  /* ── Minimum 44×44px touch targets on all interactive elements ── */
+  .action-btn {
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .action-cell {
+    gap: 0;            /* buttons already 44px wide, no extra gap needed */
+    padding: 0.25rem 0.5rem;
+  }
+
+  .ai-chip {
+    min-height: 36px;
+    padding: 0.35rem 0.75rem;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .tab-nav-btn,
+  .sidebar-link {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
+  /* ── Remove 300ms tap delay on all tappable elements ────────── */
+  button,
+  a,
+  input[type="submit"],
+  input[type="button"],
+  label,
+  select,
+  .action-btn,
+  .ai-chip,
+  .ai-fab,
+  .sidebar-link {
+    touch-action: manipulation;
+  }
+
+  /* ── Prevent text selection on drag/long-press on buttons ───── */
+  button,
+  .action-btn,
+  .ai-fab,
+  .ai-chip {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* ── Smooth momentum scroll on all scrollable containers ────── */
+  .main-content,
+  .sidebar,
+  .ai-chat-messages,
+  .ai-widget .ai-chat-messages,
+  .table-wrapper,
+  .ai-chips-row {
+    -webkit-overflow-scrolling: touch;
   }
 }
 
