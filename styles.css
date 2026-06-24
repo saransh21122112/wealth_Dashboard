@@ -1287,10 +1287,13 @@ tbody tr td:nth-child(6) {
 
   /* ── Action buttons: pinned top-right of each card ── */
   /* Note: later touch-target rules also affect .action-cell; position/top/right are stable */
-  .action-cell {
+  .data-table-container td.action-cell,
+  #lendsSection td.action-cell,
+  #borrowsSection td.action-cell {
     position: absolute !important;
     top: 0.75rem !important;
     right: 0.5rem !important;
+    width: auto !important;
     gap: 0 !important;
     padding: 0 !important;
     min-height: unset !important;
@@ -1455,9 +1458,11 @@ tbody tr td:nth-child(6) {
     justify-content: center;
   }
 
-  .action-cell {
-    gap: 0;            /* buttons already 44px wide, no extra gap needed */
-    padding: 0.25rem 0.5rem;
+  .data-table-container td.action-cell,
+  #lendsSection td.action-cell,
+  #borrowsSection td.action-cell {
+    gap: 0 !important;            /* buttons already 44px wide, no extra gap needed */
+    padding: 0.25rem 0.5rem !important;
   }
 
   .ai-chip {

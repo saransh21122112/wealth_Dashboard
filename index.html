@@ -1,17 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Aurelia - AI Wealth Operating System</title>
-  <meta name="description" content="Aurelia is an AI-powered wealth operating system for households and professionals to track expenses, investments, insurance, and financial decisions in one subscription-ready dashboard.">
+  <meta name="description"
+    content="Aurelia is an AI-powered wealth operating system for households and professionals to track expenses, investments, insurance, and financial decisions in one subscription-ready dashboard.">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="apple-touch-icon" href="/favicon.svg">
-  
+
   <!-- Prevent Theme FOUC -->
   <meta name="color-scheme" content="light dark">
   <script>
-    (function() {
+    (function () {
       const savedTheme = localStorage.getItem('aurelia-theme') || 'system';
       if (savedTheme === 'dark' || (savedTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
         document.documentElement.setAttribute('data-theme', 'dark');
@@ -20,7 +22,7 @@
       }
     })();
   </script>
-  
+
   <link rel="stylesheet" href="styles.css?v=5">
   <!-- Chart.js CDN for visualizations -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
@@ -30,6 +32,7 @@
   <script type="module" src="ai/main.js?v=5"></script>
   <script src="tour.js?v=5" defer></script>
 </head>
+
 <body>
 
   <!-- Auth Overlay Screen -->
@@ -42,11 +45,13 @@
       <form id="authForm">
         <div class="form-group">
           <label class="form-label" for="authUsername">Username</label>
-          <input type="text" id="authUsername" class="form-input" placeholder="Enter username" required autocomplete="username">
+          <input type="text" id="authUsername" class="form-input" placeholder="Enter username" required
+            autocomplete="username">
         </div>
         <div class="form-group">
           <label class="form-label" for="authPassword">Password</label>
-          <input type="password" id="authPassword" class="form-input" placeholder="Enter password" required autocomplete="current-password">
+          <input type="password" id="authPassword" class="form-input" placeholder="Enter password" required
+            autocomplete="current-password">
         </div>
         <button type="submit" class="btn btn-primary btn-full" id="authSubmitBtn">Log In</button>
       </form>
@@ -58,18 +63,25 @@
   <header class="mobile-top-bar" id="mobileHeader">
     <div class="brand-section" style="margin-bottom: 0;">
       <div class="brand-icon">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-top: 1px;">
-          <path d="M6 3h12M6 8h12M6 13h3M9 13c6.667 0 6.667-10 0-10M6 13l8.5 8"/>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round" style="margin-top: 1px;">
+          <path d="M6 3h12M6 8h12M6 13h3M9 13c6.667 0 6.667-10 0-10M6 13l8.5 8" />
         </svg>
       </div>
       <div class="brand-name">Aurelia<span>Wealth</span></div>
     </div>
     <div class="mobile-header-actions">
       <button class="menu-toggle-btn" id="mobileTourBtn" aria-label="Take App Tour" title="Take App Tour">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
       </button>
       <button class="menu-toggle-btn" id="menuToggle" aria-label="Toggle Navigation Menu">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
           <line x1="4" y1="12" x2="20" y2="12"></line>
           <line x1="4" y1="6" x2="20" y2="6"></line>
           <line x1="4" y1="18" x2="20" y2="18"></line>
@@ -88,66 +100,106 @@
       <div class="sidebar-top">
         <div class="brand-section">
           <div class="brand-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-top: 1px;">
-              <path d="M6 3h12M6 8h12M6 13h3M9 13c6.667 0 6.667-10 0-10M6 13l8.5 8"/>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round" style="margin-top: 1px;">
+              <path d="M6 3h12M6 8h12M6 13h3M9 13c6.667 0 6.667-10 0-10M6 13l8.5 8" />
             </svg>
           </div>
           <div class="brand-name">Aurelia<span>Wealth</span></div>
         </div>
-        
+
         <nav>
           <ul class="nav-menu">
             <li class="nav-item active" data-tab="dashboard">
               <button>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="7" height="9"></rect>
+                  <rect x="14" y="3" width="7" height="5"></rect>
+                  <rect x="14" y="12" width="7" height="9"></rect>
+                  <rect x="3" y="16" width="7" height="5"></rect>
+                </svg>
                 Overview
               </button>
             </li>
             <li class="nav-item" data-tab="income">
               <button>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="19" x2="12" y2="5"></line>
+                  <polyline points="5 12 12 5 19 12"></polyline>
+                </svg>
                 Income
               </button>
             </li>
             <li class="nav-item" data-tab="expenses">
               <button>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect>
+                  <line x1="2" y1="10" x2="22" y2="10"></line>
+                </svg>
                 Expenses
               </button>
             </li>
             <li class="nav-item" data-tab="investments">
               <button>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12M6 8h12M6 13h3M9 13c6.667 0 6.667-10 0-10M6 13l8.5 8"/></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6 3h12M6 8h12M6 13h3M9 13c6.667 0 6.667-10 0-10M6 13l8.5 8" />
+                </svg>
                 Investments
               </button>
             </li>
             <li class="nav-item" data-tab="settings">
               <button>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3"></circle>
+                  <path
+                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z">
+                  </path>
+                </svg>
                 Backup & Settings
               </button>
             </li>
             <li class="nav-item" data-tab="about">
               <button>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
                 About Aurelia
               </button>
             </li>
             <li class="nav-item" data-tab="admin" id="adminNavItem" style="display: none;">
               <button>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
                 Admin Panel
               </button>
             </li>
           </ul>
         </nav>
       </div>
-      
+
       <div class="sidebar-footer">
         <!-- App Tour Button -->
         <div class="tour-launch-row" style="padding: 0; margin-bottom: 0.5rem;">
           <button class="tour-launch-btn" id="startTourBtn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
             Take App Tour
           </button>
         </div>
@@ -160,14 +212,21 @@
           </div>
         </div>
         <button class="theme-toggle-btn" id="themeToggleBtn" aria-label="Toggle light and dark mode">
-          <svg id="themeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg id="themeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <!-- Sun / Moon will be rendered here dynamically -->
           </svg>
           <span id="themeBtnText">Toggle Theme</span>
         </button>
         <!-- Logout Button -->
-        <button class="btn btn-secondary btn-full" id="logoutBtn" style="min-height: auto; padding: 0.5rem 1rem; font-size: 0.85rem; display: none; margin-top: 0.5rem; justify-content: center; gap: 0.5rem;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        <button class="btn btn-secondary btn-full" id="logoutBtn"
+          style="min-height: auto; padding: 0.5rem 1rem; font-size: 0.85rem; display: none; margin-top: 0.5rem; justify-content: center; gap: 0.5rem;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
           Log Out
         </button>
       </div>
@@ -179,11 +238,17 @@
       <!-- Active LIC Premium Due Warnings Section -->
       <section class="alert-banner" id="licAlertBanner" style="display: none;" aria-live="polite">
         <div class="alert-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
         </div>
         <div class="alert-content">
           <h2 class="alert-title">Upcoming Premium Payments</h2>
-          <p class="alert-message">The following insurance/LIC policies have premiums due in the next 30 days. Please ensure you make payments on time.</p>
+          <p class="alert-message">The following insurance/LIC policies have premiums due in the next 30 days. Please
+            ensure you make payments on time.</p>
           <ul class="alert-list" id="licAlertList">
             <!-- Items added dynamically -->
           </ul>
@@ -201,12 +266,15 @@
 
         <!-- KPI Cards -->
         <section class="metrics-grid" aria-label="Key Performance Indicators">
-          
+
           <div class="card primary">
             <div class="card-header">
               <h2 class="card-title">Net Worth</h2>
               <div class="card-icon" style="background-color: var(--color-gold-light); color: var(--color-gold);">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12M6 8h12M6 13h3M9 13c6.667 0 6.667-10 0-10M6 13l8.5 8"/></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6 3h12M6 8h12M6 13h3M9 13c6.667 0 6.667-10 0-10M6 13l8.5 8" />
+                </svg>
               </div>
             </div>
             <div class="card-value" id="netWorthVal">₹0.00</div>
@@ -219,7 +287,11 @@
             <div class="card-header">
               <h2 class="card-title">Investments Value</h2>
               <div class="card-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="19" x2="12" y2="5"></line>
+                  <polyline points="5 12 12 5 19 12"></polyline>
+                </svg>
               </div>
             </div>
             <div class="card-value" id="investmentsVal">₹0.00</div>
@@ -232,7 +304,11 @@
             <div class="card-header">
               <h2 class="card-title">Total Income</h2>
               <div class="card-icon" style="background-color: rgba(46, 160, 67, 0.08); color: #2ea043;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="19" x2="12" y2="5"></line>
+                  <polyline points="5 12 12 5 19 12"></polyline>
+                </svg>
               </div>
             </div>
             <div class="card-value" id="incomeVal">₹0.00</div>
@@ -245,7 +321,11 @@
             <div class="card-header">
               <h2 class="card-title">Total Expenses</h2>
               <div class="card-icon" style="background-color: rgba(198, 40, 40, 0.08); color: var(--color-error);">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <polyline points="19 12 12 19 5 12"></polyline>
+                </svg>
               </div>
             </div>
             <div class="card-value" id="expensesVal">₹0.00</div>
@@ -258,7 +338,10 @@
             <div class="card-header">
               <h2 class="card-title">Left Per Month</h2>
               <div class="card-icon" style="background-color: rgba(46, 160, 67, 0.08); color: #2ea043;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12M6 8h12M6 13h3M9 13c6.667 0 6.667-10 0-10M6 13l8.5 8"/></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6 3h12M6 8h12M6 13h3M9 13c6.667 0 6.667-10 0-10M6 13l8.5 8" />
+                </svg>
               </div>
             </div>
             <div class="card-value" id="leftPerMonthVal">₹0</div>
@@ -271,7 +354,12 @@
             <div class="card-header">
               <h2 class="card-title">Cash in Hand</h2>
               <div class="card-icon" style="background-color: rgba(212,175,55,0.12); color: var(--color-gold);">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2"></circle><path d="M6 12h.01M18 12h.01"></path></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="6" width="20" height="12" rx="2"></rect>
+                  <circle cx="12" cy="12" r="2"></circle>
+                  <path d="M6 12h.01M18 12h.01"></path>
+                </svg>
               </div>
             </div>
             <div class="card-value" id="cashVal">₹0</div>
@@ -290,7 +378,13 @@
               <span class="investment-tag" id="lendsOutstandingBadge">₹0 outstanding</span>
             </div>
             <div class="card-icon" style="background-color:rgba(212,175,55,0.12);color:var(--color-gold);">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
             </div>
           </div>
           <div class="table-wrapper">
@@ -316,10 +410,17 @@
           <div class="card-header">
             <div style="display:flex;align-items:center;gap:0.75rem;">
               <h2 class="card-title" id="borrowsSectionTitle">Money I Owe</h2>
-              <span class="investment-tag" style="background:rgba(211,47,47,0.1);color:var(--color-error);" id="borrowsOutstandingBadge">₹0 outstanding</span>
+              <span class="investment-tag" style="background:rgba(211,47,47,0.1);color:var(--color-error);"
+                id="borrowsOutstandingBadge">₹0 outstanding</span>
             </div>
             <div class="card-icon" style="background-color:rgba(211,47,47,0.1);color:var(--color-error);">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
             </div>
           </div>
           <div class="table-wrapper">
@@ -353,11 +454,18 @@
               </div>
               <div class="calendar-nav">
                 <button class="cal-nav-btn" id="calendarPrevBtn" aria-label="Previous month">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
                 </button>
-                <span id="calendarMonthYear" style="font-weight:600;font-size:0.85rem;min-width:110px;text-align:center;"></span>
+                <span id="calendarMonthYear"
+                  style="font-weight:600;font-size:0.85rem;min-width:110px;text-align:center;"></span>
                 <button class="cal-nav-btn" id="calendarNextBtn" aria-label="Next month">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
                 </button>
               </div>
             </div>
@@ -372,7 +480,7 @@
 
         <!-- Charts Section -->
         <section class="visuals-grid" aria-label="Visual Analytics">
-          
+
           <!-- Wealth Growth Projection -->
           <div class="card chart-card">
             <div class="chart-header">
@@ -418,7 +526,8 @@
             <form id="incomeForm" novalidate>
               <div class="form-group">
                 <label class="form-label" for="incDescription">Description</label>
-                <input class="form-input" type="text" id="incDescription" placeholder="e.g., Monthly Salary, Freelance Project" required>
+                <input class="form-input" type="text" id="incDescription"
+                  placeholder="e.g., Monthly Salary, Freelance Project" required>
               </div>
 
               <div class="form-group horizontal">
@@ -451,7 +560,11 @@
               </label>
 
               <button type="submit" class="btn btn-primary btn-full">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
                 Add Income
               </button>
             </form>
@@ -462,7 +575,8 @@
             <div class="table-header">
               <h2 class="table-title">Income Log</h2>
               <div class="table-actions">
-                <select class="form-select" id="incomeFilter" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; width: auto;">
+                <select class="form-select" id="incomeFilter"
+                  style="padding: 0.4rem 0.8rem; font-size: 0.85rem; width: auto;">
                   <option value="all">All Income</option>
                   <option value="recurring">Recurring</option>
                   <option value="onetime">One-time / Extra</option>
@@ -507,7 +621,8 @@
             <form id="expenseForm" novalidate>
               <div class="form-group">
                 <label class="form-label" for="expDescription">Description</label>
-                <input class="form-input" type="text" id="expDescription" placeholder="e.g., Grocery, Electricity Bill" required>
+                <input class="form-input" type="text" id="expDescription" placeholder="e.g., Grocery, Electricity Bill"
+                  required>
               </div>
 
               <div class="form-group horizontal">
@@ -544,7 +659,11 @@
               </label>
 
               <button type="submit" class="btn btn-primary btn-full">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
                 Add Expense
               </button>
             </form>
@@ -556,14 +675,15 @@
               <h2 class="table-title">Expenses Log</h2>
               <div class="table-actions">
                 <!-- Simple Filter dropdown -->
-                <select class="form-select" id="expenseFilter" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; width: auto;">
+                <select class="form-select" id="expenseFilter"
+                  style="padding: 0.4rem 0.8rem; font-size: 0.85rem; width: auto;">
                   <option value="all">All Expenses</option>
                   <option value="recurring">Monthly Recurring</option>
                   <option value="onetime">One-time/Extra</option>
                 </select>
               </div>
             </div>
-            
+
             <div class="table-wrapper">
               <table id="expensesTable">
                 <thead>
@@ -591,14 +711,16 @@
       <div class="tab-pane" id="investmentsTab">
         <header class="page-header">
           <h1 class="page-title">Investments & Insurance</h1>
-          <p class="page-subtitle">Track your wealth corpus: Mutual Funds (SIPs), Fixed Deposits, Stocks, and LIC Policies.</p>
+          <p class="page-subtitle">Track your wealth corpus: Mutual Funds (SIPs), Fixed Deposits, Stocks, and LIC
+            Policies.</p>
         </header>
 
         <!-- Portfolio Allocation Chart -->
         <section class="card chart-card" aria-label="Portfolio Allocation" style="margin-bottom:1.5rem">
           <div class="chart-header">
             <h2 class="chart-title">Portfolio Allocation</h2>
-            <span class="chart-subtitle" style="font-size:0.8rem;color:var(--text-muted)">By current value &mdash; active investments</span>
+            <span class="chart-subtitle" style="font-size:0.8rem;color:var(--text-muted)">By current value &mdash;
+              active investments</span>
           </div>
           <div class="chart-container" style="height:260px">
             <canvas id="allocationChart"></canvas>
@@ -612,7 +734,8 @@
             <form id="investmentForm" novalidate>
               <div class="form-group">
                 <label class="form-label" for="invName">Investment / Asset Name</label>
-                <input class="form-input" type="text" id="invName" placeholder="e.g., SBI Mutual Fund, LIC Jeevan Labh" required>
+                <input class="form-input" type="text" id="invName" placeholder="e.g., SBI Mutual Fund, LIC Jeevan Labh"
+                  required>
               </div>
 
               <div class="form-group horizontal">
@@ -638,7 +761,8 @@
                 </div>
                 <div>
                   <label class="form-label" for="invRate">Annual Interest Rate (%)</label>
-                  <input class="form-input" type="number" step="0.1" min="0" max="100" id="invRate" placeholder="Interest Rate" required>
+                  <input class="form-input" type="number" step="0.1" min="0" max="100" id="invRate"
+                    placeholder="Interest Rate" required>
                 </div>
               </div>
 
@@ -655,14 +779,17 @@
                 </div>
                 <div>
                   <label class="form-label" for="invDuration">Duration (Years)</label>
-                  <input class="form-input" type="number" min="1" max="100" id="invDuration" placeholder="e.g., 10" required>
+                  <input class="form-input" type="number" min="1" max="100" id="invDuration" placeholder="e.g., 10"
+                    required>
                 </div>
               </div>
 
               <!-- Dynamic LIC Specific Fields (Displayed only when Type = LIC) -->
               <div class="conditional-fields" id="licFields">
-                <h3 class="form-label" style="border-bottom: 1px dashed var(--border-color); padding-bottom: 0.25rem; margin-bottom: 0.75rem; color: var(--color-maroon);">LIC / Insurance Policy Details</h3>
-                
+                <h3 class="form-label"
+                  style="border-bottom: 1px dashed var(--border-color); padding-bottom: 0.25rem; margin-bottom: 0.75rem; color: var(--color-maroon);">
+                  LIC / Insurance Policy Details</h3>
+
                 <div class="form-group horizontal">
                   <div>
                     <label class="form-label" for="licPolicyNum">Policy Number</label>
@@ -692,7 +819,11 @@
               </div>
 
               <button type="submit" class="btn btn-accent btn-full" style="color: #2d161a;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
                 Log Investment
               </button>
             </form>
@@ -703,7 +834,7 @@
             <div class="table-header">
               <h2 class="table-title">Investments Portfolio</h2>
             </div>
-            
+
             <div class="table-wrapper">
               <table id="investmentsTable">
                 <thead>
@@ -735,17 +866,24 @@
         </header>
 
         <section class="settings-section">
-          
+
           <!-- Storage Management -->
           <div class="settings-card">
-            <h2 class="form-title" style="border-bottom: none; margin-bottom: 1rem;">Data Portability (Local Persistence)</h2>
+            <h2 class="form-title" style="border-bottom: none; margin-bottom: 1rem;">Data Portability (Local
+              Persistence)</h2>
             <div class="settings-row">
               <div class="settings-details">
                 <h3 class="settings-title">Export Dashboard Data</h3>
-                <p class="settings-desc">Download a backup file containing all your expenses and investments to keep safe or import on another machine.</p>
+                <p class="settings-desc">Download a backup file containing all your expenses and investments to keep
+                  safe or import on another machine.</p>
               </div>
               <button class="btn btn-secondary" id="exportDataBtn">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
                 Export JSON
               </button>
             </div>
@@ -753,11 +891,17 @@
             <div class="settings-row">
               <div class="settings-details">
                 <h3 class="settings-title">Import Backup File</h3>
-                <p class="settings-desc">Upload a previously exported Aurelia JSON data file to restore your expenses and investments.</p>
+                <p class="settings-desc">Upload a previously exported Aurelia JSON data file to restore your expenses
+                  and investments.</p>
                 <input type="file" id="importFileSelector" accept=".json" style="display: none;">
               </div>
               <button class="btn btn-secondary" id="importDataBtn">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
                 Import JSON
               </button>
             </div>
@@ -765,10 +909,17 @@
             <div class="settings-row">
               <div class="settings-details">
                 <h3 class="settings-title" style="color: var(--color-error);">Reset Dashboard Database</h3>
-                <p class="settings-desc" style="color: var(--text-secondary);">Permanently erase all expenses and investments from your browser's local storage. This action cannot be undone.</p>
+                <p class="settings-desc" style="color: var(--text-secondary);">Permanently erase all expenses and
+                  investments from your browser's local storage. This action cannot be undone.</p>
               </div>
               <button class="btn btn-danger" id="resetDataBtn">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  <line x1="10" y1="11" x2="10" y2="17"></line>
+                  <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
                 Reset Database
               </button>
             </div>
@@ -780,7 +931,8 @@
             <div class="settings-row">
               <div class="settings-details">
                 <h3 class="settings-title">Default Color Mode</h3>
-                <p class="settings-desc">Choose between Light mode, Dark mode, or follow your operating system's setting automatically.</p>
+                <p class="settings-desc">Choose between Light mode, Dark mode, or follow your operating system's setting
+                  automatically.</p>
               </div>
               <div class="timeline-picker" id="settingsThemePicker" role="group" aria-label="Theme selector">
                 <button data-theme-val="light">Light</button>
@@ -827,8 +979,10 @@
         <!-- User Inspector Header -->
         <div class="admin-header-row">
           <div>
-            <h2 class="table-title" style="margin-bottom: 0.25rem; color: var(--text-primary);">Select User to Audit</h2>
-            <p style="font-size: 0.85rem; color: var(--text-secondary);">Load a user's private ledger to inspect details</p>
+            <h2 class="table-title" style="margin-bottom: 0.25rem; color: var(--text-primary);">Select User to Audit
+            </h2>
+            <p style="font-size: 0.85rem; color: var(--text-secondary);">Load a user's private ledger to inspect details
+            </p>
           </div>
           <select class="admin-inspect-select" id="adminInspectSelect">
             <!-- Populated dynamically -->
@@ -837,22 +991,28 @@
 
         <!-- Inspected User's Ledger -->
         <div id="adminInspectorPanel" style="display: none; flex-direction: column; gap: 2rem;">
-          
+
           <!-- Role Management Bar -->
           <div id="adminUserRoleBar" style="min-height: 52px;"></div>
 
           <!-- User financial summaries -->
           <section class="metrics-grid">
             <div class="card primary">
-              <div class="card-header"><h3 class="card-title">User Net Worth</h3></div>
+              <div class="card-header">
+                <h3 class="card-title">User Net Worth</h3>
+              </div>
               <div class="card-value" id="adminUserNetWorth">₹0</div>
             </div>
             <div class="card">
-              <div class="card-header"><h3 class="card-title">User Assets Current Value</h3></div>
+              <div class="card-header">
+                <h3 class="card-title">User Assets Current Value</h3>
+              </div>
               <div class="card-value" id="adminUserInvestments">₹0</div>
             </div>
             <div class="card">
-              <div class="card-header"><h3 class="card-title">User Total Expenses</h3></div>
+              <div class="card-header">
+                <h3 class="card-title">User Total Expenses</h3>
+              </div>
               <div class="card-value" id="adminUserExpenses">₹0</div>
             </div>
           </section>
@@ -929,16 +1089,29 @@
             <!-- Social Links -->
             <div class="ame-social-links">
               <a href="#" class="ame-social-btn" title="GitHub" aria-label="GitHub">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z" />
+                </svg>
               </a>
               <a href="#" class="ame-social-btn" title="LinkedIn" aria-label="LinkedIn">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                </svg>
               </a>
               <a href="#" class="ame-social-btn" title="Twitter / X" aria-label="Twitter">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.741l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.741l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                </svg>
               </a>
               <a href="mailto:saransh@aurelia.in" class="ame-social-btn" title="Email" aria-label="Email">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                  <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
               </a>
             </div>
           </div>
@@ -953,10 +1126,14 @@
               <span class="ame-role-pill">Built for India-first finance</span>
             </div>
             <p class="ame-hero-bio">
-              Aurelia brings <strong>cash flow, investments, insurance, and debt</strong> into one AI-powered operating system — so users manage money by talking to it, not filing spreadsheets. Upload a salary slip or LIC policy photo and Aurelia extracts and logs everything automatically.
+              Aurelia brings <strong>cash flow, investments, insurance, and debt</strong> into one AI-powered operating
+              system — so users manage money by talking to it, not filing spreadsheets. Upload a salary slip or LIC
+              policy photo and Aurelia extracts and logs everything automatically.
             </p>
             <p class="ame-hero-bio">
-              Built with correct <strong>Indian financial formulas</strong> (SIP effective rate, LIC IRR, FD quarterly compounding), real liability tracking, and a 12-tool AI that handles salary hikes, EMI closures, investment redemptions, and spending analysis — all in plain language.
+              Built with correct <strong>Indian financial formulas</strong> (SIP effective rate, LIC IRR, FD quarterly
+              compounding), real liability tracking, and a 12-tool AI that handles salary hikes, EMI closures,
+              investment redemptions, and spending analysis — all in plain language.
             </p>
             <div class="ame-hero-quick-facts">
               <div class="ame-quick-fact">
@@ -1070,7 +1247,10 @@
               <div class="ame-project-live-badge">Ready to launch</div>
             </div>
             <p class="ame-project-desc">
-              Aurelia is a full-stack AI wealth operating system — GPT-4o–powered natural language logging, multimodal document parsing (salary slips, LIC policies, FD receipts, bank statements), SIP/LIC/FD investment intelligence with correct Indian compounding formulas, and a live portfolio with allocation charts, cash flow metrics, and debt tracking — all in a single premium product built for Indian finance.
+              Aurelia is a full-stack AI wealth operating system — GPT-4o–powered natural language logging, multimodal
+              document parsing (salary slips, LIC policies, FD receipts, bank statements), SIP/LIC/FD investment
+              intelligence with correct Indian compounding formulas, and a live portfolio with allocation charts, cash
+              flow metrics, and debt tracking — all in a single premium product built for Indian finance.
             </p>
             <div class="ame-project-features">
               <span class="ame-proj-feat">Document photo → AI auto-log</span>
@@ -1100,7 +1280,8 @@
           <div class="ame-quote-card">
             <div class="ame-quote-mark">"</div>
             <blockquote class="ame-quote-text">
-              The best financial product is the one customers return to every week. Aurelia turns wealth management into a guided habit instead of a spreadsheet chore.
+              The best financial product is the one customers return to every week. Aurelia turns wealth management into
+              a guided habit instead of a spreadsheet chore.
             </blockquote>
             <div class="ame-quote-attr">— Aurelia product principle</div>
           </div>
@@ -1113,12 +1294,14 @@
             <div class="ame-phil-card">
               <div class="ame-phil-icon">⚡</div>
               <h3>Simple enough to use daily</h3>
-              <p>Users can log money activity in plain language, review performance instantly, and avoid friction that kills retention.</p>
+              <p>Users can log money activity in plain language, review performance instantly, and avoid friction that
+                kills retention.</p>
             </div>
             <div class="ame-phil-card">
               <div class="ame-phil-icon">🌱</div>
               <h3>Trust drives retention</h3>
-              <p>Clear insights, useful reminders, and thoughtful guidance are what make a finance product worth subscribing to long term.</p>
+              <p>Clear insights, useful reminders, and thoughtful guidance are what make a finance product worth
+                subscribing to long term.</p>
             </div>
           </div>
         </section>
@@ -1129,14 +1312,26 @@
           <div class="ame-cta-inner">
             <div class="ame-cta-avatar">A</div>
             <h2 class="ame-cta-title">Start the Aurelia experience</h2>
-            <p class="ame-cta-body">Aurelia is positioned as a premium subscription product for users who want cleaner money workflows, better visibility, and an AI assistant that keeps their finances moving.</p>
+            <p class="ame-cta-body">Aurelia is positioned as a premium subscription product for users who want cleaner
+              money workflows, better visibility, and an AI assistant that keeps their finances moving.</p>
             <div class="ame-cta-actions">
-              <a href="mailto:saransh@aurelia.in" class="btn btn-primary ame-cta-btn" style="text-decoration: none; color: white; display: inline-flex; align-items: center; gap: 0.5rem; border: none; cursor: pointer;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+              <a href="mailto:saransh@aurelia.in" class="btn btn-primary ame-cta-btn"
+                style="text-decoration: none; color: white; display: inline-flex; align-items: center; gap: 0.5rem; border: none; cursor: pointer;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                  <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
                 Request Access
               </a>
               <button class="ame-cta-btn-secondary" onclick="document.querySelector('[data-tab=dashboard]').click()">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="7" height="9"></rect>
+                  <rect x="14" y="3" width="7" height="5"></rect>
+                  <rect x="14" y="12" width="7" height="9"></rect>
+                  <rect x="3" y="16" width="7" height="5"></rect>
+                </svg>
                 View Product
               </button>
             </div>
@@ -1173,14 +1368,16 @@
           <!-- Maximize / restore toggle -->
           <button class="ai-widget-resize-btn" id="aiWidgetResizeBtn" aria-label="Maximize chat" title="Maximize">
             <!-- Maximize icon: two outward diagonal arrows (shown in normal state) -->
-            <svg class="ai-resize-icon-expand" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <svg class="ai-resize-icon-expand" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="15 3 21 3 21 9"></polyline>
               <polyline points="9 21 3 21 3 15"></polyline>
               <line x1="21" y1="3" x2="14" y2="10"></line>
               <line x1="3" y1="21" x2="10" y2="14"></line>
             </svg>
             <!-- Restore icon: two inward diagonal arrows (shown in expanded state) -->
-            <svg class="ai-resize-icon-compress" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <svg class="ai-resize-icon-compress" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="4 14 10 14 10 20"></polyline>
               <polyline points="20 10 14 10 14 4"></polyline>
               <line x1="10" y1="14" x2="3" y2="21"></line>
@@ -1189,7 +1386,11 @@
           </button>
           <!-- Close / minimise to FAB -->
           <button class="ai-widget-close-btn" id="aiWidgetCloseBtn" aria-label="Close chat" title="Close">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
           </button>
         </div>
       </div>
@@ -1198,7 +1399,8 @@
       <div class="ai-chat-messages" id="aiChatMessages" role="log" aria-live="polite">
         <div class="ai-message assistant">
           Hi! I'm <strong>Aurelia AI</strong>. Log your finances just by talking to me.<br><br>
-          Try: <em>"I spent ₹1500 on groceries"</em> or <em>"Add HDFC SIP ₹5000/month"</em>. You can also upload a salary slip, LIC policy, or bank statement and I'll extract everything.
+          Try: <em>"I spent ₹1500 on groceries"</em> or <em>"Add HDFC SIP ₹5000/month"</em>. You can also upload a
+          salary slip, LIC policy, or bank statement and I'll extract everything.
         </div>
       </div>
 
@@ -1208,13 +1410,16 @@
         <button class="ai-chip" data-fill="I received ₹">💰 Income</button>
         <button class="ai-chip" data-fill="Add SIP ₹">📈 Add SIP</button>
         <button class="ai-chip" data-send="What is my current net worth and investment value?">🏦 Net worth</button>
-        <button class="ai-chip" data-send="Analyze my spending this month and give a category breakdown">📊 Spending</button>
-        <button class="ai-chip" data-send="What is my left per month after expenses and investments?">💡 Savings</button>
+        <button class="ai-chip" data-send="Analyze my spending this month and give a category breakdown">📊
+          Spending</button>
+        <button class="ai-chip" data-send="What is my left per month after expenses and investments?">💡
+          Savings</button>
         <button class="ai-chip" id="aiChipUpload">📎 Upload doc</button>
       </div>
 
       <!-- File input (hidden) -->
-      <input type="file" id="aiFileInput" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none" aria-hidden="true">
+      <input type="file" id="aiFileInput" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none"
+        aria-hidden="true">
 
       <!-- Attachment preview -->
       <div class="ai-attachment-bar" id="aiAttachmentBar" style="display:none" aria-live="polite">
@@ -1223,19 +1428,35 @@
           <span id="aiAttachName" class="ai-attach-filename"></span>
           <span class="ai-attach-hint">AI will extract all financial data</span>
         </div>
-        <button type="button" id="aiAttachRemove" class="ai-attach-remove" title="Remove" aria-label="Remove attachment">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        <button type="button" id="aiAttachRemove" class="ai-attach-remove" title="Remove"
+          aria-label="Remove attachment">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
         </button>
       </div>
 
       <!-- Input -->
       <form id="aiChatForm" class="ai-widget-form">
-        <button type="button" id="aiAttachBtn" class="ai-attach-btn" title="Upload document (salary slip, LIC policy, FD receipt, bank statement)" aria-label="Attach document">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+        <button type="button" id="aiAttachBtn" class="ai-attach-btn"
+          title="Upload document (salary slip, LIC policy, FD receipt, bank statement)" aria-label="Attach document">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path
+              d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48">
+            </path>
+          </svg>
         </button>
-        <input type="text" id="aiChatInput" class="ai-widget-input" placeholder="Ask Aurelia anything…" aria-label="Message Aurelia AI" autocomplete="off">
+        <input type="text" id="aiChatInput" class="ai-widget-input" placeholder="Ask Aurelia anything…"
+          aria-label="Message Aurelia AI" autocomplete="off">
         <button type="submit" id="aiSendBtn" class="ai-widget-send" aria-label="Send message">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
         </button>
       </form>
 
@@ -1245,25 +1466,37 @@
     <button class="ai-fab" id="aiFloatBtn" aria-label="Open AI chat" title="Chat with Aurelia AI">
       <!-- Chat icon (visible when closed) -->
       <span class="ai-fab-icon-chat">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
       </span>
       <!-- Close icon (visible when open) -->
       <span class="ai-fab-icon-close">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
       </span>
     </button>
 
   </div><!-- /.ai-float-root -->
 
   <!-- Edit Modal -->
-  <div class="modal-overlay" id="editModal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="editModalTitle">
+  <div class="modal-overlay" id="editModal" style="display:none;" role="dialog" aria-modal="true"
+    aria-labelledby="editModalTitle">
     <div class="modal-card">
 
       <!-- Header -->
       <div class="modal-header">
         <h2 id="editModalTitle">Edit Entry</h2>
         <button class="modal-close-btn" id="editModalClose" aria-label="Close">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
         </button>
       </div>
 
@@ -1303,7 +1536,8 @@
 
           <div class="form-group">
             <label class="form-label" for="editInvName">Name</label>
-            <input class="form-input" type="text" id="editInvName" placeholder="e.g. LIC Jeevan Lakshya, Nifty 50 SIP" required>
+            <input class="form-input" type="text" id="editInvName" placeholder="e.g. LIC Jeevan Lakshya, Nifty 50 SIP"
+              required>
           </div>
 
           <div class="form-group horizontal">
@@ -1374,20 +1608,24 @@
             </div>
             <div class="form-group horizontal">
               <div>
-                <label class="form-label" for="editLicPolicyNum">Policy Number <span class="label-opt">optional</span></label>
+                <label class="form-label" for="editLicPolicyNum">Policy Number <span
+                    class="label-opt">optional</span></label>
                 <input class="form-input" type="text" id="editLicPolicyNum" placeholder="e.g. 901234567">
               </div>
               <div>
-                <label class="form-label" for="editLicPremiumDue">Next Premium Due <span class="label-opt">optional</span></label>
+                <label class="form-label" for="editLicPremiumDue">Next Premium Due <span
+                    class="label-opt">optional</span></label>
                 <input class="form-input" type="date" id="editLicPremiumDue">
               </div>
             </div>
             <div class="edit-rate-result">
               <div>
-                <div class="edit-rate-result-label">Implied Annual Return <span class="edit-rate-auto-tag" id="editLicRateTag">auto</span></div>
+                <div class="edit-rate-result-label">Implied Annual Return <span class="edit-rate-auto-tag"
+                    id="editLicRateTag">auto</span></div>
                 <div class="edit-rate-result-hint" id="editLicRateHint">Enter maturity value &amp; duration above</div>
               </div>
-              <input class="form-input edit-rate-result-input" type="number" step="0.1" min="0" id="editInvRateLic" placeholder="—">
+              <input class="form-input edit-rate-result-input" type="number" step="0.1" min="0" id="editInvRateLic"
+                placeholder="—">
             </div>
           </div>
 
@@ -1403,90 +1641,93 @@
   </div>
 
   <!-- Screen reader accessible table alternate data for accessibility compliance -->
-  <div class="sr-only" style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0;" id="accessibleSummary">
+  <div class="sr-only"
+    style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0;"
+    id="accessibleSummary">
     Aurelia Wealth Dashboard tracks your personal expenses and investments.
   </div>
 
   <!-- Floating AI Widget: open/close + chip handlers -->
   <script defer>
-  document.addEventListener('DOMContentLoaded', () => {
-    const floatRoot   = document.getElementById('aiFloatRoot');
-    const widget      = document.getElementById('aiWidget');
-    const floatBtn    = document.getElementById('aiFloatBtn');
-    const closeBtn    = document.getElementById('aiWidgetCloseBtn');
-    const aiInput     = document.getElementById('aiChatInput');
-    const aiForm      = document.getElementById('aiChatForm');
-    const aiFileInput = document.getElementById('aiFileInput');
-    const messages    = document.getElementById('aiChatMessages');
+    document.addEventListener('DOMContentLoaded', () => {
+      const floatRoot = document.getElementById('aiFloatRoot');
+      const widget = document.getElementById('aiWidget');
+      const floatBtn = document.getElementById('aiFloatBtn');
+      const closeBtn = document.getElementById('aiWidgetCloseBtn');
+      const aiInput = document.getElementById('aiChatInput');
+      const aiForm = document.getElementById('aiChatForm');
+      const aiFileInput = document.getElementById('aiFileInput');
+      const messages = document.getElementById('aiChatMessages');
 
-    const resizeBtn = document.getElementById('aiWidgetResizeBtn');
+      const resizeBtn = document.getElementById('aiWidgetResizeBtn');
 
-    function openWidget() {
-      if (!floatRoot) return;
-      floatRoot.classList.add('open');
-      if (widget) widget.setAttribute('aria-hidden', 'false');
-      setTimeout(() => { if (aiInput) aiInput.focus(); }, 320);
-    }
-
-    function closeWidget() {
-      if (!floatRoot) return;
-      floatRoot.classList.remove('open');
-      if (widget) {
-        widget.setAttribute('aria-hidden', 'true');
-        // Reset to normal size whenever closed
-        widget.classList.remove('expanded');
+      function openWidget() {
+        if (!floatRoot) return;
+        floatRoot.classList.add('open');
+        if (widget) widget.setAttribute('aria-hidden', 'false');
+        setTimeout(() => { if (aiInput) aiInput.focus(); }, 320);
       }
-      if (resizeBtn) {
-        resizeBtn.setAttribute('aria-label', 'Maximize chat');
-        resizeBtn.title = 'Maximize';
+
+      function closeWidget() {
+        if (!floatRoot) return;
+        floatRoot.classList.remove('open');
+        if (widget) {
+          widget.setAttribute('aria-hidden', 'true');
+          // Reset to normal size whenever closed
+          widget.classList.remove('expanded');
+        }
+        if (resizeBtn) {
+          resizeBtn.setAttribute('aria-label', 'Maximize chat');
+          resizeBtn.title = 'Maximize';
+        }
       }
-    }
 
-    if (floatBtn) floatBtn.addEventListener('click', () =>
-      floatRoot.classList.contains('open') ? closeWidget() : openWidget()
-    );
-    if (closeBtn) closeBtn.addEventListener('click', closeWidget);
+      if (floatBtn) floatBtn.addEventListener('click', () =>
+        floatRoot.classList.contains('open') ? closeWidget() : openWidget()
+      );
+      if (closeBtn) closeBtn.addEventListener('click', closeWidget);
 
-    // Maximize ↔ restore toggle
-    if (resizeBtn && widget) {
-      resizeBtn.addEventListener('click', () => {
-        widget.classList.toggle('expanded');
-        const isExpanded = widget.classList.contains('expanded');
-        resizeBtn.setAttribute('aria-label', isExpanded ? 'Restore chat' : 'Maximize chat');
-        resizeBtn.title = isExpanded ? 'Restore' : 'Maximize';
-      });
-    }
+      // Maximize ↔ restore toggle
+      if (resizeBtn && widget) {
+        resizeBtn.addEventListener('click', () => {
+          widget.classList.toggle('expanded');
+          const isExpanded = widget.classList.contains('expanded');
+          resizeBtn.setAttribute('aria-label', isExpanded ? 'Restore chat' : 'Maximize chat');
+          resizeBtn.title = isExpanded ? 'Restore' : 'Maximize';
+        });
+      }
 
-    // Auto-open when AI replies (new child node in messages)
-    if (messages) {
-      new MutationObserver(() => openWidget()).observe(messages, { childList: true });
-    }
+      // Auto-open when AI replies (new child node in messages)
+      if (messages) {
+        new MutationObserver(() => openWidget()).observe(messages, { childList: true });
+      }
 
-    // ── Chip handlers ─────────────────────────────────────────────
-    document.querySelectorAll('.ai-chip').forEach(chip => {
-      chip.addEventListener('click', () => {
-        openWidget();
-        const fill = chip.dataset.fill;
-        const send = chip.dataset.send;
+      // ── Chip handlers ─────────────────────────────────────────────
+      document.querySelectorAll('.ai-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          openWidget();
+          const fill = chip.dataset.fill;
+          const send = chip.dataset.send;
 
-        if (chip.id === 'aiChipUpload') {
-          if (aiFileInput) aiFileInput.click();
-          return;
-        }
-        if (fill && aiInput) {
-          aiInput.value = fill;
-          aiInput.focus();
-          aiInput.setSelectionRange(fill.length, fill.length);
-        } else if (send && aiInput && aiForm) {
-          aiInput.value = send;
-          setTimeout(() => {
-            aiForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
-          }, 320);
-        }
+          if (chip.id === 'aiChipUpload') {
+            if (aiFileInput) aiFileInput.click();
+            return;
+          }
+          if (fill && aiInput) {
+            aiInput.value = fill;
+            aiInput.focus();
+            aiInput.setSelectionRange(fill.length, fill.length);
+          } else if (send && aiInput && aiForm) {
+            aiInput.value = send;
+            setTimeout(() => {
+              aiForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+            }, 320);
+          }
+        });
       });
     });
-  });
   </script>
 
 </body>
+
 </html>
