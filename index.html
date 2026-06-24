@@ -165,7 +165,6 @@
       </div>
     </aside>
 
-    <div class="content-wrapper">
     <!-- Main Content Area -->
     <main class="main-content">
 
@@ -1139,75 +1138,94 @@
       </div><!-- /#aboutTab -->
 
     </main>
+  </div><!-- /.app-container -->
 
-    <!-- ══════════════════════════════════════════════════════
-         PERSISTENT AI ASSISTANT PANEL
-         Desktop: right column (always visible)
-         Mobile:  fixed bottom bar (expands on tap)
-    ═══════════════════════════════════════════════════════ -->
-    <aside class="ai-panel" id="aiPanel" aria-label="Aurelia AI Assistant">
+  <!-- ══════════════════════════════════════════════════════════
+       FLOATING AI CHAT WIDGET
+       Intercom-style FAB: collapsed = button, expanded = chat card
+  ═══════════════════════════════════════════════════════════ -->
+  <div class="ai-float-root" id="aiFloatRoot">
 
-      <!-- Panel header -->
-      <div class="ai-panel-header">
-        <div class="ai-panel-title">
-          <div class="pulse-indicator"></div>
-          <span>Aurelia AI</span>
-          <span class="ai-panel-tagline">Always on</span>
+    <!-- Chat card (shown when open) -->
+    <div class="ai-widget" id="aiWidget" role="dialog" aria-label="Aurelia AI Chat" aria-hidden="true">
+
+      <!-- Header -->
+      <div class="ai-widget-header">
+        <div class="ai-widget-header-info">
+          <div class="ai-widget-avatar">
+            A
+            <span class="ai-widget-online"></span>
+          </div>
+          <div>
+            <div class="ai-widget-name">Aurelia AI</div>
+            <div class="ai-widget-status">Your personal finance AI</div>
+          </div>
         </div>
-        <button class="ai-panel-toggle-btn" id="aiPanelToggleBtn" aria-label="Toggle AI panel">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+        <button class="ai-widget-close-btn" id="aiWidgetCloseBtn" aria-label="Close chat">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
       </div>
 
-      <!-- Chat messages -->
+      <!-- Messages -->
       <div class="ai-chat-messages" id="aiChatMessages" role="log" aria-live="polite">
         <div class="ai-message assistant">
-          Hi! I'm <strong>Aurelia AI</strong> — log your finances just by talking to me.<br><br>
-          Try: <em>"I spent ₹1500 on groceries"</em>, <em>"Add HDFC SIP ₹5000/month"</em>, or upload a salary slip / LIC policy / bank statement and I'll extract everything automatically.
+          Hi! I'm <strong>Aurelia AI</strong>. Log your finances just by talking to me.<br><br>
+          Try: <em>"I spent ₹1500 on groceries"</em> or <em>"Add HDFC SIP ₹5000/month"</em>. You can also upload a salary slip, LIC policy, or bank statement and I'll extract everything.
         </div>
       </div>
 
       <!-- Quick-action chips -->
-      <div class="ai-chips-row" id="aiChipsRow" aria-label="Quick actions">
-        <button class="ai-chip" data-fill="I spent ₹" aria-label="Log an expense">💸 Expense</button>
-        <button class="ai-chip" data-fill="I received ₹" aria-label="Log income">💰 Income</button>
-        <button class="ai-chip" data-fill="Add SIP ₹" aria-label="Add SIP investment">📈 Add SIP</button>
-        <button class="ai-chip" data-send="What is my current net worth and investment value?" aria-label="Check net worth">🏦 Net worth</button>
-        <button class="ai-chip" data-send="Analyze my spending this month and give me a category breakdown" aria-label="Spending analysis">📊 Spending</button>
-        <button class="ai-chip" data-send="What is my left per month after all expenses and investments?" aria-label="Monthly savings">💡 Savings left</button>
-        <button class="ai-chip" id="aiChipUpload" aria-label="Upload a document">📎 Upload doc</button>
+      <div class="ai-chips-row" id="aiChipsRow">
+        <button class="ai-chip" data-fill="I spent ₹">💸 Expense</button>
+        <button class="ai-chip" data-fill="I received ₹">💰 Income</button>
+        <button class="ai-chip" data-fill="Add SIP ₹">📈 Add SIP</button>
+        <button class="ai-chip" data-send="What is my current net worth and investment value?">🏦 Net worth</button>
+        <button class="ai-chip" data-send="Analyze my spending this month and give a category breakdown">📊 Spending</button>
+        <button class="ai-chip" data-send="What is my left per month after expenses and investments?">💡 Savings</button>
+        <button class="ai-chip" id="aiChipUpload">📎 Upload doc</button>
       </div>
 
-      <!-- Hidden file input -->
+      <!-- File input (hidden) -->
       <input type="file" id="aiFileInput" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none" aria-hidden="true">
 
-      <!-- Attachment preview bar -->
+      <!-- Attachment preview -->
       <div class="ai-attachment-bar" id="aiAttachmentBar" style="display:none" aria-live="polite">
         <img id="aiAttachThumb" src="" alt="Attached document preview" class="ai-attach-thumb">
         <div class="ai-attach-info">
           <span id="aiAttachName" class="ai-attach-filename"></span>
-          <span class="ai-attach-hint">AI will extract and log all financial data</span>
+          <span class="ai-attach-hint">AI will extract all financial data</span>
         </div>
         <button type="button" id="aiAttachRemove" class="ai-attach-remove" title="Remove" aria-label="Remove attachment">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
       </div>
 
-      <!-- Input form -->
-      <form id="aiChatForm" class="ai-panel-form">
+      <!-- Input -->
+      <form id="aiChatForm" class="ai-widget-form">
         <button type="button" id="aiAttachBtn" class="ai-attach-btn" title="Upload document (salary slip, LIC policy, FD receipt, bank statement)" aria-label="Attach document">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
         </button>
-        <input type="text" id="aiChatInput" class="ai-panel-input" placeholder="Ask Aurelia anything…" aria-label="Message Aurelia AI" autocomplete="off">
-        <button type="submit" id="aiSendBtn" class="ai-panel-send" aria-label="Send message">
+        <input type="text" id="aiChatInput" class="ai-widget-input" placeholder="Ask Aurelia anything…" aria-label="Message Aurelia AI" autocomplete="off">
+        <button type="submit" id="aiSendBtn" class="ai-widget-send" aria-label="Send message">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
         </button>
       </form>
 
-    </aside><!-- /.ai-panel -->
+    </div><!-- /.ai-widget -->
 
-    </div><!-- /.content-wrapper -->
-  </div><!-- /.app-container -->
+    <!-- FAB trigger button -->
+    <button class="ai-fab" id="aiFloatBtn" aria-label="Open AI chat" title="Chat with Aurelia AI">
+      <!-- Chat icon (visible when closed) -->
+      <span class="ai-fab-icon-chat">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+      </span>
+      <!-- Close icon (visible when open) -->
+      <span class="ai-fab-icon-close">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </span>
+    </button>
+
+  </div><!-- /.ai-float-root -->
 
   <!-- Edit Modal -->
   <div class="modal-overlay" id="editModal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="editModalTitle">
@@ -1361,75 +1379,61 @@
     Aurelia Wealth Dashboard tracks your personal expenses and investments.
   </div>
 
-  <!-- AI Panel: chip handlers + mobile expand/collapse -->
+  <!-- Floating AI Widget: open/close + chip handlers -->
   <script defer>
   document.addEventListener('DOMContentLoaded', () => {
-    const aiPanel   = document.getElementById('aiPanel');
-    const aiInput   = document.getElementById('aiChatInput');
-    const aiForm    = document.getElementById('aiChatForm');
+    const floatRoot   = document.getElementById('aiFloatRoot');
+    const widget      = document.getElementById('aiWidget');
+    const floatBtn    = document.getElementById('aiFloatBtn');
+    const closeBtn    = document.getElementById('aiWidgetCloseBtn');
+    const aiInput     = document.getElementById('aiChatInput');
+    const aiForm      = document.getElementById('aiChatForm');
     const aiFileInput = document.getElementById('aiFileInput');
+    const messages    = document.getElementById('aiChatMessages');
 
-    function isMobile() { return window.innerWidth <= 768; }
-
-    // ── Expand panel on mobile ─────────────────────────────────────
-    function openMobilePanel() {
-      if (isMobile() && aiPanel) aiPanel.classList.add('mobile-open');
+    function openWidget() {
+      if (!floatRoot) return;
+      floatRoot.classList.add('open');
+      if (widget) widget.setAttribute('aria-hidden', 'false');
+      setTimeout(() => { if (aiInput) aiInput.focus(); }, 320);
     }
 
-    function closeMobilePanel() {
-      if (aiPanel) aiPanel.classList.remove('mobile-open');
+    function closeWidget() {
+      if (!floatRoot) return;
+      floatRoot.classList.remove('open');
+      if (widget) widget.setAttribute('aria-hidden', 'true');
     }
 
-    // Focus on input opens the panel on mobile
-    if (aiInput) {
-      aiInput.addEventListener('focus', openMobilePanel);
+    if (floatBtn) floatBtn.addEventListener('click', () =>
+      floatRoot.classList.contains('open') ? closeWidget() : openWidget()
+    );
+    if (closeBtn) closeBtn.addEventListener('click', closeWidget);
+
+    // Auto-open when AI replies (new child node in messages)
+    if (messages) {
+      new MutationObserver(() => openWidget()).observe(messages, { childList: true });
     }
 
-    // Header toggle button: collapse on mobile, nothing on desktop (always visible)
-    const toggleBtn = document.getElementById('aiPanelToggleBtn');
-    if (toggleBtn) {
-      toggleBtn.addEventListener('click', () => {
-        if (isMobile()) {
-          closeMobilePanel();
-          if (aiInput) aiInput.blur();
-        }
-      });
-    }
-
-    // Auto-open panel when AI sends a new message (MutationObserver)
-    const messages = document.getElementById('aiChatMessages');
-    if (messages && isMobile()) {
-      new MutationObserver(() => openMobilePanel())
-        .observe(messages, { childList: true });
-    }
-
-    // ── Chip click handlers ────────────────────────────────────────
+    // ── Chip handlers ─────────────────────────────────────────────
     document.querySelectorAll('.ai-chip').forEach(chip => {
       chip.addEventListener('click', () => {
-        const fill = chip.dataset.fill;   // pre-fill input, user completes
-        const send = chip.dataset.send;   // send directly as a query
+        openWidget();
+        const fill = chip.dataset.fill;
+        const send = chip.dataset.send;
 
         if (chip.id === 'aiChipUpload') {
-          // Upload doc chip: trigger file picker
           if (aiFileInput) aiFileInput.click();
-          openMobilePanel();
           return;
         }
-
         if (fill && aiInput) {
           aiInput.value = fill;
           aiInput.focus();
-          // Place cursor at end so user types after the pre-fill
-          const len = fill.length;
-          aiInput.setSelectionRange(len, len);
-          openMobilePanel();
+          aiInput.setSelectionRange(fill.length, fill.length);
         } else if (send && aiInput && aiForm) {
           aiInput.value = send;
-          openMobilePanel();
-          // Small delay so the panel can animate open before sending
           setTimeout(() => {
             aiForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
-          }, isMobile() ? 200 : 0);
+          }, 320);
         }
       });
     });

@@ -17,10 +17,10 @@ document.addEventListener('DOMContentLoaded', () => {
       position: 'right'
     },
     {
-      elementSelector: '.ai-assistant-card',
-      title: 'Aurelia AI Assistant',
-      body: 'The heart of the app! Type your finances in plain language and the AI logs them. Try: <em>"I spent ₹1500 on groceries today"</em> or <em>"Add my HDFC SIP of ₹5000/month for 10 years"</em>.',
-      position: 'bottom'
+      elementSelector: '#aiFloatBtn',
+      title: 'Aurelia AI — Always There',
+      body: 'Click this button anytime to chat with your AI. Log expenses, add investments, or ask anything — <em>"I spent ₹1500 on groceries"</em>, <em>"Add HDFC SIP ₹5000/month"</em>. The AI handles it instantly.',
+      position: 'top'
     },
     {
       elementSelector: '.metrics-grid',
@@ -45,10 +45,10 @@ document.addEventListener('DOMContentLoaded', () => {
       position: 'bottom'
     },
     {
-      elementSelector: '.ai-assistant-card',
-      title: 'Aurelia AI Assistant',
-      body: 'The heart of the app! Type your finances in plain language — <em>"I spent ₹1500 on groceries"</em> or <em>"Add HDFC SIP ₹5000/month"</em> — and the AI logs them instantly.',
-      position: 'bottom'
+      elementSelector: '#aiFloatBtn',
+      title: 'Aurelia AI — Always There',
+      body: 'Tap the button at the bottom-right anytime to chat with your AI. Log expenses, add investments, or ask anything — <em>"I spent ₹1500 on groceries"</em> — and the AI logs it instantly.',
+      position: 'top'
     },
     {
       elementSelector: '.metrics-grid',
