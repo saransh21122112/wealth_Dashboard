@@ -165,6 +165,7 @@
       </div>
     </aside>
 
+    <div class="content-wrapper">
     <!-- Main Content Area -->
     <main class="main-content">
 
@@ -332,43 +333,6 @@
           </div>
         </section>
 
-        <!-- AI Financial Assistant Card -->
-        <section class="card primary ai-assistant-card" aria-labelledby="aiAssistantTitle">
-          <div class="card-header">
-            <div style="display: flex; align-items: center; gap: 0.75rem;">
-              <div class="pulse-indicator"></div>
-              <h2 class="card-title" id="aiAssistantTitle" style="font-size: 1.15rem; font-weight: 700; margin: 0; color: var(--text-primary);">Aurelia AI Assistant</h2>
-            </div>
-          </div>
-          <div class="ai-chat-container">
-            <div class="ai-chat-messages" id="aiChatMessages" role="log" aria-live="polite">
-              <div class="ai-message assistant">
-                Hi! I'm Aurelia AI, your personal financial assistant. Tell me about your <strong>income</strong>, <strong>expenses</strong>, or <strong>investments</strong> — or <strong>upload a document</strong> (salary slip, LIC policy, FD receipt, bank statement, bill) and I'll extract and log everything automatically.
-              </div>
-            </div>
-            <!-- Hidden file input — images only; PDF users should screenshot -->
-            <input type="file" id="aiFileInput" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none" aria-hidden="true">
-            <!-- Attachment preview bar (shown when file is selected) -->
-            <div class="ai-attachment-bar" id="aiAttachmentBar" style="display:none" aria-live="polite">
-              <img id="aiAttachThumb" src="" alt="Attached document preview" class="ai-attach-thumb">
-              <div class="ai-attach-info">
-                <span id="aiAttachName" class="ai-attach-filename"></span>
-                <span class="ai-attach-hint">AI will extract and log all financial data</span>
-              </div>
-              <button type="button" id="aiAttachRemove" class="ai-attach-remove" title="Remove attachment" aria-label="Remove attachment">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-              </button>
-            </div>
-            <form id="aiChatForm" class="ai-chat-form">
-              <!-- Attach button -->
-              <button type="button" id="aiAttachBtn" class="ai-attach-btn" title="Upload document photo (salary slip, LIC policy, FD receipt, bill, bank statement)" aria-label="Attach document">
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
-              </button>
-              <input type="text" id="aiChatInput" placeholder="Describe finances, or upload a document and ask me to extract…" aria-label="Type message to Aurelia AI Assistant" autocomplete="off">
-              <button type="submit" class="btn btn-primary" id="aiSendBtn" style="min-height: auto; padding: 0.5rem 1.25rem;">Send</button>
-            </form>
-          </div>
-        </section>
 
         <!-- Financial Calendar -->
         <section class="card calendar-card" id="calendarSection" aria-labelledby="calendarTitle">
@@ -1175,8 +1139,76 @@
       </div><!-- /#aboutTab -->
 
     </main>
-  </div>
-  
+
+    <!-- ══════════════════════════════════════════════════════
+         PERSISTENT AI ASSISTANT PANEL
+         Desktop: right column (always visible)
+         Mobile:  fixed bottom bar (expands on tap)
+    ═══════════════════════════════════════════════════════ -->
+    <aside class="ai-panel" id="aiPanel" aria-label="Aurelia AI Assistant">
+
+      <!-- Panel header -->
+      <div class="ai-panel-header">
+        <div class="ai-panel-title">
+          <div class="pulse-indicator"></div>
+          <span>Aurelia AI</span>
+          <span class="ai-panel-tagline">Always on</span>
+        </div>
+        <button class="ai-panel-toggle-btn" id="aiPanelToggleBtn" aria-label="Toggle AI panel">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+        </button>
+      </div>
+
+      <!-- Chat messages -->
+      <div class="ai-chat-messages" id="aiChatMessages" role="log" aria-live="polite">
+        <div class="ai-message assistant">
+          Hi! I'm <strong>Aurelia AI</strong> — log your finances just by talking to me.<br><br>
+          Try: <em>"I spent ₹1500 on groceries"</em>, <em>"Add HDFC SIP ₹5000/month"</em>, or upload a salary slip / LIC policy / bank statement and I'll extract everything automatically.
+        </div>
+      </div>
+
+      <!-- Quick-action chips -->
+      <div class="ai-chips-row" id="aiChipsRow" aria-label="Quick actions">
+        <button class="ai-chip" data-fill="I spent ₹" aria-label="Log an expense">💸 Expense</button>
+        <button class="ai-chip" data-fill="I received ₹" aria-label="Log income">💰 Income</button>
+        <button class="ai-chip" data-fill="Add SIP ₹" aria-label="Add SIP investment">📈 Add SIP</button>
+        <button class="ai-chip" data-send="What is my current net worth and investment value?" aria-label="Check net worth">🏦 Net worth</button>
+        <button class="ai-chip" data-send="Analyze my spending this month and give me a category breakdown" aria-label="Spending analysis">📊 Spending</button>
+        <button class="ai-chip" data-send="What is my left per month after all expenses and investments?" aria-label="Monthly savings">💡 Savings left</button>
+        <button class="ai-chip" id="aiChipUpload" aria-label="Upload a document">📎 Upload doc</button>
+      </div>
+
+      <!-- Hidden file input -->
+      <input type="file" id="aiFileInput" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none" aria-hidden="true">
+
+      <!-- Attachment preview bar -->
+      <div class="ai-attachment-bar" id="aiAttachmentBar" style="display:none" aria-live="polite">
+        <img id="aiAttachThumb" src="" alt="Attached document preview" class="ai-attach-thumb">
+        <div class="ai-attach-info">
+          <span id="aiAttachName" class="ai-attach-filename"></span>
+          <span class="ai-attach-hint">AI will extract and log all financial data</span>
+        </div>
+        <button type="button" id="aiAttachRemove" class="ai-attach-remove" title="Remove" aria-label="Remove attachment">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <!-- Input form -->
+      <form id="aiChatForm" class="ai-panel-form">
+        <button type="button" id="aiAttachBtn" class="ai-attach-btn" title="Upload document (salary slip, LIC policy, FD receipt, bank statement)" aria-label="Attach document">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+        </button>
+        <input type="text" id="aiChatInput" class="ai-panel-input" placeholder="Ask Aurelia anything…" aria-label="Message Aurelia AI" autocomplete="off">
+        <button type="submit" id="aiSendBtn" class="ai-panel-send" aria-label="Send message">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+        </button>
+      </form>
+
+    </aside><!-- /.ai-panel -->
+
+    </div><!-- /.content-wrapper -->
+  </div><!-- /.app-container -->
+
   <!-- Edit Modal -->
   <div class="modal-overlay" id="editModal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="editModalTitle">
     <div class="modal-card">
@@ -1328,6 +1360,81 @@
   <div class="sr-only" style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0;" id="accessibleSummary">
     Aurelia Wealth Dashboard tracks your personal expenses and investments.
   </div>
+
+  <!-- AI Panel: chip handlers + mobile expand/collapse -->
+  <script defer>
+  document.addEventListener('DOMContentLoaded', () => {
+    const aiPanel   = document.getElementById('aiPanel');
+    const aiInput   = document.getElementById('aiChatInput');
+    const aiForm    = document.getElementById('aiChatForm');
+    const aiFileInput = document.getElementById('aiFileInput');
+
+    function isMobile() { return window.innerWidth <= 768; }
+
+    // ── Expand panel on mobile ─────────────────────────────────────
+    function openMobilePanel() {
+      if (isMobile() && aiPanel) aiPanel.classList.add('mobile-open');
+    }
+
+    function closeMobilePanel() {
+      if (aiPanel) aiPanel.classList.remove('mobile-open');
+    }
+
+    // Focus on input opens the panel on mobile
+    if (aiInput) {
+      aiInput.addEventListener('focus', openMobilePanel);
+    }
+
+    // Header toggle button: collapse on mobile, nothing on desktop (always visible)
+    const toggleBtn = document.getElementById('aiPanelToggleBtn');
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', () => {
+        if (isMobile()) {
+          closeMobilePanel();
+          if (aiInput) aiInput.blur();
+        }
+      });
+    }
+
+    // Auto-open panel when AI sends a new message (MutationObserver)
+    const messages = document.getElementById('aiChatMessages');
+    if (messages && isMobile()) {
+      new MutationObserver(() => openMobilePanel())
+        .observe(messages, { childList: true });
+    }
+
+    // ── Chip click handlers ────────────────────────────────────────
+    document.querySelectorAll('.ai-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const fill = chip.dataset.fill;   // pre-fill input, user completes
+        const send = chip.dataset.send;   // send directly as a query
+
+        if (chip.id === 'aiChipUpload') {
+          // Upload doc chip: trigger file picker
+          if (aiFileInput) aiFileInput.click();
+          openMobilePanel();
+          return;
+        }
+
+        if (fill && aiInput) {
+          aiInput.value = fill;
+          aiInput.focus();
+          // Place cursor at end so user types after the pre-fill
+          const len = fill.length;
+          aiInput.setSelectionRange(len, len);
+          openMobilePanel();
+        } else if (send && aiInput && aiForm) {
+          aiInput.value = send;
+          openMobilePanel();
+          // Small delay so the panel can animate open before sending
+          setTimeout(() => {
+            aiForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+          }, isMobile() ? 200 : 0);
+        }
+      });
+    });
+  });
+  </script>
 
 </body>
 </html>

@@ -299,14 +299,23 @@ body {
   border-color: var(--color-gold);
 }
 
+/* Content wrapper — holds main-content + ai-panel side by side */
+.content-wrapper {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  min-width: 0;
+}
+
 /* Main Content Area */
 .main-content {
-  flex-grow: 1;
+  flex: 1;
   padding: 2.5rem;
   overflow-y: auto;
   height: 100vh;
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .tab-pane {
@@ -1130,7 +1139,53 @@ tr:hover td {
     background-color: var(--surface-hover);
   }
 
-  /* ── Tour popover: bottom sheet on mobile ────────── */
+  /* ── AI panel: fixed bottom bar on mobile ────────── */
+  .content-wrapper {
+    flex-direction: column;
+  }
+
+  .ai-panel {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    min-width: unset;
+    height: auto;
+    max-height: 70vh;
+    border-left: none;
+    border-top: 1.5px solid var(--border-color);
+    z-index: 150;
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.12);
+    border-radius: 16px 16px 0 0;
+  }
+
+  /* Header and messages hidden in compact mode */
+  .ai-panel .ai-panel-header {
+    display: none;
+  }
+
+  .ai-panel .ai-chat-messages {
+    display: none;
+    max-height: 38vh;
+    flex: unset;
+  }
+
+  /* Expanded state: show header + messages */
+  .ai-panel.mobile-open .ai-panel-header {
+    display: flex;
+  }
+
+  .ai-panel.mobile-open .ai-chat-messages {
+    display: flex;
+  }
+
+  /* Main content gets bottom padding so content isn't hidden */
+  .main-content {
+    padding-bottom: 120px;
+  }
+
+  /* Tour popover: bottom sheet on mobile */
   .tour-popover {
     position: fixed !important;
     width: 100% !important;
@@ -1145,6 +1200,7 @@ tr:hover td {
     border-bottom: none !important;
     padding: 1.25rem 1.5rem 2rem !important;
     box-shadow: 0 -6px 40px rgba(0, 0, 0, 0.25) !important;
+    z-index: 2010 !important;
   }
 }
 
@@ -1292,6 +1348,195 @@ tr:hover td {
   outline: none;
   border-color: var(--color-gold);
   box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   PERSISTENT AI PANEL — right column on desktop, bottom sheet on mobile
+═══════════════════════════════════════════════════════════════════════ */
+.ai-panel {
+  width: 340px;
+  min-width: 300px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  border-left: 1.5px solid var(--border-color);
+  background: var(--surface-color);
+  overflow: hidden;
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              min-width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Panel header ─────────────────────────────────── */
+.ai-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.9rem 1.1rem;
+  border-bottom: 1.5px solid var(--border-color);
+  background: linear-gradient(135deg, var(--color-maroon-light) 0%, var(--color-gold-light) 100%);
+  flex-shrink: 0;
+}
+
+.ai-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.ai-panel-tagline {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--color-success);
+  background: rgba(46, 125, 50, 0.1);
+  padding: 0.1rem 0.45rem;
+  border-radius: 100px;
+  letter-spacing: 0.02em;
+}
+
+.ai-panel-toggle-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.3rem;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  transition: all var(--transition-fast);
+}
+
+.ai-panel-toggle-btn:hover {
+  background: rgba(128, 0, 32, 0.08);
+  color: var(--color-maroon);
+}
+
+/* ── Chat messages within panel ───────────────────── */
+.ai-panel .ai-chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.85rem;
+  background: var(--bg-color);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+/* ── Quick-action chips ───────────────────────────── */
+.ai-chips-row {
+  display: flex;
+  gap: 0.4rem;
+  padding: 0.55rem 0.85rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  border-top: 1px solid var(--border-color);
+  flex-shrink: 0;
+  background: var(--surface-color);
+}
+
+.ai-chips-row::-webkit-scrollbar { display: none; }
+
+.ai-chip {
+  white-space: nowrap;
+  font-size: 0.75rem;
+  padding: 0.28rem 0.65rem;
+  border-radius: 100px;
+  border: 1px solid var(--border-color);
+  background: var(--surface-hover);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-weight: 500;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.12s ease;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.ai-chip:hover {
+  border-color: var(--color-gold);
+  color: var(--color-maroon);
+  background: var(--color-gold-light);
+  transform: translateY(-1px);
+}
+
+.ai-chip:active {
+  transform: scale(0.94) translateY(0);
+}
+
+/* ── Attachment bar inside panel ──────────────────── */
+.ai-panel .ai-attachment-bar {
+  border-radius: 0;
+  border-top: 1px solid var(--border-color);
+  border-bottom: none;
+  border-left: none;
+  border-right: none;
+  flex-shrink: 0;
+}
+
+/* ── Input form ───────────────────────────────────── */
+.ai-panel-form {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.7rem 0.85rem;
+  border-top: 1.5px solid var(--border-color);
+  background: var(--surface-color);
+  flex-shrink: 0;
+}
+
+.ai-panel-input {
+  flex: 1;
+  background: var(--bg-color);
+  border: 1.5px solid var(--border-color);
+  border-radius: 20px;
+  padding: 0.55rem 0.95rem;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  min-width: 0;
+}
+
+.ai-panel-input:focus {
+  outline: none;
+  border-color: var(--color-gold);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.12);
+}
+
+.ai-panel-input::placeholder {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.ai-panel-send {
+  background: var(--color-maroon);
+  border: none;
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--transition-fast), transform 0.12s ease;
+  padding: 0;
+}
+
+.ai-panel-send:hover {
+  background: var(--color-maroon-hover);
+  transform: scale(1.1);
+}
+
+.ai-panel-send:active {
+  transform: scale(0.91);
 }
 
 /* ── Document Upload UI ──────────────────────────────────────────────── */
