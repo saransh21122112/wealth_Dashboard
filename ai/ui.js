@@ -24,10 +24,10 @@ export function createAIChatUI(aiChatMessages) {
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
 
-    // Bold: **text**
+    // Bold: **text** — convert first so remaining * are only single-asterisk
     html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-    // Italic: *text* (not touching **)
-    html = html.replace(/(?<!\*)\*([^*\n]+?)\*(?!\*)/g, '<em>$1</em>');
+    // Italic: *text* — safe now because ** is already converted; no lookbehind needed
+    html = html.replace(/\*([^*\n]+?)\*/g, '<em>$1</em>');
     // Inline code: `code`
     html = html.replace(/`([^`\n]+)`/g, '<code class="ai-inline-code">$1</code>');
 

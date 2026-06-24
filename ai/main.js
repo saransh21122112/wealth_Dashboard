@@ -2,7 +2,7 @@ import { requestAICompletion } from './api.js';
 import { createInitialMessageHistory } from './config.js';
 import { executeToolCall } from './tool-executor.js';
 import { AI_TOOLS } from './tools.js';
-import { createAIChatUI } from './ui.js';
+import { createAIChatUI } from './ui.js?v=4';
 
 const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10 MB
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
