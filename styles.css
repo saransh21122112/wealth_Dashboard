@@ -1131,16 +1131,29 @@ tr:hover td {
     background-color: var(--surface-hover);
   }
 
-  /* ── Floating widget: full-width on small screens ── */
+  /* ── Floating widget: mobile layout ────────────────
+     Root shrinks to FAB only; widget breaks out to
+     its own fixed position so it never overflows.      */
   .ai-float-root {
-    bottom: 16px;
+    bottom: 20px;
     right: 16px;
+    width: 60px;
+    height: 60px;
+    display: block; /* not flex — only contains FAB */
+    gap: 0;
   }
 
+  /* Widget independently fixed above the FAB */
   .ai-widget {
-    width: calc(100vw - 32px);
-    max-height: 72vh;
+    position: fixed;
+    bottom: 100px; /* 20px root + 60px FAB + 20px gap */
+    left: 12px;
+    right: 12px;
+    width: auto;
+    max-height: calc(100vh - 124px); /* never taller than viewport minus FAB+gap */
+    border-radius: 16px;
     transform-origin: bottom right;
+    box-shadow: 0 8px 48px rgba(18, 8, 10, 0.22), 0 0 0 1px var(--border-color);
   }
 
   /* Tour popover: bottom sheet on mobile */
@@ -1180,16 +1193,25 @@ tr:hover td {
     font-size: 1.3rem;
   }
 
+  /* Tighter chat widget on very small screens */
+  .ai-widget {
+    bottom: 96px;
+    left: 8px;
+    right: 8px;
+    max-height: calc(100vh - 116px);
+  }
+
+  .ai-float-root {
+    bottom: 16px;
+    right: 12px;
+  }
+
   .tab-heading h1 {
     font-size: 1.3rem;
   }
 
   .chart-card {
     min-height: 300px;
-  }
-
-  .ai-chat-messages {
-    max-height: 220px;
   }
 }
 
