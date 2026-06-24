@@ -1397,26 +1397,27 @@ tbody tr td:nth-child(6) {
     gap: 0;
   }
 
-  /* Widget independently fixed above the FAB */
+  /* Widget independently fixed above the FAB — centered */
   .ai-widget {
     position: fixed;
     bottom: 100px; /* 20px root + 60px FAB + 20px gap */
-    left: 12px;
-    right: 12px;
-    width: auto;
+    left: 0;
+    right: 0;
+    width: min(420px, calc(100vw - 24px));
+    margin: 0 auto;
     max-height: calc(100vh - 124px);
     border-radius: 16px;
-    transform-origin: bottom right;
+    transform-origin: bottom center;
     box-shadow: 0 8px 48px rgba(18, 8, 10, 0.22), 0 0 0 1px var(--border-color);
-    /* Smooth resize transition on mobile too */
+    /* Synchronized transitions — all size/position on the same curve */
     transition: opacity 0.3s ease,
                 transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
-                top 0.3s ease,
-                bottom 0.3s ease,
-                left 0.3s ease,
-                right 0.3s ease,
-                max-height 0.35s ease,
-                border-radius 0.3s ease;
+                top 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                left 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                right 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                border-radius 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   /* Maximized on mobile: full-screen from top to just above the FAB */
@@ -1425,6 +1426,8 @@ tbody tr td:nth-child(6) {
     bottom: 88px;  /* above FAB (20px margin + 60px FAB + 8px gap) */
     left: 8px;
     right: 8px;
+    width: auto;
+    margin: 0;
     max-height: none;  /* top+bottom constraints take over */
     border-radius: 16px;
   }
@@ -1472,12 +1475,27 @@ tbody tr td:nth-child(6) {
     padding: 0.45rem 0.8rem;
   }
 
+  /* More breathing room between bubbles + no layout shift on scrollbar appear */
+  .ai-widget .ai-chat-messages {
+    gap: 0.75rem;
+    scrollbar-gutter: stable;
+  }
+
   /* Message bubbles: slightly tighter, full readable width */
   .ai-widget .ai-message {
     max-width: 88%;
     font-size: 0.84rem;
     padding: 0.55rem 0.75rem;
     line-height: 1.48;
+  }
+
+  /* Modern tail-style bubble geometry on mobile */
+  .ai-widget .ai-message.assistant {
+    border-radius: 18px 18px 18px 4px;
+  }
+
+  .ai-widget .ai-message.user {
+    border-radius: 18px 18px 4px 18px;
   }
 
   /* Tour popover: bottom sheet on mobile */
@@ -1822,11 +1840,12 @@ tbody tr td:nth-child(6) {
   transform: scale(0.8) translateY(16px);
   transform-origin: bottom right;
   pointer-events: none;
-  /* Smooth transition for both open/close AND resize */
+  will-change: transform, opacity;
+  /* Synchronized transitions — all size properties on the same curve */
   transition: opacity 0.3s ease,
               transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
-              width 0.3s ease,
-              max-height 0.35s ease;
+              width 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .ai-float-root.open .ai-widget {
@@ -1839,6 +1858,23 @@ tbody tr td:nth-child(6) {
 .ai-widget.expanded {
   width: min(680px, calc(100vw - 56px));
   max-height: min(88vh, calc(100vh - 56px));
+}
+
+/* Override desktop expanded width on mobile — must live after the rule above */
+@media (max-width: 768px) {
+  .ai-widget.expanded {
+    width: auto;
+    max-width: none;
+    max-height: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .ai-widget.expanded {
+    width: auto;
+    max-width: none;
+    max-height: none;
+  }
 }
 
 /* ── Widget header ────────────────────────────────── */
@@ -1941,7 +1977,8 @@ tbody tr td:nth-child(6) {
   background: var(--bg-color);
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
+  gap: 0.75rem;
+  scrollbar-gutter: stable;
   min-height: 0;
   max-height: none;   /* cancel the 280px cap from generic .ai-chat-messages */
   border: none;       /* cancel the box border from generic .ai-chat-messages */
@@ -1955,26 +1992,26 @@ tbody tr td:nth-child(6) {
   font-size: 0.875rem;
   line-height: 1.5;
   word-break: break-word;
-  border-radius: 14px;
+  border-radius: 18px;
 }
 
-/* AI reply: subtle card, NO heavy left accent */
+/* AI reply: subtle card, tail anchored bottom-left */
 .ai-widget .ai-message.assistant {
   align-self: flex-start;
   background: var(--surface-color);
   border: 1px solid var(--border-color);
   border-left: none;          /* override the 4px gold left border */
-  border-top-left-radius: 4px;
+  border-radius: 18px 18px 18px 4px;
   color: var(--text-primary);
 }
 
-/* User bubble: compact maroon pill */
+/* User bubble: maroon pill, tail anchored bottom-right */
 .ai-widget .ai-message.user {
   align-self: flex-end;
   background: var(--color-maroon);
   color: white;
   border: none;
-  border-top-right-radius: 4px;
+  border-radius: 18px 18px 4px 18px;
 }
 
 /* System status toast */

@@ -7,6 +7,8 @@ import { createAIChatUI } from './ui.js?v=4';
 const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10 MB
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
+const isMobile = () => window.matchMedia('(max-width: 768px)').matches;
+
 document.addEventListener('DOMContentLoaded', () => {
   const aiChatMessages = document.getElementById('aiChatMessages');
   const aiChatForm    = document.getElementById('aiChatForm');
@@ -69,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (aiAttachName)    { aiAttachName.textContent = file.name; }
         if (aiAttachmentBar) { aiAttachmentBar.style.display = 'flex'; }
         if (aiAttachBtn)     { aiAttachBtn.classList.add('active'); }
-        aiChatInput.focus();
+        if (!isMobile()) aiChatInput.focus();
       };
       reader.readAsDataURL(file);
     });
@@ -145,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     messageHistory.push({ role: 'user', content: userContent });
     aiChatInput.value = '';
-    aiChatInput.focus();
+    if (!isMobile()) aiChatInput.focus();
     clearAttachment();
     setTypingIndicator(true);
 

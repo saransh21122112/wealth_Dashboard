@@ -1665,7 +1665,7 @@
         if (!floatRoot) return;
         floatRoot.classList.add('open');
         if (widget) widget.setAttribute('aria-hidden', 'false');
-        setTimeout(() => { if (aiInput) aiInput.focus(); }, 320);
+        if (!('ontouchstart' in window)) setTimeout(() => { if (aiInput) aiInput.focus(); }, 320);
       }
 
       function closeWidget() {
