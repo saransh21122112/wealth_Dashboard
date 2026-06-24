@@ -1175,6 +1175,57 @@ tr:hover td {
     border-radius: 16px;
   }
 
+  /* ── Mobile widget component tweaks ─────────────── */
+
+  /* Tighter header on small screens */
+  .ai-widget-header {
+    padding: 0.75rem 0.9rem;
+  }
+
+  .ai-widget-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+  }
+
+  .ai-widget-name {
+    font-size: 0.88rem;
+  }
+
+  .ai-widget-status {
+    font-size: 0.67rem;
+  }
+
+  /* Chips: tighter padding, hide scrollbar cleanly */
+  .ai-chips-row {
+    padding: 0.45rem 0.7rem;
+    gap: 0.35rem;
+  }
+
+  .ai-chip {
+    font-size: 0.72rem;
+    padding: 0.25rem 0.55rem;
+  }
+
+  /* Input form: tighter on mobile */
+  .ai-widget-form {
+    padding: 0.55rem 0.7rem;
+    gap: 0.35rem;
+  }
+
+  .ai-widget-input {
+    font-size: 0.84rem;
+    padding: 0.45rem 0.8rem;
+  }
+
+  /* Message bubbles: slightly tighter, full readable width */
+  .ai-widget .ai-message {
+    max-width: 88%;
+    font-size: 0.84rem;
+    padding: 0.55rem 0.75rem;
+    line-height: 1.48;
+  }
+
   /* Tour popover: bottom sheet on mobile */
   .tour-popover {
     position: fixed !important;
@@ -1550,15 +1601,56 @@ tr:hover td {
 .ai-widget.expanded .ai-resize-icon-compress { display: flex; }
 
 /* ── Messages area ────────────────────────────────── */
+/* Widget message area — reset all inherited old-card styles */
 .ai-widget .ai-chat-messages {
   flex: 1;
   overflow-y: auto;
-  padding: 0.85rem;
+  padding: 0.8rem 0.85rem;
   background: var(--bg-color);
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.55rem;
   min-height: 0;
+  max-height: none;   /* cancel the 280px cap from generic .ai-chat-messages */
+  border: none;       /* cancel the box border from generic .ai-chat-messages */
+  border-radius: 0;
+}
+
+/* ── Clean chat bubbles inside the widget ─────────── */
+.ai-widget .ai-message {
+  max-width: 82%;
+  padding: 0.6rem 0.85rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  word-break: break-word;
+  border-radius: 14px;
+}
+
+/* AI reply: subtle card, NO heavy left accent */
+.ai-widget .ai-message.assistant {
+  align-self: flex-start;
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-left: none;          /* override the 4px gold left border */
+  border-top-left-radius: 4px;
+  color: var(--text-primary);
+}
+
+/* User bubble: compact maroon pill */
+.ai-widget .ai-message.user {
+  align-self: flex-end;
+  background: var(--color-maroon);
+  color: white;
+  border: none;
+  border-top-right-radius: 4px;
+}
+
+/* System status toast */
+.ai-widget .ai-message.system-status {
+  align-self: center;
+  max-width: 92%;
+  font-size: 0.78rem;
+  padding: 0.35rem 0.75rem;
 }
 
 /* ── Quick-action chips ───────────────────────────── */
