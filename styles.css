@@ -864,45 +864,65 @@ tbody tr:hover {
   background-color: var(--surface-hover);
 }
 
-/* Cells inside card-row */
+/* Cells inside desktop card-row */
 td {
   display: flex;
   flex-direction: column;
+  justify-content: center;
   padding: 0.25rem 0.5rem !important;
   border: none !important;
   font-size: 0.94rem;
   color: var(--text-primary);
-  white-space: normal;
-  word-break: break-word;
   vertical-align: middle;
+  /* ── Critical: allow flex children to shrink and truncate ── */
+  min-width: 0;               /* flex items default to min-width:auto which prevents shrinking */
+  white-space: nowrap;        /* keep text on a single line — no more 'Recurrin\ng' breaks */
+  overflow: hidden;           /* clip content that overflows the cell */
+  text-overflow: ellipsis;    /* show … when text is clipped */
+}
+
+/* Action cell must NOT clip its buttons */
+td.action-cell {
+  overflow: visible !important;
+  white-space: normal !important;
+}
+
+/* Nested block elements inside cells (e.g. investment name <div>) must also truncate.
+   text-overflow only works when the element itself has overflow:hidden + white-space:nowrap */
+td:not(.action-cell) > div,
+td:not(.action-cell) > span {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 /* Column distribution weights for desktop */
 tbody tr td:nth-child(1) {
-  flex: 2; /* Description / Name */
+  flex: 2.5;      /* Description / Name — widest column */
   font-weight: 600;
   font-size: 1rem;
   padding-right: 6rem !important; /* reserve space for the 2 absolute action buttons */
 }
 
 tbody tr td:nth-child(2) {
-  flex: 1.2; /* Category / Type */
+  flex: 1.1;      /* Category tag / Type */
 }
 
 tbody tr td:nth-child(3) {
-  flex: 1.2; /* Date / Invested Amount */
+  flex: 1;        /* Date */
 }
 
 tbody tr td:nth-child(4) {
-  flex: 1; /* Type / Rate */
+  flex: 1;        /* Recurring/Extra / Rate */
 }
 
 tbody tr td:nth-child(5) {
-  flex: 1.5; /* Amount / Current Value / Outstanding */
+  flex: 1.4;      /* Amount / Current Value / Outstanding */
 }
 
 tbody tr td:nth-child(6) {
-  flex: 1.2; /* Status */
+  flex: 1;        /* Status (lends/borrows table) */
 }
 
 .category-tag {
@@ -1272,6 +1292,21 @@ tbody tr td:nth-child(6) {
     font-size: 0.88rem !important;
     color: var(--text-primary) !important;
     white-space: normal !important;
+    word-break: break-word !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+
+  /* Reset nested div truncation on mobile — text must wrap freely in card layout */
+  .data-table-container td:not(.action-cell) > div,
+  .data-table-container td:not(.action-cell) > span,
+  #lendsSection td:not(.action-cell) > div,
+  #lendsSection td:not(.action-cell) > span,
+  #borrowsSection td:not(.action-cell) > div,
+  #borrowsSection td:not(.action-cell) > span {
+    overflow: visible !important;
+    white-space: normal !important;
+    text-overflow: clip !important;
     word-break: break-word !important;
   }
 
