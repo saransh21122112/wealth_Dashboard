@@ -16,17 +16,36 @@ export function setupNavigation(dom) {
     }
   }
 
+  const overlay = document.querySelector('.sidebar-overlay');
+
+  function openSidebar() {
+    dom.sidebar.classList.add('open');
+    if (overlay) overlay.classList.add('visible');
+  }
+
+  function closeSidebar() {
+    dom.sidebar.classList.remove('open');
+    if (overlay) overlay.classList.remove('visible');
+  }
+
+  // Nav item tap: switch tab + close mobile sidebar
   dom.navItems.forEach((item) => {
     item.addEventListener('click', () => {
       switchTab(item.getAttribute('data-tab'));
-      dom.sidebar.classList.remove('open');
+      closeSidebar();
     });
   });
 
+  // Hamburger toggle
   if (dom.menuToggle) {
     dom.menuToggle.addEventListener('click', () => {
-      dom.sidebar.classList.toggle('open');
+      dom.sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
     });
+  }
+
+  // Tap outside sidebar (overlay) closes it
+  if (overlay) {
+    overlay.addEventListener('click', closeSidebar);
   }
 
   return { switchTab };

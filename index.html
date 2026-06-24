@@ -60,18 +60,25 @@
       <div class="brand-icon">A</div>
       <div class="brand-name">Aurelia<span>Wealth</span></div>
     </div>
-    <button class="menu-toggle-btn" id="menuToggle" aria-label="Toggle Navigation Menu">
-      <!-- Menu burger SVG icon -->
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="4" y1="12" x2="20" y2="12"></line>
-        <line x1="4" y1="6" x2="20" y2="6"></line>
-        <line x1="4" y1="18" x2="20" y2="18"></line>
-      </svg>
-    </button>
+    <div class="mobile-header-actions">
+      <button class="menu-toggle-btn" id="mobileTourBtn" aria-label="Take App Tour" title="Take App Tour">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+      </button>
+      <button class="menu-toggle-btn" id="menuToggle" aria-label="Toggle Navigation Menu">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="4" y1="12" x2="20" y2="12"></line>
+          <line x1="4" y1="6" x2="20" y2="6"></line>
+          <line x1="4" y1="18" x2="20" y2="18"></line>
+        </svg>
+      </button>
+    </div>
   </header>
 
+  <!-- Sidebar overlay for mobile (tap outside to close) -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
   <div class="app-container">
-    
+
     <!-- Sidebar Navigation -->
     <aside class="sidebar" id="appSidebar">
       <div class="sidebar-top">

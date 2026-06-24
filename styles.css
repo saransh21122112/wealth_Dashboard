@@ -996,37 +996,186 @@ tr:hover td {
   cursor: pointer;
 }
 
+/* ── Mobile Top-bar actions ─────────────────────────────────────── */
+.mobile-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
 @media (max-width: 768px) {
+  /* ── Base layout ─────────────────────────────────── */
   body {
     flex-direction: column;
+    overflow-x: hidden;
   }
-  
+
   .app-container {
     flex-direction: column;
+    min-height: auto;
   }
-  
+
   .mobile-top-bar {
     display: flex;
+    height: 60px;
+    padding: 0 1rem;
   }
-  
+
+  /* ── Sidebar: slides in from left ────────────────── */
   .sidebar {
     width: 100%;
-    height: auto;
     position: fixed;
-    top: 60px; /* Below mobile header */
+    top: 60px;
     left: -100%;
     transition: left var(--transition-slow);
     box-shadow: var(--shadow-lg);
     height: calc(100vh - 60px);
+    overflow-y: auto;
+    z-index: 200;
   }
-  
+
   .sidebar.open {
     left: 0;
   }
-  
+
+  /* Overlay to close sidebar when tapping outside */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(18, 8, 10, 0.45);
+    z-index: 199;
+  }
+
+  .sidebar-overlay.visible {
+    display: block;
+  }
+
+  /* ── Main content ────────────────────────────────── */
   .main-content {
-    padding: 1.5rem;
+    padding: 1rem;
     height: auto;
+    min-height: calc(100vh - 60px);
+    overflow-y: visible;
+  }
+
+  /* ── Metrics: 2 columns on tablet, 1 on phone ────── */
+  .metrics-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  .card {
+    padding: 1.1rem 1.2rem;
+  }
+
+  .card-value {
+    font-size: 1.45rem;
+  }
+
+  /* ── Charts ─────────────────────────────────────── */
+  .visuals-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .chart-header {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .chart-title {
+    font-size: 1rem;
+  }
+
+  .timeline-picker button {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  /* ── Forms ──────────────────────────────────────── */
+  .management-layout {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .form-group.horizontal {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  /* ── Table: allow horizontal scroll on mobile ────── */
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ── Tab heading ─────────────────────────────────── */
+  .tab-heading {
+    margin-bottom: 1.25rem;
+  }
+
+  .tab-heading h1 {
+    font-size: 1.55rem;
+  }
+
+  /* ── Mobile header buttons ───────────────────────── */
+  .menu-toggle-btn {
+    padding: 0.45rem;
+    border-radius: var(--border-radius-sm);
+    transition: background-color var(--transition-fast);
+  }
+
+  .menu-toggle-btn:hover {
+    background-color: var(--surface-hover);
+  }
+
+  /* ── Tour popover: bottom sheet on mobile ────────── */
+  .tour-popover {
+    position: fixed !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    top: auto !important;
+    border-radius: 16px 16px 0 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-bottom: none !important;
+    padding: 1.25rem 1.5rem 2rem !important;
+    box-shadow: 0 -6px 40px rgba(0, 0, 0, 0.25) !important;
+  }
+}
+
+/* ── Very small phones (<= 480px) ──────────────────────────────────── */
+@media (max-width: 480px) {
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .main-content {
+    padding: 0.85rem;
+  }
+
+  .card {
+    padding: 1rem;
+  }
+
+  .card-value {
+    font-size: 1.3rem;
+  }
+
+  .tab-heading h1 {
+    font-size: 1.3rem;
+  }
+
+  .chart-card {
+    min-height: 300px;
+  }
+
+  .ai-chat-messages {
+    max-height: 220px;
   }
 }
 
