@@ -1686,10 +1686,12 @@ tbody tr td:nth-child(6) {
   flex-direction: column;
   align-items: flex-end;
   gap: 14px;
+  pointer-events: none; /* Let clicks pass through the empty container area */
 }
 
 /* ── FAB trigger button ───────────────────────────── */
 .ai-fab {
+  pointer-events: auto; /* Enable click capture on the button itself */
   width: 60px;
   height: 60px;
   border-radius: 50%;
