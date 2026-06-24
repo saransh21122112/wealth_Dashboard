@@ -1380,6 +1380,50 @@ td:nth-child(3) {
     word-break: break-word !important;
   }
 
+  /* ── Restore badge styling on mobile ─────────────────── */
+  .category-tag {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0.3rem 0.75rem !important;
+    border-radius: 20px !important;
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    max-width: none !important;       /* full text visible in card layout */
+    overflow: hidden !important;
+    white-space: nowrap !important;
+  }
+  .category-tag .cat-text {
+    overflow: visible !important;     /* no ellipsis needed on mobile */
+    text-overflow: clip !important;
+    white-space: nowrap !important;
+    word-break: normal !important;
+  }
+  .type-recurring {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0.3rem 0.75rem !important;
+    border-radius: 20px !important;
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    background: rgba(46, 125, 50, 0.12) !important;
+    color: var(--color-success) !important;
+    white-space: nowrap !important;
+  }
+  .type-extra {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0.3rem 0.75rem !important;
+    border-radius: 20px !important;
+    font-size: 0.82rem !important;
+    font-weight: 500 !important;
+    background: var(--surface-hover) !important;
+    color: var(--text-muted) !important;
+    white-space: nowrap !important;
+  }
+
   /* Label text shown before each non-title cell */
   .data-table-container td[data-label]:not([data-label=""])::before,
   #lendsSection td[data-label]:not([data-label=""])::before,
