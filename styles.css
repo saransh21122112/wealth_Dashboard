@@ -503,11 +503,17 @@ body {
 .trend-up {
   color: var(--color-success);
   font-weight: 600;
+  font-size: 0.8rem;
+  line-height: 1.2; /* compact line-height reduces vertical footprint in two-line amount cells */
+  white-space: nowrap;
 }
 
 .trend-down {
   color: var(--color-error);
   font-weight: 600;
+  font-size: 0.8rem;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 /* Visualization grid */
@@ -580,13 +586,20 @@ body {
 /* Form layouts */
 .management-layout {
   display: grid;
-  grid-template-columns: 0.8fr 1.2fr;
+  /* minmax(320px, 0.8fr): form column can never be narrower than 320px.
+     Without this, the 0.8fr column crushes to ~58px when DevTools panel opens. */
+  grid-template-columns: minmax(320px, 0.8fr) minmax(0, 1.2fr);
   gap: 2rem;
+  /* If the viewport is truly too narrow for both minmax constraints, scroll
+     horizontally rather than crushing content */
+  overflow-x: auto;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
+  /* Stack at 1100px — catches "DevTools panel open" on a typical 1470px monitor */
   .management-layout {
     grid-template-columns: 1fr;
+    overflow-x: visible;
   }
 }
 
@@ -874,55 +887,51 @@ td {
   font-size: 0.94rem;
   color: var(--text-primary);
   vertical-align: middle;
-  /* ── Critical: allow flex children to shrink and truncate ── */
-  min-width: 0;               /* flex items default to min-width:auto which prevents shrinking */
-  white-space: nowrap;        /* keep text on a single line — no more 'Recurrin\ng' breaks */
-  overflow: hidden;           /* clip content that overflows the cell */
-  text-overflow: ellipsis;    /* show … when text is clipped */
+  /* min-width:0 lets flex items shrink below content size */
+  min-width: 0;
+  /* NO overflow:hidden here — it clips .trend-up and "Recurring".
+     Clipping is only applied on the description column below. */
 }
 
-/* Action cell must NOT clip its buttons */
-td.action-cell {
-  overflow: visible !important;
-  white-space: normal !important;
+/* Only the description / name column needs truncation (text can be very long).
+   text-overflow:ellipsis MUST pair with overflow:hidden + white-space:nowrap. */
+tbody tr td:nth-child(1) {
+  flex: 2.5;        /* Description / Name — widest column */
+  font-weight: 600;
+  font-size: 1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Nested block elements inside cells (e.g. investment name <div>) must also truncate.
-   text-overflow only works when the element itself has overflow:hidden + white-space:nowrap */
-td:not(.action-cell) > div,
-td:not(.action-cell) > span {
+/* Description's direct child divs/spans also need the truncation pair.
+   (e.g. investment name is wrapped in a <div>) */
+tbody tr td:nth-child(1) > div,
+tbody tr td:nth-child(1) > span {
   min-width: 0;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
-/* Column distribution weights for desktop */
-tbody tr td:nth-child(1) {
-  flex: 2.5;      /* Description / Name — widest column */
-  font-weight: 600;
-  font-size: 1rem;
-  padding-right: 6rem !important; /* reserve space for the 2 absolute action buttons */
-}
-
 tbody tr td:nth-child(2) {
-  flex: 1.1;      /* Category tag / Type */
+  flex: 1.2;        /* Category tag — extra 0.1 over old value for tag breathing room */
 }
 
 tbody tr td:nth-child(3) {
-  flex: 1;        /* Date */
+  flex: 1.1;        /* Date — slight bump so "1 Jul 2026" never clips */
 }
 
 tbody tr td:nth-child(4) {
-  flex: 1;        /* Recurring/Extra / Rate */
+  flex: 1.3;        /* "Recurring" is 77px; 1.3 gives it reliable clearance */
 }
 
 tbody tr td:nth-child(5) {
-  flex: 1.4;      /* Amount / Current Value / Outstanding */
+  flex: 1.6;        /* Amount / Current Value — room for two-line .trend-up */
 }
 
 tbody tr td:nth-child(6) {
-  flex: 1;        /* Status (lends/borrows table) */
+  flex: 1;          /* Status (lends/borrows table) */
 }
 
 .category-tag {
@@ -994,20 +1003,22 @@ tbody tr td:nth-child(6) {
   background-color: var(--surface-hover);
 }
 
-/* Action cell: absolutely pinned to top-right of each card row on desktop
-   (mirrors the mobile treatment so buttons are always in a predictable spot) */
+/* ── Desktop action cell: in normal flex flow, pinned to the right ──────────────
+   Keeping it in-flow means the browser accounts for button width when distributing
+   space to the other cells — no more overlap of data columns under the buttons.
+   Mobile overrides this back to position:absolute via !important in @media block.  */
 .action-cell {
-  position: absolute !important;
-  top: 0.55rem !important;
-  right: 0.75rem !important;
-  width: auto !important;
+  position: static !important;  /* back in flex document flow — no more overlap */
+  margin-left: auto !important; /* pushed to the far right within the flex row */
   flex: none !important;
   flex-shrink: 0 !important;
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
-  gap: 0.25rem !important;
-  padding: 0 !important;
+  gap: 0.35rem !important;
+  padding: 0 0.25rem !important;
+  overflow: visible !important;
+  white-space: normal !important;
 }
 
 .empty-state {
