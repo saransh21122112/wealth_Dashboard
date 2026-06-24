@@ -1162,13 +1162,25 @@
           </div>
         </div>
         <div class="ai-widget-header-actions">
-          <button class="ai-widget-resize-btn" id="aiWidgetResizeBtn" aria-label="Expand chat" title="Expand / shrink">
-            <!-- expand icon (default) -->
-            <svg class="ai-resize-icon-expand" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
-            <!-- compress icon (when expanded) -->
-            <svg class="ai-resize-icon-compress" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 14 10 14 10 20"></polyline><polyline points="20 10 14 10 14 4"></polyline><line x1="10" y1="14" x2="3" y2="21"></line><line x1="21" y1="3" x2="14" y2="10"></line></svg>
+          <!-- Maximize / restore toggle -->
+          <button class="ai-widget-resize-btn" id="aiWidgetResizeBtn" aria-label="Maximize chat" title="Maximize">
+            <!-- Maximize icon: two outward diagonal arrows (shown in normal state) -->
+            <svg class="ai-resize-icon-expand" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <polyline points="9 21 3 21 3 15"></polyline>
+              <line x1="21" y1="3" x2="14" y2="10"></line>
+              <line x1="3" y1="21" x2="10" y2="14"></line>
+            </svg>
+            <!-- Restore icon: two inward diagonal arrows (shown in expanded state) -->
+            <svg class="ai-resize-icon-compress" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="4 14 10 14 10 20"></polyline>
+              <polyline points="20 10 14 10 14 4"></polyline>
+              <line x1="10" y1="14" x2="3" y2="21"></line>
+              <line x1="21" y1="3" x2="14" y2="10"></line>
+            </svg>
           </button>
-          <button class="ai-widget-close-btn" id="aiWidgetCloseBtn" aria-label="Close chat">
+          <!-- Close / minimise to FAB -->
+          <button class="ai-widget-close-btn" id="aiWidgetCloseBtn" aria-label="Close chat" title="Close">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
         </div>
@@ -1399,6 +1411,8 @@
     const aiFileInput = document.getElementById('aiFileInput');
     const messages    = document.getElementById('aiChatMessages');
 
+    const resizeBtn = document.getElementById('aiWidgetResizeBtn');
+
     function openWidget() {
       if (!floatRoot) return;
       floatRoot.classList.add('open');
@@ -1409,7 +1423,15 @@
     function closeWidget() {
       if (!floatRoot) return;
       floatRoot.classList.remove('open');
-      if (widget) widget.setAttribute('aria-hidden', 'true');
+      if (widget) {
+        widget.setAttribute('aria-hidden', 'true');
+        // Reset to normal size whenever closed
+        widget.classList.remove('expanded');
+      }
+      if (resizeBtn) {
+        resizeBtn.setAttribute('aria-label', 'Maximize chat');
+        resizeBtn.title = 'Maximize';
+      }
     }
 
     if (floatBtn) floatBtn.addEventListener('click', () =>
@@ -1417,14 +1439,13 @@
     );
     if (closeBtn) closeBtn.addEventListener('click', closeWidget);
 
-    // Resize toggle (expand ↔ normal)
-    const resizeBtn = document.getElementById('aiWidgetResizeBtn');
+    // Maximize ↔ restore toggle
     if (resizeBtn && widget) {
       resizeBtn.addEventListener('click', () => {
         widget.classList.toggle('expanded');
         const isExpanded = widget.classList.contains('expanded');
-        resizeBtn.setAttribute('aria-label', isExpanded ? 'Shrink chat' : 'Expand chat');
-        resizeBtn.title = isExpanded ? 'Shrink' : 'Expand';
+        resizeBtn.setAttribute('aria-label', isExpanded ? 'Restore chat' : 'Maximize chat');
+        resizeBtn.title = isExpanded ? 'Restore' : 'Maximize';
       });
     }
 

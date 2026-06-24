@@ -1150,17 +1150,29 @@ tr:hover td {
     left: 12px;
     right: 12px;
     width: auto;
-    max-height: calc(100vh - 124px); /* never taller than viewport minus FAB+gap */
+    max-height: calc(100vh - 124px);
     border-radius: 16px;
     transform-origin: bottom right;
     box-shadow: 0 8px 48px rgba(18, 8, 10, 0.22), 0 0 0 1px var(--border-color);
+    /* Smooth resize transition on mobile too */
+    transition: opacity 0.3s ease,
+                transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+                top 0.3s ease,
+                bottom 0.3s ease,
+                left 0.3s ease,
+                right 0.3s ease,
+                max-height 0.35s ease,
+                border-radius 0.3s ease;
   }
 
-  /* Expanded on mobile = more height, same width */
+  /* Maximized on mobile: full-screen from top to just above the FAB */
   .ai-widget.expanded {
-    width: auto; /* still left:12px right:12px */
-    max-height: calc(100vh - 112px);
-    bottom: 100px;
+    top: 8px;
+    bottom: 88px;  /* above FAB (20px margin + 60px FAB + 8px gap) */
+    left: 8px;
+    right: 8px;
+    max-height: none;  /* top+bottom constraints take over */
+    border-radius: 16px;
   }
 
   /* Tour popover: bottom sheet on mobile */
@@ -1202,10 +1214,19 @@ tr:hover td {
 
   /* Tighter chat widget on very small screens */
   .ai-widget {
-    bottom: 96px;
-    left: 8px;
-    right: 8px;
-    max-height: calc(100vh - 116px);
+    bottom: 92px;
+    left: 6px;
+    right: 6px;
+    max-height: calc(100vh - 110px);
+  }
+
+  /* Full-screen maximize on tiny phones */
+  .ai-widget.expanded {
+    top: 4px;
+    bottom: 84px;
+    left: 4px;
+    right: 4px;
+    max-height: none;
   }
 
   .ai-float-root {
@@ -1418,13 +1439,23 @@ tr:hover td {
   transform: scale(0.8) translateY(16px);
   transform-origin: bottom right;
   pointer-events: none;
-  transition: opacity 0.3s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* Smooth transition for both open/close AND resize */
+  transition: opacity 0.3s ease,
+              transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+              width 0.3s ease,
+              max-height 0.35s ease;
 }
 
 .ai-float-root.open .ai-widget {
   opacity: 1;
   transform: scale(1) translateY(0);
   pointer-events: auto;
+}
+
+/* ── Maximized / expanded state (desktop) ─────────── */
+.ai-widget.expanded {
+  width: min(680px, calc(100vw - 56px));
+  max-height: min(88vh, calc(100vh - 56px));
 }
 
 /* ── Widget header ────────────────────────────────── */
@@ -1516,17 +1547,7 @@ tr:hover td {
 /* Icon swap for resize button */
 .ai-resize-icon-compress { display: none; }
 .ai-widget.expanded .ai-resize-icon-expand   { display: none; }
-.ai-widget.expanded .ai-resize-icon-compress { display: block; }
-
-/* Expanded state — larger widget */
-.ai-widget.expanded {
-  width: 540px;
-  max-height: 80vh;
-}
-
-.ai-float-root.open .ai-widget.expanded {
-  transform: scale(1) translateY(0);
-}
+.ai-widget.expanded .ai-resize-icon-compress { display: flex; }
 
 /* ── Messages area ────────────────────────────────── */
 .ai-widget .ai-chat-messages {
