@@ -111,11 +111,11 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
     filteredExpenses.forEach((expense) => {
       const row = document.createElement('tr');
       row.innerHTML = `
-        <td data-label="">${expense.description}</td>
-        <td data-label="Category"><span class="category-tag tag-${expense.category}">${expense.category}</span></td>
-        <td data-label="Date">${new Date(expense.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
-        <td data-label="Type">${expense.isRecurring ? 'Recurring' : 'Extra'}</td>
-        <td data-label="Amount" style="font-weight: 600;">₹${parseFloat(expense.amount).toLocaleString('en-IN')}</td>
+        <td data-label=""><span>${expense.description}</span></td>
+        <td data-label="Category"><span class="category-tag tag-${expense.category}"><span class="cat-text">${expense.category}</span></span></td>
+        <td data-label="Date"><span style="white-space:nowrap">${new Date(expense.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span></td>
+        <td data-label="Type"><span class="${expense.isRecurring ? 'type-recurring' : 'type-extra'}">${expense.isRecurring ? 'Recurring' : 'Extra'}</span></td>
+        <td data-label="Amount" class="expense-amt">₹${parseFloat(expense.amount).toLocaleString('en-IN')}</td>
         <td data-label="" class="action-cell">
           <button class="action-btn edit-exp" data-id="${expense.id}" aria-label="Edit expense">${EDIT_ICON}</button>
           <button class="action-btn delete-exp" data-id="${expense.id}" aria-label="Delete expense">${DELETE_ICON}</button>
@@ -160,8 +160,8 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
         <td data-label="Type"><span class="investment-tag">${typeLabel}</span></td>
         <td data-label="Invested">₹${Math.round(principal).toLocaleString('en-IN')}</td>
         <td data-label="Rate">${investment.rate}%</td>
-        <td data-label="Current Value">
-          <div style="font-weight: 700;">₹${Math.round(currentValue).toLocaleString('en-IN')}</div>
+        <td data-label="Current Value" style="display:flex;flex-direction:column;align-items:flex-end;">
+          <div class="investment-amt">₹${Math.round(currentValue).toLocaleString('en-IN')}</div>
           <div style="font-size: 0.8rem;" class="${profit >= 0 ? 'trend-up' : 'trend-down'}">
             ${profit >= 0 ? '+' : ''}${Math.round(profit).toLocaleString('en-IN')} (${returnsPct.toFixed(1)}%)
           </div>
@@ -204,11 +204,11 @@ export function createRenderers({ dom, store, calculations, formatCurrency, save
     filtered.forEach((inc) => {
       const row = document.createElement('tr');
       row.innerHTML = `
-        <td data-label="">${inc.description}</td>
-        <td data-label="Category"><span class="category-tag tag-${inc.category}">${inc.category}</span></td>
-        <td data-label="Date">${new Date(inc.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
-        <td data-label="Type">${inc.isRecurring ? 'Recurring' : 'Extra'}</td>
-        <td data-label="Amount" style="font-weight: 600; color: var(--color-success);">+₹${parseFloat(inc.amount).toLocaleString('en-IN')}</td>
+        <td data-label=""><span>${inc.description}</span></td>
+        <td data-label="Category"><span class="category-tag tag-${inc.category}"><span class="cat-text">${inc.category}</span></span></td>
+        <td data-label="Date"><span style="white-space:nowrap">${new Date(inc.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span></td>
+        <td data-label="Type"><span class="${inc.isRecurring ? 'type-recurring' : 'type-extra'}">${inc.isRecurring ? 'Recurring' : 'Extra'}</span></td>
+        <td data-label="Amount" class="income-amt">+₹${parseFloat(inc.amount).toLocaleString('en-IN')}</td>
         <td data-label="" class="action-cell">
           <button class="action-btn edit-inc" data-id="${inc.id}" aria-label="Edit income">${EDIT_ICON}</button>
           <button class="action-btn delete-inc" data-id="${inc.id}" aria-label="Delete income">${DELETE_ICON}</button>

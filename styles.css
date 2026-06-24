@@ -855,6 +855,7 @@ tbody tr {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.5rem;
   background: var(--surface-color);
   border: 1px solid var(--border-color);
   border-radius: 12px;
@@ -915,11 +916,12 @@ tbody tr td:nth-child(1) > span {
 }
 
 tbody tr td:nth-child(2) {
-  flex: 1.2;        /* Category tag — extra 0.1 over old value for tag breathing room */
+  flex: 1.5;        /* Category tag — wider to fit "Miscellaneous" without overflow */
 }
 
 tbody tr td:nth-child(3) {
-  flex: 1.1;        /* Date — slight bump so "1 Jul 2026" never clips */
+  flex: 1.4;        /* Date — enough room for "30 Nov 2026" without clipping */
+  min-width: 90px;
 }
 
 tbody tr td:nth-child(4) {
@@ -937,11 +939,18 @@ tbody tr td:nth-child(6) {
 .category-tag {
   display: inline-flex;
   align-items: center;
-  padding: 0.25rem 0.65rem;
+  justify-content: center;
+  padding: 0.35rem 0.8rem;
   border-radius: 20px;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 600;
   text-transform: capitalize;
+  max-width: 120px;
+  overflow: hidden;
+}
+.category-tag .cat-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -1019,6 +1028,56 @@ tbody tr td:nth-child(6) {
   padding: 0 0.25rem !important;
   overflow: visible !important;
   white-space: normal !important;
+}
+
+/* ── Type badges (Recurring / Extra) ─────────────────────────────────── */
+.type-recurring {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.35rem 0.8rem;
+  border-radius: 20px;
+  background: rgba(46, 125, 50, 0.1);
+  color: var(--color-success);
+  white-space: nowrap;
+}
+.type-extra {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 0.35rem 0.8rem;
+  border-radius: 20px;
+  background: var(--surface-hover);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* ── Semantic amount colours ─────────────────────────────────────────── */
+.income-amt {
+  font-weight: 600;
+  color: var(--color-success);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.expense-amt {
+  font-weight: 600;
+  color: var(--color-error);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.investment-amt {
+  font-weight: 700;
+  color: var(--color-maroon);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Tabular digits for dates so day/month/year columns stay aligned */
+td:nth-child(3) {
+  font-variant-numeric: tabular-nums;
 }
 
 .empty-state {
