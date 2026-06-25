@@ -1,0 +1,29 @@
+{
+  "name": "Aurelia – AI Wealth Dashboard",
+  "short_name": "Aurelia",
+  "description": "AI-powered wealth operating system. Track expenses, investments, insurance, and financial decisions in one place.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#800020",
+  "background_color": "#ffffff",
+  "categories": ["finance", "productivity"],
+  "lang": "en-IN",
+  "icons": [
+    {
+      "src": "/icons/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false
+}
